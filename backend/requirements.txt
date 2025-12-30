@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+email-validator
+pymongo
+python-dotenv
+passlib[bcrypt]
+python-jose

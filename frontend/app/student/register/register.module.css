@@ -1,0 +1,216 @@
+.container {
+  display: flex;
+  height: 100vh;
+  color: white;
+  font-family: serif;
+}
+
+/* LEFT PANEL */
+.leftPanel {
+  width: 35%;
+  background: linear-gradient(160deg, #5b3a8e, #2e1b47);
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
+.leftPanel h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.leftPanel .subHeading {
+  margin: 20px 0;
+  font-weight: 300;
+  line-height: 140%;
+  opacity: 0.8;
+}
+
+.leftPanel .text{
+  margin-top: 4rem;
+}
+
+.loginLink {
+  margin-top: 25px;
+  display: inline-block;
+  color: #fff;
+}
+
+.loginLink span {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.footer {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-top: 40px;
+}
+
+/* RIGHT PANEL */
+.rightPanel {
+  width: 65%;
+  background: #ffffff;
+  backdrop-filter: blur(18px);
+  padding: 2rem;
+}
+
+.title {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 10px;
+  color: #000000;
+}
+
+.rightPanel p {
+  color: #000000;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logIn{
+    padding: 8px 14px;
+    border: 1px solid;
+    margin: 10px 0;
+    border-radius: 10px;
+    text-align: center;
+    width: fit-content;
+    cursor: pointer;
+}
+
+.logIn:hover {
+  transform: scale(1.05);
+}
+
+/* Avatar */
+.avatar {
+  width: 80px;
+  height: 80px;
+  margin: 20px auto 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #9333ea);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+/* Form */
+/* .form input {
+  background-color: #e9ecef;
+  color: #343a40;
+  padding: 8px 12px;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 18px;
+}
+
+.form input::placeholder {
+  color: #000000;
+}
+
+.row {
+  display: flex;
+  gap: 15px;
+} */
+.form{
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+}
+
+.inputWrapper {
+  width: 100%;
+}
+
+/* Input field */
+.inputField input {
+  width: 100%;
+  padding: 10px 40px;
+  border-radius: 8px;
+  background-color: #e9ecef;
+  border: 1px solid transparent;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  color: #000000;
+}
+
+/* Hover effect */
+.inputWrapper input:hover {
+  background-color: #dee2e6;
+}
+
+/* Focus effect */
+.inputWrapper input:focus {
+  outline: none;
+  border-color: #5b3a8e;
+  /* background-color: #ffffff; */
+  box-shadow: 0 0 0 2px rgba(91, 58, 142, 0.15);
+}
+
+.inputField{
+  position: relative;
+  width: 100%;
+}
+
+/* Left icons */
+.icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #5b3a8e;
+  font-size: 20px;
+}
+
+.error {
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Eye icon */
+.eyeIcon {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #5b3a8e;
+}
+/* Row spacing */
+.row {
+  display: flex;
+  gap: 15px;
+  /* margin-bottom: 18px; */
+}
+
+/* Button */
+.submitBtn {
+  background: linear-gradient(160deg, #5b3a8e, #2e1b47);
+  padding: 8px 16px;
+  font-weight: 500;
+  color: #ffffff;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 30%;
+  align-self: flex-end;
+  margin-top: 10px;
+}
+
+.submitBtn:hover {
+  transform: scale(1.05);
+}
+
+.rightPanel .footer{
+  opacity: 0.8;
+  font-size: 14px;
+  margin:50px 0 0;
+}
