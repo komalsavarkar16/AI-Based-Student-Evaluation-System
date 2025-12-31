@@ -7,8 +7,10 @@ import { useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +24,7 @@ export default function Login() {
     if (!email) {
       newErrors.email = "Email is required";
       console.log("error occured")
-    } else if(!email.includes("@")){
+    } else if (!email.includes("@")) {
       newErrors.email = "Please enter a valid email"
     }
 
@@ -51,6 +53,11 @@ export default function Login() {
 
       const data = await res.json();
       toast.success("Login successful 🎉");
+      if (data.role === "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/student/dashboard");
+      }
     } catch (err) {
       console.error(err);
       toast.error("Backend not reachable")

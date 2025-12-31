@@ -3,81 +3,117 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #57C785, #57C785);
-  color:#343a40;
-  /* font-family: "Inter", sans-serif; */
+  background-color: #f1f2f6; /* Light grey background */
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Optional: Add the same decorative circular gradients as the Register page for consistency, but simpler */
+.page::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(140, 82, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.page::after {
+  content: "";
+  position: absolute;
+  bottom: -10%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(230, 255, 0, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
 }
 
 /* Glass card */
 .card {
-  /* background: rgba(255, 255, 255, 0.12); */
   background: white;
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 50px 60px;
+  border-radius: 24px;
+  padding: 60px 50px;
   text-align: center;
   width: 90%;
-  max-width: 520px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(140, 82, 255, 0.15); /* Soft purple shadow */
+  z-index: 10;
+  border: 1px solid rgba(140, 82, 255, 0.05);
 }
 
 /* Title */
 .title {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   margin-bottom: 15px;
+  color: #8c52ff; /* Primary Purple */
+  line-height: 1.2;
 }
 
 /* Subtitle */
 .subtitle {
   font-size: 16px;
-  opacity: 0.85;
+  color: #666;
   line-height: 1.6;
-  margin-bottom: 35px;
+  margin-bottom: 40px;
 }
 
 /* Buttons */
 .buttonGroup {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 15px;
 }
 
-/* Student button */
-.studentBtn {
-  background: linear-gradient(135deg, #6366f1, #9333ea);
-  color: white;
-  border-radius: 5px;
-  border: none;
+/* Common button styles */
+.studentBtn, .adminBtn {
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 100%;
   outline: none;
-  padding: 5px 15px;
 }
 
-.studentBtn:hover, .adminBtn:hover{
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.5);
-}
-
-/* Admin button */
-.adminBtn {
-  background: linear-gradient(135deg, #6366f1, #9333ea);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+/* Student button - Primary styling */
+.studentBtn {
+  background: #8c52ff;
   color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 5px 15px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(140, 82, 255, 0.3);
+}
+
+.studentBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(140, 82, 255, 0.4);
+  background: #7b3fe6;
+}
+
+/* Admin button - Secondary styling (Outline or specialized) */
+.adminBtn {
+  background: white;
+  border: 2px solid #8c52ff;
+  color: #8c52ff;
 }
 
 .adminBtn:hover {
-  /* background: rgba(255, 255, 255, 0.15); */
-  transform: translateY(-3px);
+  background: #f8f7fa;
+  transform: translateY(-2px);
 }
+
 
 /* Footer */
 .footer {
-  margin-top: 30px;
-  font-size: 13px;
-  opacity: 0.75;
+  margin-top: 40px;
+  font-size: 12px;
+  color: #999;
+  letter-spacing: 0.5px;
 }

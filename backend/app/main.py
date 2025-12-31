@@ -17,3 +17,5 @@ def root():
     return {"message": "Backend is running"}
 
 app.include_router(student.router)
+from app.routes import admin
+app.include_router(admin.router)

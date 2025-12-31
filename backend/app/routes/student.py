@@ -12,6 +12,7 @@ def register_student(student: StudentCreate):
     student_dict = student.model_dump()
 
     student_dict["password"] = hash_password(student.password)
+    student_dict["role"] = "student"
 
     # 🚨 REMOVE confirmPassword if it exists
     student_dict.pop("confirmPassword", None)
@@ -39,10 +40,11 @@ async def login_student(data: StudentLogin):
 
     return {
         "message": "Login successful",
+        "role": student["role"],
         "student": {
             "id": str(student["_id"]),
             "email": student["email"],
             "firstName": student["firstName"],
-            "lastName": student["lastName"]
+            "lastName": student["lastName"],
         }
     }
