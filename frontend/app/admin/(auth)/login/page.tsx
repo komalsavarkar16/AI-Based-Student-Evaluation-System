@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
       console.log(data)
 
       if (data.role === "admin") {
-        router.push("/admin/dashboard");
+        router.push("/admin");
       } else {
         router.push("/student/dashboard");
       }

@@ -1,119 +1,114 @@
-.page {
-  height: 100vh;
+.container {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f1f2f6; /* Light grey background */
-  font-family: 'Inter', sans-serif;
-  overflow: hidden;
-  position: relative;
+  background-color: #f4f7fa;
+  background-image: radial-gradient(#d1d5db 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+  padding: 2rem;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Optional: Add the same decorative circular gradients as the Register page for consistency, but simpler */
-.page::before {
-  content: "";
-  position: absolute;
-  top: -10%;
-  right: -10%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(140, 82, 255, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  z-index: 0;
-}
-
-.page::after {
-  content: "";
-  position: absolute;
-  bottom: -10%;
-  left: -10%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(230, 255, 0, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  z-index: 0;
-}
-
-/* Glass card */
-.card {
-  background: white;
-  border-radius: 24px;
-  padding: 60px 50px;
+.mainWrapper {
+  max-width: 1000px;
+  width: 100%;
   text-align: center;
-  width: 90%;
-  max-width: 480px;
-  box-shadow: 0 20px 60px rgba(140, 82, 255, 0.15); /* Soft purple shadow */
-  z-index: 10;
-  border: 1px solid rgba(140, 82, 255, 0.05);
 }
 
-/* Title */
-.title {
-  font-size: 32px;
+.header {
+  margin-bottom: rem;
+}
+
+.header h1 {
+  font-size: 3rem;
   font-weight: 800;
-  margin-bottom: 15px;
-  color: #8c52ff; /* Primary Purple */
-  line-height: 1.2;
+  color: #1e293b;
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
 }
 
-/* Subtitle */
-.subtitle {
-  font-size: 16px;
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 40px;
+.header p {
+  font-size: 1.125rem;
+  color: #64748b;
 }
 
-/* Buttons */
-.buttonGroup {
+.selectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background: #ffffff;
+  padding: 2rem 1rem;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  text-decoration: none;
+  margin-top: 2rem;
 }
 
-/* Common button styles */
-.studentBtn, .adminBtn {
-  padding: 14px 20px;
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: #8c52ff;
+}
+
+.iconBox {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Student specific colors */
+.studentIcon { background-color: #eff6ff; color: #8c52ff; }
+.studentBtn { background-color: #8c52ff; }
+.studentBtn:hover { transform: scale(1.05) }
+
+/* Admin specific colors */
+.adminIcon { background-color: #f8fafc; color: #1e293b; }
+.adminBtn { background-color: #1e293b; }
+.adminBtn:hover { background-color: #0f172a; }
+
+.cardTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+}
+
+.cardDescription {
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.actionButton {
+  width: 50%;
+  padding: 12px;
   border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  outline: none;
-}
-
-/* Student button - Primary styling */
-.studentBtn {
-  background: #8c52ff;
   color: white;
+  font-weight: 600;
   border: none;
-  box-shadow: 0 5px 15px rgba(140, 82, 255, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
 }
 
-.studentBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(140, 82, 255, 0.4);
-  background: #7b3fe6;
-}
-
-/* Admin button - Secondary styling (Outline or specialized) */
-.adminBtn {
-  background: white;
-  border: 2px solid #8c52ff;
-  color: #8c52ff;
-}
-
-.adminBtn:hover {
-  background: #f8f7fa;
-  transform: translateY(-2px);
-}
-
-
-/* Footer */
-.footer {
-  margin-top: 40px;
-  font-size: 12px;
-  color: #999;
-  letter-spacing: 0.5px;
+@media (max-width: 640px) {
+  .header h1 { font-size: 2.25rem; }
+  .container { padding: 1rem; }
 }

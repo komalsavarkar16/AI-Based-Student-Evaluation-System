@@ -1,0 +1,241 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background-color: #f1f2f6;
+  font-family: 'Inter', sans-serif;
+  padding: 20px;
+}
+
+.card {
+  display: flex;
+  width: 900px;
+  max-width: 100%;
+  min-height: 550px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* LEFT PANEL (FORM) */
+.leftPanel {
+  flex: 1;
+  padding: 60px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #f8f7fa;
+}
+
+.title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #8c52ff;
+  margin-bottom: 35px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.inputWrapper {
+  width: 100%;
+}
+
+.inputField {
+  position: relative;
+  width: 100%;
+}
+
+.inputField input {
+  width: 100%;
+  padding: 12px 10px 12px 40px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 15px;
+  color: #1e293b;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.inputField input::placeholder {
+  color: #94a3b8;
+}
+
+.inputField input:focus {
+  border-bottom-color: #8c52ff;
+}
+
+.icon {
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 20px;
+}
+
+.eyeIcon {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.error {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 6px;
+  display: block;
+}
+
+.submitBtn {
+  background: #8c52ff;
+  padding: 14px;
+  font-weight: 600;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 25px;
+  width: 100%;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  box-shadow: 0 4px 6px -1px rgba(140, 82, 255, 0.2);
+}
+
+.submitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(140, 82, 255, 0.3);
+}
+
+/* RIGHT PANEL (WELCOME) */
+.rightPanel {
+  flex: 0.8;
+  background: #8c52ff;
+  padding: 50px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+}
+
+.welcomeTitle {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #e6ff00;
+}
+
+.subHeading {
+  font-size: 16px;
+  margin-bottom: 35px;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.createAccount {
+  padding: 10px 40px;
+  background: transparent;
+  border: 2px solid #e6ff00;
+  color: white;
+  border-radius: 25px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.createAccount:hover {
+  background: #e6ff00;
+  color: #8c52ff;
+}
+
+/* Media Queries */
+
+@media (max-width: 1024px) {
+  .card {
+    width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    flex-direction: column;
+    width: 100%;
+    max-width: 450px;
+    height: auto;
+  }
+
+  .leftPanel {
+    padding: 40px 30px;
+  }
+
+  .rightPanel {
+    padding: 40px 30px;
+    order: -1;
+    /* Welcome panel on top for mobile */
+  }
+
+  .welcomeTitle {
+    font-size: 28px;
+  }
+
+  .title {
+    font-size: 24px;
+    margin-bottom: 25px;
+  }
+}
+
+@media (max-width: 420px) {
+  .container {
+    padding: 0;
+  }
+
+  .card {
+    border-radius: 0;
+  }
+
+  .leftPanel,
+  .rightPanel {
+    padding: 1rem 1.5rem;
+  }
+
+  .welcomeTitle {
+    font-size: 24px;
+  }
+
+  .subHeading {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .createAccount {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .inputField input {
+    padding: 12px 10px 12px 40px;
+    font-size: 14px;
+  }
+
+  .submitBtn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}

@@ -19,8 +19,10 @@
   }
 }
 
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: cursive;
+  font-family: 'Inter', serif;
+  overflow-x: hidden;
 }

@@ -1,0 +1,661 @@
+.container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background-color: #f5f7fa;
+    /* Light grey/blue background */
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+}
+
+/* SIDEBAR (Kept from previous step) */
+.sidebar {
+    width: 250px;
+    background-color: #ffffff;
+    color: #707070;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 14px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s ease;
+    z-index: 100;
+    position: relative;
+    white-space: nowrap;
+}
+
+.sidebar.minimized {
+    width: 88px;
+}
+
+.toggleBtn {
+    position: absolute;
+    top: 50px;
+    right: -12px;
+    height: 25px;
+    width: 25px;
+    background: #8c52ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    z-index: 101;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 16px;
+}
+
+.sidebar.minimized .toggleBtn {
+    transform: rotate(180deg);
+}
+
+.logoContainer {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 50px;
+    padding: 0 5px;
+    height: 50px;
+    min-height: 50px;
+}
+
+.logoBox {
+    min-width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #8c52ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.logoText {
+    font-size: 18px;
+    font-weight: 600;
+    color: #707070;
+    opacity: 1;
+    transition: opacity 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.logoSubtext {
+    font-size: 12px;
+    font-weight: 400;
+    color: #a0a0a0;
+}
+
+.sidebar.minimized .logoText {
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 14px;
+    color: #707070;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 15px;
+    white-space: nowrap;
+    height: 50px;
+}
+
+.navItem:hover {
+    background-color: #f6f5ff;
+    color: #8c52ff;
+}
+
+.navItem.active {
+    background-color: #8c52ff;
+    color: #ffffff;
+}
+
+.navItem.active .navIcon {
+    color: #ffffff;
+}
+
+.navIcon {
+    font-size: 24px;
+    min-width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #707070;
+    transition: color 0.3s;
+}
+
+.navItem:hover .navIcon {
+    color: #8c52ff;
+}
+
+.sidebar.minimized .navItemText {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+}
+
+/* Logout */
+.logoutBtn {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 14px;
+    color: #707070;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border-radius: 6px;
+    height: 50px;
+}
+
+.logoutBtn:hover {
+    background: #f6f5ff;
+    color: #8c52ff;
+}
+
+.sidebar.minimized .logoutText {
+    opacity: 0;
+    display: none;
+}
+
+/* MAIN CONTENT AREA */
+.mainContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+    transition: margin-left 0.4s ease;
+    padding: 0;
+    /* Remove padding from main container, put it on content div if needed */
+}
+
+/* 1. TOP BAR (Restored) */
+.topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: white;
+    border-bottom: 1px solid #eaeaea;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+}
+
+.welcomeMsg h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+.welcomeMsg p {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0 0;
+}
+
+.profileSection {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.searchBar {
+    display: flex;
+    align-items: center;
+    background: #f1f2f6;
+    padding: 8px 15px;
+    border-radius: 20px;
+    gap: 10px;
+    width: 250px;
+}
+
+.searchInput {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    color: #333;
+    width: 100%;
+}
+
+.iconBtn {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s;
+    width: auto;
+    /* Reset fixed width from previous step */
+    height: auto;
+}
+
+.iconBtn:hover {
+    color: #8c52ff;
+    background: none;
+    /* Reset bg hover */
+}
+
+.badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: #ff4742;
+    border-radius: 50%;
+    border: none;
+    /* Reset border */
+}
+
+.profilePic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e6ff00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #8c52ff;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* CONTENT CONTAINER for grid */
+.dashboardContent {
+    padding: 30px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+
+/* 2. STATS ROW (3 Columns) */
+.statsRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 25px;
+}
+
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Profile Widget */
+.profileWidget {
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.largeAvatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #e6ff00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #8c52ff;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profileInfo h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 5px;
+}
+
+.profileInfo span {
+    font-size: 14px;
+    color: #888;
+    display: block;
+}
+
+/* Skill Status Widget */
+.skillWidget h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #555;
+    margin: 0 0 15px;
+}
+
+.progressBarBack {
+    width: 100%;
+    height: 10px;
+    background: #f1f2f6;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progressBarFill {
+    height: 100%;
+    background: linear-gradient(90deg, #8c52ff, #a980ff);
+    border-radius: 10px;
+}
+
+.skillMeta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #888;
+}
+
+/* Score Widget */
+.scoreWidget {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+}
+
+.scoreCircle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 6px solid #f1f2f6;
+    border-top-color: #e6ff00;
+    /* Yellow Score */
+    border-right-color: #e6ff00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    color: #333;
+}
+
+.scoreLabel {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #888;
+    font-weight: 500;
+}
+
+
+/* 3. CTA SECTION */
+.ctaSection {
+    background: linear-gradient(135deg, #8c52ff 0%, #7b3fe6 100%);
+    border-radius: 20px;
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 10px 30px rgba(140, 82, 255, 0.2);
+}
+
+.ctaText {
+    max-width: 60%;
+}
+
+.ctaText h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.ctaText p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.startBtn {
+    background: white;
+    color: #8c52ff;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 2;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.startBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Decorative circles */
+.ctaSection::before {
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.ctaSection::after {
+    content: "";
+    position: absolute;
+    bottom: -30px;
+    left: 20%;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+
+/* 4. INSIGHTS ROW (2 Columns) */
+.insightsRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sectionTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+}
+
+.viewLink {
+    font-size: 13px;
+    color: #8c52ff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Gap Analysis List */
+.gapList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.gapItem {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: #fff0f0;
+    border-radius: 12px;
+}
+
+.gapIcon {
+    color: #ff4742;
+}
+
+.gapDetails h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.gapDetails p {
+    font-size: 12px;
+    color: #888;
+    margin: 3px 0 0;
+}
+
+/* Rec List */
+.recList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.recItem {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: #f6f5ff;
+    border-radius: 12px;
+}
+
+.recIcon {
+    color: #8c52ff;
+}
+
+.recDetails h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.recDetails p {
+    font-size: 12px;
+    color: #888;
+    margin: 3px 0 0;
+}
+
+
+/* 5. HISTORY SECTION */
+.historySection {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.historyTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.historyTable th {
+    text-align: left;
+    padding: 15px;
+    font-size: 13px;
+    color: #888;
+    font-weight: 600;
+    border-bottom: 1px solid #eee;
+}
+
+.historyTable td {
+    padding: 15px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.statusTag {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.statusTag.completed {
+    background: #e6fffa;
+    color: #047857;
+}
+
+.statusTag.pending {
+    background: #fffbeb;
+    color: #b45309;
+}
+
+.actionLink {
+    color: #8c52ff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .statsRow {
+        grid-template-columns: 1fr;
+        /* Stack stats on tablet */
+    }
+
+    .insightsRow {
+        grid-template-columns: 1fr;
+        /* Stack insights */
+    }
+}
+
+@media (max-width: 768px) {
+    .mainContent {
+        padding: 20px;
+    }
+
+    .ctaSection {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .ctaText {
+        max-width: 100%;
+    }
+
+    /* Handle Sidebar collapse logic if needed (Assuming sidebar logic from prev step is intact) */
+}

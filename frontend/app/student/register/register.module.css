@@ -1,6 +1,6 @@
 .container {
   display: flex;
-  height: 100vh;
+  /* height: 100vh; */
   color: white;
   font-family: serif;
 }
@@ -8,18 +8,19 @@
 /* LEFT PANEL */
 .leftPanel {
   width: 35%;
-  background: linear-gradient(160deg, #5b3a8e, #2e1b47);
+  background: #8c52ff;
   padding: 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background-size: cover;
 }
 
 
 .leftPanel h2 {
   font-size: 28px;
   margin-bottom: 10px;
-  text-align: center;
+  text-align: center
 }
 
 .leftPanel .subHeading {
@@ -29,20 +30,10 @@
   opacity: 0.8;
 }
 
-.leftPanel .text{
+.leftPanel .text {
   margin-top: 4rem;
 }
 
-.loginLink {
-  margin-top: 25px;
-  display: inline-block;
-  color: #fff;
-}
-
-.loginLink span {
-  font-weight: 600;
-  text-decoration: underline;
-}
 
 .footer {
   font-size: 14px;
@@ -71,21 +62,26 @@
   margin-bottom: 20px;
 }
 
-.logIn{
-    padding: 8px 14px;
-    border: 1px solid;
-    margin: 10px 0;
-    border-radius: 10px;
-    text-align: center;
-    width: fit-content;
-    cursor: pointer;
+.leftPanel .logIn {
+  padding: 8px 14px;
+  border: 1px solid;
+  margin: 10px 0;
+  border-radius: 10px;
+  width: fit-content;
+  cursor: pointer;
+  text-align: end;
+  box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, .1) 0 6px 20px;
+  outline: none;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s, -webkit-box-shadow .2s;
+  touch-action: manipulation;
 }
 
-.logIn:hover {
-  transform: scale(1.05);
+.leftPanel .logIn:hover {
+  box-shadow: #ffffff 0 0 0 3px, transparent 0 0 0 0;
 }
 
-/* Avatar */
 .avatar {
   width: 80px;
   height: 80px;
@@ -99,30 +95,10 @@
   cursor: pointer;
 }
 
-/* Form */
-/* .form input {
-  background-color: #e9ecef;
-  color: #343a40;
-  padding: 8px 12px;
-  border-radius: 6px;
-  width: 100%;
-  font-size: 14px;
-  outline: none;
-  margin-bottom: 18px;
-}
-
-.form input::placeholder {
-  color: #000000;
-}
-
-.row {
+.form {
   display: flex;
-  gap: 15px;
-} */
-.form{
-    display: flex;
-    flex-direction: column;
-    row-gap: 20px;
+  flex-direction: column;
+  row-gap: 20px;
 }
 
 .inputWrapper {
@@ -154,7 +130,7 @@
   box-shadow: 0 0 0 2px rgba(91, 58, 142, 0.15);
 }
 
-.inputField{
+.inputField {
   position: relative;
   width: 100%;
 }
@@ -184,6 +160,7 @@
   cursor: pointer;
   color: #5b3a8e;
 }
+
 /* Row spacing */
 .row {
   display: flex;
@@ -193,7 +170,7 @@
 
 /* Button */
 .submitBtn {
-  background: linear-gradient(160deg, #5b3a8e, #2e1b47);
+  background: #8c52ff;
   padding: 8px 16px;
   font-weight: 500;
   color: #ffffff;
@@ -201,7 +178,7 @@
   cursor: pointer;
   margin-top: 10px;
   width: 30%;
-  align-self: flex-end;
+  align-self: flex-start;
   margin-top: 10px;
 }
 
@@ -209,8 +186,8 @@
   transform: scale(1.05);
 }
 
-.rightPanel .footer{
+.rightPanel .footer {
   opacity: 0.8;
   font-size: 14px;
-  margin:50px 0 0;
+  margin: 50px 0 0;
 }

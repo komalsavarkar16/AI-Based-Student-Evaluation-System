@@ -1,15 +1,15 @@
 "use client";
+import { useState } from "react";
 import styles from "./login.module.css";
 import Link from "next/link";
-import Image from "next/image";
-import studImage from "../../../public/assets/images/Login/loginPage.jpg";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
 
-export default function Login() {
+export default function StudentLogin() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,16 +23,15 @@ export default function Login() {
 
     if (!email) {
       newErrors.email = "Email is required";
-      console.log("error occured")
     } else if (!email.includes("@")) {
-      newErrors.email = "Please enter a valid email"
+      newErrors.email = "Please enter a valid email";
     }
 
     if (!password) {
       newErrors.password = "Password is required";
     }
 
-    setErrors(newErrors)
+    setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) return;
 
@@ -43,16 +42,20 @@ export default function Login() {
         body: JSON.stringify({ email: email, password: password }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const text = await res.text();
-        console.error(text);
-        console.log(email, password);
-        toast.error("Login failed");
+        toast.error(data.detail || "Login failed");
         return;
       }
 
-      const data = await res.json();
       toast.success("Login successful 🎉");
+
+      // Store student details
+      if (data.student) {
+        localStorage.setItem("student_info", JSON.stringify(data.student));
+      }
+
       if (data.role === "admin") {
         router.push("/admin/dashboard");
       } else {
@@ -60,78 +63,88 @@ export default function Login() {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Backend not reachable")
-      // alert("Backend not reachable");
+      toast.error("Backend not reachable");
     }
   };
+
   return (
-    <div className={styles.mainContainer}>
-      <div className={styles.formContainer}>
+    <div className={styles.container}>
+      <div className={styles.leftPanel}>
+        <h2 className={styles.welcomeTitle}>Welcome Back!</h2>
+        <p className={styles.subHeading}>
+          To keep connected with us please login with your personal info.
+        </p>
+        <Link href="/student/register" className={styles.signUpLink}>
+          Sign Up
+        </Link>
+      </div>
+      <div className={styles.rightPanel}>
+        <h2 className={styles.title}>Sign In</h2>
+        <p className={styles.subtitle}>Log in to continue your learning journey</p>
+
         <form className={styles.form} onSubmit={handleLogin}>
-          <h1 className={styles.heading}>Sign In to your account</h1>
-          <div className={styles.inputGroup}>
-            <label className={styles.labels}>Email or username<span className={styles.asterisk}>*</span></label>
-            <input
-              className={styles.input}
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email or username"
-            />
+          <div className={styles.inputWrapper}>
+            <div className={styles.inputField}>
+              <PersonOutlineIcon className={styles.icon} />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email or Username"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrors((prev: any) => ({
+                    ...prev,
+                    email: "",
+                  }));
+                }}
+              />
+            </div>
             {errors.email && (
               <span className={styles.error}>{errors.email}</span>
             )}
           </div>
-          <div className={styles.inputGroup}>
-            <div className={styles.labelContainer}>
-              <label className={styles.labels}>Password<span className={styles.asterisk}>*</span></label>
-              <Link href="/" className={styles.link}>
-                Forgot Password?
-              </Link>
-            </div>
-            <div className={styles.inputWrapper}>
+
+          <div className={styles.inputWrapper}>
+            <div className={styles.inputField}>
+              <LockOutlinedIcon className={styles.icon} />
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className={styles.input}
+                name="password"
+                placeholder="Password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrors((prev: any) => ({
+                    ...prev,
+                    password: "",
+                  }));
+                }}
               />
-
               <span
                 className={styles.eyeIcon}
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
               </span>
-              {errors.password && (
-                <span className={styles.error}>{errors.password}</span>
-              )}
             </div>
+            {errors.password && (
+              <span className={styles.error}>{errors.password}</span>
+            )}
           </div>
-          <div className={styles.flexContainer}>
-            <input type="checkbox" />
-            <span>Remember me</span>
+
+          <div className={styles.optionsRow}>
+            <label className={styles.checkboxContainer}>
+              <input type="checkbox" /> Remember me
+            </label>
+            <Link href="#" className={styles.forgotPass}>Forgot Password?</Link>
           </div>
-          <button type="submit" className={styles.signInBtn}>
+
+          <button type="submit" className={styles.submitBtn}>
             Sign In
           </button>
-          <div className={styles.flexContainer}>
-            <label>Not registered yet?</label>
-            <Link href="/student/register" className={styles.link}>
-              Create an account
-            </Link>
-          </div>
         </form>
       </div>
-      <Image
-        src={studImage}
-        alt="Student"
-        width={700}
-        height={600}
-        quality={90}
-        className={styles.image}
-      />
     </div>
   );
 }

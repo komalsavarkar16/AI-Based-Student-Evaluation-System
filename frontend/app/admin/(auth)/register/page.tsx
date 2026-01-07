@@ -105,7 +105,7 @@ export default function RegisterPage() {
         {/* LEFT PANEL - FORM */}
         <div className={styles.leftPanel}>
           <h2 className={styles.title}>Create Account</h2>
-          
+
           {/* Form */}
           <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.inputWrapper}>
@@ -211,13 +211,6 @@ export default function RegisterPage() {
           <Link href="/admin/login" className={styles.logIn}>
             Log in
           </Link>
-          
-          {/* Pagination dots simulation to match image */}
-          <div className={styles.dots}>
-            <span className={`${styles.dot} ${styles.active}`}></span>
-            <span className={styles.dot}></span>
-            <span className={styles.dot}></span>
-          </div>
         </div>
       </div>
     </div>

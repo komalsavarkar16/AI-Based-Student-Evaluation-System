@@ -1,41 +1,47 @@
 'use client';
 import styles from "./styles/home.module.css";
-import { useRouter } from "next/navigation";
+import Link from 'next/link';
+import { GraduationCap, ShieldCheck, ChevronRight } from 'lucide-react';
 
-export default function Home() {
-  const router = useRouter();
-
+export default function LandingPage() {
   return (
-    <div className={styles.page}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>
-          AI Student Evaluation System
-        </h1>
+    <div className={styles.container}>
+      <main className={styles.mainWrapper}>
+        <header className={styles.header}>
+          <h1>Welcome</h1>
+          <p>Choose your workspace to manage your academic journey.</p>
+        </header>
 
-        <p className={styles.subtitle}>
-          Assess skills • Identify gaps • Get personalized learning paths
-        </p>
+        <div className={styles.selectionGrid}>
+          {/* Student Card */}
+          <div  className={styles.card}>
+            <div className={`${styles.iconBox} ${styles.studentIcon}`}>
+              <GraduationCap size={32} />
+            </div>
+            <h2 className={styles.cardTitle}>Student</h2>
+            <p className={styles.cardDescription}>
+              View your courses, track assignments, and access learning materials.
+            </p>
+            <Link href="/student/login" className={`${styles.actionButton} ${styles.studentBtn}`}>
+              Continue as Student <ChevronRight size={18} />
+            </Link>
+          </div>
 
-        <div className={styles.buttonGroup}>
-          <button
-            className={styles.studentBtn}
-            onClick={() => router.push("/student/login")}
-          >
-            Continue as Student
-          </button>
-
-          <button
-            className={styles.adminBtn}
-            onClick={() => router.push("/admin/login")}
-          >
-            Continue as Admin
-          </button>
+          {/* Admin Card */}
+          <div  className={styles.card}>
+            <div className={`${styles.iconBox} ${styles.adminIcon}`}>
+              <ShieldCheck size={32} />
+            </div>
+            <h2 className={styles.cardTitle}>Administrator</h2>
+            <p className={styles.cardDescription}>
+              Manage enrollments, generate reports, and configure system settings.
+            </p>
+            <Link href="/admin/login" className={`${styles.actionButton} ${styles.adminBtn}`}>
+              Continue as Admin <ChevronRight size={18} />
+            </Link>
+          </div>
         </div>
-
-        <p className={styles.footer}>
-          Powered by AI for smarter education 🚀
-        </p>
-      </div>
+      </main>
     </div>
   );
 }

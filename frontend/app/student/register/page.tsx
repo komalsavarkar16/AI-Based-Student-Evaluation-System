@@ -30,6 +30,10 @@ export default function RegisterPage() {
       ...prev,
       [name]: value,
     }));
+    setErrors((prev: any) => ({
+      ...prev,
+      [name]: "",
+    }));
   };
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
@@ -60,13 +64,12 @@ export default function RegisterPage() {
 
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
-      toast.error("Passwords do not match!!!")
-      // alert("Passwords do not match");
       return;
     }
 
     console.log("Error found:", newErrors);
     setErrors(newErrors);
+    console.log("Errors:", errors);
 
     if (Object.keys(newErrors).length > 0) return;
 
@@ -100,7 +103,6 @@ export default function RegisterPage() {
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong")
-      // alert("Something went wrong");
       console.log(error);
     }
   };
@@ -109,29 +111,12 @@ export default function RegisterPage() {
 
   return (
     <div className={styles.container}>
-      {/* LEFT PANEL */}
-      <div className={styles.leftPanel}>
-        <h2>Welcome</h2>
-        <h4 className={styles.subHeading}>
-          This platform evaluates your skills using AI, identifies knowledge
-          gaps, and recommends personalized courses to improve your performance.
-        </h4>
-        <span className={styles.text}>Already have an account?</span>
-        <Link href="/student/login" className={styles.logIn}>
-          Log In
-        </Link>
-
-        <p className={styles.footer}>Terms of Use & Privacy Policy</p>
-      </div>
-
-      {/* RIGHT PANEL */}
       <div className={styles.rightPanel}>
         <h2 className={styles.title}>Create Your Student Account</h2>
         <p>
           Start your AI-powered skill evaluation and personalized learning
           journey.
         </p>
-        {/* Avatar */}
         <div className={styles.avatar}>
           <span>+</span>
         </div>
@@ -173,7 +158,6 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Email */}
           <div className={styles.inputWrapper}>
             <div className={styles.inputField}>
               <EmailOutlinedIcon className={styles.icon} />
@@ -190,7 +174,6 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* Password + Confirm */}
           <div className={styles.row}>
             <div className={styles.inputWrapper}>
               <div className={styles.inputField}>
@@ -238,6 +221,20 @@ export default function RegisterPage() {
           © 2025 AI Student Evaluation System Built for academic & skill
           assessment
         </p>
+      </div>
+
+      <div className={styles.leftPanel}>
+        <h2>Welcome</h2>
+        <h4 className={styles.subHeading}>
+          This platform evaluates your skills using AI, identifies knowledge
+          gaps, and recommends personalized courses to improve your performance.
+        </h4>
+        <span className={styles.text}>Already have an account?</span>
+        <Link href="/student/login" className={styles.logIn}>
+          Log In
+        </Link>
+
+        <p className={styles.footer}>Terms of Use & Privacy Policy</p>
       </div>
     </div>
   );
