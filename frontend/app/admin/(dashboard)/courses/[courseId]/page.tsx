@@ -1,4 +1,6 @@
+import React from "react";
 import CourseDetailsContainer from "../../../components/CourseDetailsContainer/CourseDetailsContainer";
+import CourseMCQContainer from "@/app/admin/components/CourseMCQContainer/CourseMCQContainer";
 
 interface Props {
     params: Promise<{
@@ -9,6 +11,9 @@ interface Props {
 export default async function CourseDetailsPage({ params }: Props) {
     const { courseId } = await params;
     return (
-        <CourseDetailsContainer courseId={courseId} />
+        <React.Fragment>
+            <CourseDetailsContainer courseId={courseId} />
+            <CourseMCQContainer courseId={courseId} />
+        </React.Fragment>
     );
 }

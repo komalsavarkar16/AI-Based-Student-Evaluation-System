@@ -11,6 +11,7 @@ courses = client["Courses_DB"]
 students_collection = db["students"]
 admins_collection = db1["admins"]
 courses_collection = courses["Courses"]
+mcq_collection = courses["Courses_MCQs"]
 
 
 print("MongoDB connected successfully")

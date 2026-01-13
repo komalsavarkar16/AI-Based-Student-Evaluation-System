@@ -37,7 +37,7 @@ export default function CourseDetailsContainer({ courseId }: courseDetailsProps)
     const handleGenerateMCQ = async () => {
         setGeneratingMcq(true);
         try {
-            const response = await fetch(`http://127.0.0.1:8000/courses/${courseId}/generate-mcq`, {
+            const response = await fetch(`http://127.0.0.1:8000/ai/generate/mcq/${courseId}`, {
                 method: "POST"
             });
             if (response.ok) {
@@ -53,24 +53,24 @@ export default function CourseDetailsContainer({ courseId }: courseDetailsProps)
         }
     };
 
-    const handleGenerateVideoQuestions = async () => {
-        setGeneratingVideo(true);
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/courses/${courseId}/generate-video-questions`, {
-                method: "POST"
-            });
-            if (response.ok) {
-                toast.success("Video questions generated successfully!");
-            } else {
-                throw new Error("Failed to generate video questions");
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error("Error generating video questions");
-        } finally {
-            setGeneratingVideo(false);
-        }
-    };
+    // const handleGenerateVideoQuestions = async () => {
+    //     setGeneratingVideo(true);
+    //     try {
+    //         const response = await fetch(`http://127.0.0.1:8000/courses/${courseId}/generate-video-questions`, {
+    //             method: "POST"
+    //         });
+    //         if (response.ok) {
+    //             toast.success("Video questions generated successfully!");
+    //         } else {
+    //             throw new Error("Failed to generate video questions");
+    //         }
+    //     } catch (error) {
+    //         console.error(error);
+    //         toast.error("Error generating video questions");
+    //     } finally {
+    //         setGeneratingVideo(false);
+    //     }
+    // };
 
     if (loading) {
         return (
@@ -132,7 +132,6 @@ export default function CourseDetailsContainer({ courseId }: courseDetailsProps)
                         </button>
                         <button
                             className={`${styles.actionBtn} ${styles.generateVideo}`}
-                            onClick={handleGenerateVideoQuestions}
                             disabled={generatingVideo}
                         >
                             {generatingVideo ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <Video size={20} />}

@@ -1,13 +1,16 @@
-# Python
+# Python virtual environment
+backend/Lib/
+backend/Scripts/
+backend/Include/
+backend/pyvenv.cfg
+
+# Python cache
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-
-# Virtual environment
-venv/
-env/
-.venv/
 
 # Environment variables
 .env
+
+# Node / Next.js
+node_modules/
+.next/

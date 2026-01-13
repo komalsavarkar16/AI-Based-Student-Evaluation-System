@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes import student,courses,admin
+from app.routes import student,courses,admin,ai
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="AI Student Evaluation System")
@@ -19,3 +19,4 @@ def root():
 app.include_router(student.router)
 app.include_router(admin.router)
 app.include_router(courses.router)
+app.include_router(ai.router)
