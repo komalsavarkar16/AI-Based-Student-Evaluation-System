@@ -7,9 +7,10 @@ import { toast } from "react-toastify";
 
 interface courseDetailsProps {
     courseId: string;
+    isAdmin?: boolean;
 }
 
-export default function CourseDetailsContainer({ courseId }: courseDetailsProps) {
+export default function CourseDetailsContainer({ courseId, isAdmin = true }: courseDetailsProps) {
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     const [generatingMcq, setGeneratingMcq] = useState(false);
@@ -50,6 +51,18 @@ export default function CourseDetailsContainer({ courseId }: courseDetailsProps)
             toast.error("Error generating MCQs");
         } finally {
             setGeneratingMcq(false);
+        }
+    };
+
+    const handleEnroll = async () => {
+        try {
+            // Placeholder for enrollment API call
+            // const response = await fetch(`http://127.0.0.1:8000/student/enroll/${courseId}`, { method: "POST" });
+
+            toast.success("Successfully enrolled in the course!");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to enroll in the course");
         }
     };
 
@@ -120,24 +133,37 @@ export default function CourseDetailsContainer({ courseId }: courseDetailsProps)
                 </div>
 
                 <div className={styles.actionsSection}>
-                    <div className={styles.actionCard}>
-                        <h3 className={styles.sectionTitle}>AI Generation</h3>
-                        <button
-                            className={`${styles.actionBtn} ${styles.generateMcq}`}
-                            onClick={handleGenerateMCQ}
-                            disabled={generatingMcq}
-                        >
-                            {generatingMcq ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <BrainCircuit size={20} />}
-                            {generatingMcq ? "Generating..." : "Generate MCQ"}
-                        </button>
-                        <button
-                            className={`${styles.actionBtn} ${styles.generateVideo}`}
-                            disabled={generatingVideo}
-                        >
-                            {generatingVideo ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <Video size={20} />}
-                            {generatingVideo ? "Generating..." : "Generate Video Questions"}
-                        </button>
-                    </div>
+                    {isAdmin ? (
+                        <div className={styles.actionCard}>
+                            <h3 className={styles.sectionTitle}>AI Generation</h3>
+                            <button
+                                className={`${styles.actionBtn} ${styles.generateMcq}`}
+                                onClick={handleGenerateMCQ}
+                                disabled={generatingMcq}
+                            >
+                                {generatingMcq ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <BrainCircuit size={20} />}
+                                {generatingMcq ? "Generating..." : "Generate MCQ"}
+                            </button>
+                            <button
+                                className={`${styles.actionBtn} ${styles.generateVideo}`}
+                                disabled={generatingVideo}
+                            >
+                                {generatingVideo ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <Video size={20} />}
+                                {generatingVideo ? "Generating..." : "Generate Video Questions"}
+                            </button>
+                        </div>
+                    ) : (
+                        <div className={styles.actionCard}>
+                            <h3 className={styles.sectionTitle}>Course Action</h3>
+                            <button
+                                className={`${styles.actionBtn} ${styles.enrollBtn}`}
+                                onClick={handleEnroll}
+                            >
+                                <Sparkles size={20} />
+                                Enroll Now
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

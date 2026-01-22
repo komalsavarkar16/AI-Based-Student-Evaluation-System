@@ -113,6 +113,12 @@ export default function AdminLoginPage() {
               )}
             </div>
 
+            <div className={styles.forgotPassWrapper}>
+              <Link href="/admin/forgot-password" className={styles.forgotPass}>
+                Forgot Password?
+              </Link>
+            </div>
+
             <button type="submit" className={styles.submitBtn}>
               Log In
             </button>

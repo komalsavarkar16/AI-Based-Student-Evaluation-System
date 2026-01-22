@@ -137,7 +137,7 @@ export default function StudentLogin() {
             <label className={styles.checkboxContainer}>
               <input type="checkbox" /> Remember me
             </label>
-            <Link href="#" className={styles.forgotPass}>Forgot Password?</Link>
+            <Link href="/student/forgot-password" className={styles.forgotPass}>Forgot Password?</Link>
           </div>
 
           <button type="submit" className={styles.submitBtn}>

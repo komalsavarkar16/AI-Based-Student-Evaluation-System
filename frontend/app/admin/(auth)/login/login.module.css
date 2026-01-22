@@ -117,6 +117,25 @@
   box-shadow: 0 10px 15px -3px rgba(140, 82, 255, 0.3);
 }
 
+.forgotPassWrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -10px;
+}
+
+.forgotPass {
+  color: #8c52ff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.forgotPass:hover {
+  text-decoration: underline;
+  color: #7b3fe6;
+}
+
 /* RIGHT PANEL (WELCOME) */
 .rightPanel {
   flex: 0.8;

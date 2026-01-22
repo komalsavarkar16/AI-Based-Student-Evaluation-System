@@ -1,26 +1,14 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./dashboard.module.css";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
-  Dashboard as DashboardIcon,
-  Assignment as AssessmentIcon,
-  Timeline as PerformanceIcon,
-  Person as ProfileIcon,
-  Settings as SettingsIcon,
-  Logout as LogoutIcon,
-  Search as SearchIcon,
-  ChevronRight as ToggleIcon,
-  NotificationsNone as BellIcon,
   WarningAmber as GapIcon,
   Lightbulb as IdeaIcon
 } from "@mui/icons-material";
+import StudentNavbar from "../components/StudentNavbar/StudentNavbar";
 
 export default function StudentDashboard() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState("Dashboard");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [studentName, setStudentName] = useState("Student");
 
   useEffect(() => {
@@ -37,14 +25,6 @@ export default function StudentDashboard() {
     }
   }, []);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const handleLogout = () => {
-    router.push("/student/login");
-  };
-
   // Mock Data
   const assessmentHistory = [
     { id: 101, name: "Python Basics", date: "Oct 24, 2024", score: "85%", status: "completed" },
@@ -54,77 +34,18 @@ export default function StudentDashboard() {
 
   return (
     <div className={styles.container}>
-      {/* SIDEBAR */}
-      <aside className={`${styles.sidebar} ${!isSidebarOpen ? styles.minimized : ''}`}>
-        <button className={styles.toggleBtn} onClick={toggleSidebar}>
-          <ToggleIcon style={{ fontSize: '18px' }} />
-        </button>
-
-        <div className={styles.logoContainer}>
-          <div className={styles.logoBox}>ES</div>
-          <div className={styles.logoText}>
-            Evaluation System
-            <span className={styles.logoSubtext}>Student</span>
-          </div>
-        </div>
-
-        <nav className={styles.nav}>
-          <Link href="#" className={`${styles.navItem} ${activeTab === 'Dashboard' ? styles.active : ''}`} onClick={() => setActiveTab('Dashboard')}>
-            <div className={styles.navIcon}><DashboardIcon /></div>
-            <span className={styles.navItemText}>Dashboard</span>
-          </Link>
-          <Link href="#" className={`${styles.navItem} ${activeTab === 'Assessments' ? styles.active : ''}`} onClick={() => setActiveTab('Assessments')}>
-            <div className={styles.navIcon}><AssessmentIcon /></div>
-            <span className={styles.navItemText}>My Assessments</span>
-          </Link>
-          <Link href="#" className={`${styles.navItem} ${activeTab === 'Performance' ? styles.active : ''}`} onClick={() => setActiveTab('Performance')}>
-            <div className={styles.navIcon}><PerformanceIcon /></div>
-            <span className={styles.navItemText}>Performance</span>
-          </Link>
-          <Link href="#" className={`${styles.navItem} ${activeTab === 'Profile' ? styles.active : ''}`} onClick={() => setActiveTab('Profile')}>
-            <div className={styles.navIcon}><ProfileIcon /></div>
-            <span className={styles.navItemText}>My Profile</span>
-          </Link>
-          <Link href="#" className={`${styles.navItem} ${activeTab === 'Settings' ? styles.active : ''}`} onClick={() => setActiveTab('Settings')}>
-            <div className={styles.navIcon}><SettingsIcon /></div>
-            <span className={styles.navItemText}>Settings</span>
-          </Link>
-        </nav>
-
-        <button className={styles.logoutBtn} onClick={handleLogout}>
-          <div className={styles.navIcon}><LogoutIcon /></div>
-          <span className={styles.logoutText}>Logout</span>
-        </button>
-      </aside>
+      <StudentNavbar />
 
       {/* MAIN CONTENT */}
       <main className={styles.mainContent}>
-
-        {/* 1. TOP BAR (Restored) */}
-        <header className={styles.topBar}>
-          <div className={styles.welcomeMsg}>
-            <h2>Hello, {studentName} 👋</h2>
-            <p>Here's what's happening with your learning today.</p>
-          </div>
-
-          <div className={styles.profileSection}>
-            <div className={styles.searchBar}>
-              <SearchIcon style={{ color: '#ccc', fontSize: 20 }} />
-              <input type="text" placeholder="Search..." className={styles.searchInput} />
-            </div>
-
-            <button className={styles.iconBtn}>
-              <BellIcon />
-              <span className={styles.badge}></span>
-            </button>
-
-            <div className={styles.profilePic}>
-              {studentName.charAt(0).toUpperCase()}
-            </div>
-          </div>
-        </header>
-
         <div className={styles.dashboardContent}>
+          {/* Header Section */}
+          <div className={styles.contentHeader}>
+            <div className={styles.welcomeMsg}>
+              <h2>Hello, {studentName} 👋</h2>
+              <p>Here's what's happening with your learning today.</p>
+            </div>
+          </div>
           {/* 2. STATS ROW (Profile | Skill | Score) */}
           <section className={styles.statsRow}>
             {/* Profile Card */}
@@ -163,24 +84,16 @@ export default function StudentDashboard() {
                 </div>
               </div>
             </div>
-
-            {/* Score Card */}
-            <div className={`${styles.card} ${styles.scoreWidget}`}>
-              <div className={styles.scoreCircle}>
-                A
-              </div>
-              <div className={styles.scoreLabel}>Overall Grade</div>
-            </div>
           </section>
 
           {/* 3. CTA BANNER */}
           <section className={styles.ctaSection}>
             <div className={styles.ctaText}>
-              <h2>Ready to test your skills?</h2>
-              <p>Take a new AI-powered assessment to evaluate your knowledge and get personalized recommendations.</p>
+              <h2>Explore New Horizons!</h2>
+              <p>Browse through our extensive library of courses and find the perfect path to enhance your skills and knowledge.</p>
             </div>
-            <Link href="#" className={styles.startBtn}>
-              Start Assessment
+            <Link href="/student/courses" className={styles.startBtn}>
+              Browse Courses
             </Link>
           </section>
 

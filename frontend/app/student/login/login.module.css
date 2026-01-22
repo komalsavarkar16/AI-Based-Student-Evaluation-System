@@ -10,8 +10,7 @@
   display: flex;
   width: 900px;
   max-width: 95%;
-  /* Ensure card fits on smaller screens */
-  height: 550px;
+  height: fit-content;
   background: white;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);

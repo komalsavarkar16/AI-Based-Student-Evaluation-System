@@ -153,6 +153,17 @@
     box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
 }
 
+.enrollBtn {
+    background-color: #10b981;
+    color: white;
+}
+
+.enrollBtn:hover:not(:disabled) {
+    background-color: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
 .actionBtn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
