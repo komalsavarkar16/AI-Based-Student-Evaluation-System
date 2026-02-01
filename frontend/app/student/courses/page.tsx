@@ -11,6 +11,7 @@ import {
     BarChart as LevelIcon,
     ArrowForward as ViewIcon
 } from "@mui/icons-material";
+import { API_BASE_URL } from "@/app/utils/api";
 
 export default function StudentCourses() {
     const [courses, setCourses] = useState<Course[]>([]);
@@ -23,7 +24,7 @@ export default function StudentCourses() {
     const fetchCourses = async () => {
         try {
             const token = localStorage.getItem("auth_token");
-            const res = await fetch("http://127.0.0.1:8000/courses", {
+            const res = await fetch(`${API_BASE_URL}/courses`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }

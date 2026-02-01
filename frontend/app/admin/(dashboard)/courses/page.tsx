@@ -3,6 +3,7 @@
 import styles from "./courses.module.css";
 import { useState, useEffect } from "react";
 import { Course } from "../../../types/course";
+import { API_BASE_URL } from "@/app/utils/api";
 
 import Link from "next/link";
 
@@ -17,7 +18,7 @@ export default function Courses() {
   const fetchCourses = async () => {
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch("http://127.0.0.1:8000/courses", {
+      const res = await fetch(`${API_BASE_URL}/courses`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }

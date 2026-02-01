@@ -14,6 +14,7 @@ import {
     Settings as SettingsIcon,
     Edit as EditIcon
 } from "@mui/icons-material";
+import { API_BASE_URL } from "@/app/utils/api";
 
 interface StudentInfo {
     firstName: string;
@@ -69,7 +70,7 @@ export default function StudentProfile() {
             }
 
             try {
-                const res = await fetch(`http://127.0.0.1:8000/student/profile/${studentId}`);
+                const res = await fetch(`${API_BASE_URL}/student/profile/${studentId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setStudentInfo(data);

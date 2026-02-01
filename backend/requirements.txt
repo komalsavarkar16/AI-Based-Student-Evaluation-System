@@ -6,5 +6,4 @@ pymongo
 python-dotenv
 passlib[bcrypt]
 python-jose
-google-generativeai
 google-genai

@@ -8,6 +8,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "@/app/utils/api";
 
 export default function StudentLogin() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function StudentLogin() {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/student/login", {
+      const res = await fetch(`${API_BASE_URL}/student/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email, password: password }),

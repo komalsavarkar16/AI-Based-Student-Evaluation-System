@@ -4,6 +4,7 @@ import styles from "../login/login.module.css";
 import Link from "next/link";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "@/app/utils/api";
 
 export default function AdminForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ export default function AdminForgotPasswordPage() {
 
         setLoading(true);
         try {
-            const res = await fetch("http://127.0.0.1:8000/admin/forgot-password", {
+            const res = await fetch(`${API_BASE_URL}/admin/forgot-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),

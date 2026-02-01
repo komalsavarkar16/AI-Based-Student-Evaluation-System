@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import styles from "./courseMCQContainer.module.css";
+import { API_BASE_URL } from "@/app/utils/api";
 
 interface courseDetailsProps {
     courseId: string;
@@ -16,7 +17,7 @@ export default function CourseMCQContainer({ courseId }: courseDetailsProps) {
         setLoading(true);
         try {
             const token = localStorage.getItem("auth_token");
-            const response = await fetch(`http://127.0.0.1:8000/ai/get/mcq/${courseId}`, {
+            const response = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }

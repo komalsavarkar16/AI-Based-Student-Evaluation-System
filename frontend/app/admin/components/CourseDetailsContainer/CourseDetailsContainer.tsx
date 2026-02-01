@@ -5,6 +5,7 @@ import styles from "./courseDetailsContainer.module.css";
 import { BrainCircuit, Video, Clock, BarChart, GraduationCap, Sparkles } from "lucide-react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/app/utils/api";
 
 interface courseDetailsProps {
     courseId: string;
@@ -29,7 +30,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
         if (!studentId || isAdmin) return;
 
         try {
-            const res = await fetch(`http://127.0.0.1:8000/student/check-test-status/${studentId}/${courseId}`);
+            const res = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`);
             if (res.ok) {
                 const data = await res.json();
                 setTestCompleted(data.completed);
@@ -42,7 +43,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const fetchCourse = async () => {
         try {
             const token = localStorage.getItem("auth_token");
-            const response = await fetch(`http://127.0.0.1:8000/courses/${courseId}`, {
+            const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -63,7 +64,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
         setGeneratingMcq(true);
         try {
             const token = localStorage.getItem("auth_token");
-            const response = await fetch(`http://127.0.0.1:8000/ai/generate/mcq/${courseId}`, {
+            const response = await fetch(`${API_BASE_URL}/ai/generate/mcq/${courseId}`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -92,7 +93,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             }
 
             // 1. Fetch student profile to check skills and academic details
-            const profileRes = await fetch(`http://127.0.0.1:8000/student/profile/${studentId}`);
+            const profileRes = await fetch(`${API_BASE_URL}/student/profile/${studentId}`);
             if (!profileRes.ok) {
                 toast.error("Failed to verify profile details");
                 return;
@@ -111,7 +112,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             }
 
             // 3. Check if MCQs exist for the course
-            const mcqRes = await fetch(`http://127.0.0.1:8000/ai/get/mcq/${courseId}`);
+            const mcqRes = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`);
             if (!mcqRes.ok) {
                 if (mcqRes.status === 404) {
                     toast.info("Assessment is not yet ready for this course. Please contact administrator.");
@@ -139,7 +140,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     // const handleGenerateVideoQuestions = async () => {
     //     setGeneratingVideo(true);
     //     try {
-    //         const response = await fetch(`http://127.0.0.1:8000/courses/${courseId}/generate-video-questions`, {
+    //         const response = await fetch(`${API_BASE_URL}/courses/${courseId}/generate-video-questions`, {
     //             method: "POST"
     //         });
     //         if (response.ok) {

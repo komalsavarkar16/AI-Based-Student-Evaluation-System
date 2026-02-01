@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import styles from "./test.module.css";
 import { toast } from "react-toastify";
 import ResultContainer from "../../components/MCQResultContainer/ResultContainer";
+import { API_BASE_URL } from "@/app/utils/api";
 import {
     Timer as TimerIcon,
     ChevronRight,
@@ -60,7 +61,7 @@ export default function MCQTestPage() {
 
     const fetchMCQs = async () => {
         try {
-            const res = await fetch(`http://127.0.0.1:8000/ai/get/mcq/${courseId}`);
+            const res = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`);
             if (res.ok) {
                 const data = await res.json();
                 setTestData(data);
@@ -124,7 +125,7 @@ export default function MCQTestPage() {
                 toast.error("You must be logged in to submit the test");
                 return;
             }
-            const response = await fetch(`http://127.0.0.1:8000/student/submit-test`, {
+            const response = await fetch(`${API_BASE_URL}/student/submit-test`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
