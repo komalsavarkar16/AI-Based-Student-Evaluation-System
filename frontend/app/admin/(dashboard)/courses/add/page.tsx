@@ -38,10 +38,12 @@ export default function AddCourse() {
         };
 
         try {
+            const token = localStorage.getItem("auth_token");
             const res = await fetch("http://127.0.0.1:8000/courses/add", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(payload),
             });
@@ -147,7 +149,7 @@ export default function AddCourse() {
                             <label htmlFor="status">Status</label>
                             <select id="status" name="status" value={formData.status} onChange={handleChange}>
                                 <option value="Draft">Draft</option>
-                                <option value="Active">Active</option>
+                                <option value="published">published</option>
                                 <option value="Archived">Archived</option>
                             </select>
                         </div>

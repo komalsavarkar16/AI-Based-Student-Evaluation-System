@@ -40,6 +40,13 @@ def get_mcq(course_id: str):
     if not mcq:
         raise HTTPException(status_code=404, detail="MCQs not found")
 
+    if "courseTitle" not in mcq:
+        course = courses_collection.find_one({"_id": mcq["courseId"]})
+        if course:
+            mcq["courseTitle"] = course.get("title", "Assessment")
+        else:
+            mcq["courseTitle"] = "Assessment"
+
     mcq["_id"] = str(mcq["_id"])
     mcq["courseId"] = str(mcq["courseId"])
 

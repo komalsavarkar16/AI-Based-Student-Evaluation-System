@@ -16,7 +16,12 @@ export default function Courses() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/courses");
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("http://127.0.0.1:8000/courses", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setCourses(data);
     } catch (err) {

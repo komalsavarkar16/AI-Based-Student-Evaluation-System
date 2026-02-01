@@ -52,7 +52,15 @@ export default function AdminLoginPage() {
       }
 
       toast.success("Login successful");
-      console.log(data)
+
+      // Store token
+      if (data.access_token) {
+        localStorage.setItem("auth_token", data.access_token);
+      }
+
+      if (data.admin) {
+        localStorage.setItem("admin_info", JSON.stringify(data.admin));
+      }
 
       if (data.role === "admin") {
         router.push("/admin");

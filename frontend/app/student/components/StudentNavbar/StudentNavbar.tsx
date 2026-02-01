@@ -47,7 +47,7 @@ export default function StudentNavbar() {
         { label: "My Course", path: "/student/courses" },
         { label: "Tests", path: "#" },
         { label: "Results", path: "#" },
-        { label: "My profile", path: "#" },
+        { label: "My profile", path: "/student/profile" },
     ];
 
     return (
@@ -96,9 +96,9 @@ export default function StudentNavbar() {
                     <span className={styles.badge}></span>
                 </button>
 
-                <div className={styles.profilePic} title={studentName}>
+                <Link href="/student/profile" className={styles.profilePic} title={studentName}>
                     {studentName.charAt(0).toUpperCase()}
-                </div>
+                </Link>
 
                 <button className={styles.logout} onClick={handleLogout}>
                     <LogoutIcon fontSize="small" />

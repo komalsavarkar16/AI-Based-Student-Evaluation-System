@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
-from app.schemas.admin import AdminCreate, AdminLogin
+from app.schemas.admin import AdminCreate, AdminLogin, AdminUpdate
+from bson import ObjectId
 from app.database.connection import db, admins_collection
 from app.core.security import hash_password, verify_password
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
@@ -44,8 +45,13 @@ async def login_admin(data: AdminLogin):
             detail="Invalid email or password"
         )
 
+    from app.core.security import create_access_token
+    access_token = create_access_token(data={"sub": str(admin["_id"]), "role": admin["role"]})
+
     return {
         "message": "Login successful",
+        "access_token": access_token,
+        "token_type": "bearer",
         "admin": {
             "id": str(admin["_id"]),
             "email": admin["email"],
@@ -82,25 +88,6 @@ async def forgot_password(data: ForgotPasswordRequest):
         "message": "If your email is registered, you will receive a reset link shortly."
         }
 
-# @router.post("/forgot-password")
-# async def forgot_password(data: ForgotPasswordRequest):
-#     admin = admins_collection.find_one({"email": data.email})
-#     if not admin:
-#         # We return success even if user doesn't exist for security (prevent email enumeration)
-#         return {"message": "If your email is registered, you will receive a reset link shortly."}
-
-#     token = secrets.token_urlsafe(32)
-#     expiry = datetime.utcnow() + timedelta(hours=1)
-
-#     admins_collection.update_one(
-#         {"_id": admin["_id"]},
-#         {"$set": {"reset_token": token, "reset_token_expiry": expiry}}
-#     )
-
-#     await send_reset_email(data.email, token, "admin")
-
-#     return {"message": "If your email is registered, you will receive a reset link shortly."}
-
 
 @router.post("/reset-password")
 async def reset_password(data: ResetPasswordRequest):
@@ -125,3 +112,40 @@ async def reset_password(data: ResetPasswordRequest):
     )
 
     return {"message": "Password reset successfully"}
+
+@router.get("/profile/{admin_id}")
+async def get_admin_profile(admin_id: str):
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    admin = admins_collection.find_one({"_id": ObjectId(admin_id)})
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    
+    # Convert ObjectId to string and remove password
+    admin["id"] = str(admin["_id"])
+    del admin["_id"]
+    if "password" in admin:
+        del admin["password"]
+    
+    return admin
+
+@router.put("/profile/{admin_id}")
+async def update_admin_profile(admin_id: str, admin_update: AdminUpdate):
+    if not ObjectId.is_valid(admin_id):
+        raise HTTPException(status_code=400, detail="Invalid admin ID")
+    
+    update_data = {k: v for k, v in admin_update.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    result = admins_collection.update_one(
+        {"_id": ObjectId(admin_id)},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    
+    return {"message": "Profile updated successfully"}

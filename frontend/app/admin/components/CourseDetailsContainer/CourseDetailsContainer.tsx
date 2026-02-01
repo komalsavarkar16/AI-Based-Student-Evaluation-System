@@ -4,6 +4,7 @@ import { Course } from "../../../types/course";
 import styles from "./courseDetailsContainer.module.css";
 import { BrainCircuit, Video, Clock, BarChart, GraduationCap, Sparkles } from "lucide-react";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 interface courseDetailsProps {
     courseId: string;
@@ -11,18 +12,41 @@ interface courseDetailsProps {
 }
 
 export default function CourseDetailsContainer({ courseId, isAdmin = true }: courseDetailsProps) {
+    const router = useRouter();
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     const [generatingMcq, setGeneratingMcq] = useState(false);
     const [generatingVideo, setGeneratingVideo] = useState(false);
+    const [testCompleted, setTestCompleted] = useState(false);
 
     useEffect(() => {
         fetchCourse()
+        checkTestCompletion()
     }, [])
+
+    const checkTestCompletion = async () => {
+        const studentId = localStorage.getItem("student_id");
+        if (!studentId || isAdmin) return;
+
+        try {
+            const res = await fetch(`http://127.0.0.1:8000/student/check-test-status/${studentId}/${courseId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setTestCompleted(data.completed);
+            }
+        } catch (error) {
+            console.error("Error checking test status:", error);
+        }
+    };
 
     const fetchCourse = async () => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/courses/${courseId}`)
+            const token = localStorage.getItem("auth_token");
+            const response = await fetch(`http://127.0.0.1:8000/courses/${courseId}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
             const data = await response.json()
             setCourse(data)
         }
@@ -38,8 +62,12 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const handleGenerateMCQ = async () => {
         setGeneratingMcq(true);
         try {
+            const token = localStorage.getItem("auth_token");
             const response = await fetch(`http://127.0.0.1:8000/ai/generate/mcq/${courseId}`, {
-                method: "POST"
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
             });
             if (response.ok) {
                 toast.success("MCQs generated successfully!");
@@ -56,15 +84,57 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
 
     const handleEnroll = async () => {
         try {
-            // Placeholder for enrollment API call
-            // const response = await fetch(`http://127.0.0.1:8000/student/enroll/${courseId}`, { method: "POST" });
+            const studentId = localStorage.getItem("student_id");
+            if (!studentId) {
+                toast.error("Please login as a student to enroll");
+                router.push("/student/login");
+                return;
+            }
 
-            toast.success("Successfully enrolled in the course!");
+            // 1. Fetch student profile to check skills and academic details
+            const profileRes = await fetch(`http://127.0.0.1:8000/student/profile/${studentId}`);
+            if (!profileRes.ok) {
+                toast.error("Failed to verify profile details");
+                return;
+            }
+
+            const profile = await profileRes.json();
+
+            // 2. Check if skills and academic details are filled
+            const hasSkills = profile.skills && profile.skills.length > 0;
+            const hasAcademicDetails = profile.university && profile.major && profile.year && profile.gpa;
+
+            if (!hasSkills || !hasAcademicDetails) {
+                toast.warning("Please fill your skills and academic details in your profile before enrolling.");
+                router.push("/student/profile");
+                return;
+            }
+
+            // 3. Check if MCQs exist for the course
+            const mcqRes = await fetch(`http://127.0.0.1:8000/ai/get/mcq/${courseId}`);
+            if (!mcqRes.ok) {
+                if (mcqRes.status === 404) {
+                    toast.info("Assessment is not yet ready for this course. Please contact administrator.");
+                } else {
+                    toast.error("Error fetching assessment details");
+                }
+                return;
+            }
+
+            toast.success("Redirecting to the MCQ Assessment...");
+            router.push(`/student/test/${courseId}`);
+
         } catch (error) {
             console.error(error);
             toast.error("Failed to enroll in the course");
         }
     };
+
+    const handleVideoTest = () => {
+        toast.info("Video-based assessment feature is coming soon!");
+        // router.push(`/student/video-test/${courseId}`);
+    };
+
 
     // const handleGenerateVideoQuestions = async () => {
     //     setGeneratingVideo(true);
@@ -155,13 +225,23 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                     ) : (
                         <div className={styles.actionCard}>
                             <h3 className={styles.sectionTitle}>Course Action</h3>
-                            <button
-                                className={`${styles.actionBtn} ${styles.enrollBtn}`}
-                                onClick={handleEnroll}
-                            >
-                                <Sparkles size={20} />
-                                Enroll Now
-                            </button>
+                            {!testCompleted ? (
+                                <button
+                                    className={`${styles.actionBtn} ${styles.enrollBtn}`}
+                                    onClick={handleEnroll}
+                                >
+                                    <Sparkles size={20} />
+                                    Enroll Now
+                                </button>
+                            ) : (
+                                <button
+                                    className={`${styles.actionBtn} ${styles.videoBtn}`}
+                                    onClick={handleVideoTest}
+                                >
+                                    <Video size={20} />
+                                    Give Video Based Test
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

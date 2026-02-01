@@ -27,8 +27,9 @@ export default function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
+        localStorage.removeItem("auth_token");
         localStorage.removeItem("role");
+        localStorage.removeItem("admin_info");
         router.push("/admin/login");
     };
 

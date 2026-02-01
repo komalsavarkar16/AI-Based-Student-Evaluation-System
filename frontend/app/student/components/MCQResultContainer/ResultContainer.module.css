@@ -1,0 +1,91 @@
+.resultContainer {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    padding: 3rem;
+}
+
+.resultCard {
+    background: white;
+    padding: 4rem;
+    border-radius: 32px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 90%;
+}
+
+.resultCard h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 1.5rem 0 0.5rem;
+}
+
+.courseTitle {
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 2.5rem;
+}
+
+.scoreCircle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: #f5f3ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2.5rem;
+    border: 8px solid #ede9fe;
+}
+
+.scoreText {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #5664f5;
+}
+
+.scoreLabel {
+    font-size: 0.875rem;
+    color: #6366f1;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.statsGrid {
+    margin-bottom: 2.5rem;
+}
+
+.statLine {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.statLine span:last-child {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.dashboardBtn {
+    background: #1e293b;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.dashboardBtn:hover {
+    background: #0f172a;
+    transform: translateY(-2px);
+}

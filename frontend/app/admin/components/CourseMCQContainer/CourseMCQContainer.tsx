@@ -15,7 +15,12 @@ export default function CourseMCQContainer({ courseId }: courseDetailsProps) {
     const getMCQs = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`http://127.0.0.1:8000/ai/get/mcq/${courseId}`);
+            const token = localStorage.getItem("auth_token");
+            const response = await fetch(`http://127.0.0.1:8000/ai/get/mcq/${courseId}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
             const data = await response.json();
             if (response.ok) {
                 setMCQs(data.mcqs || []);

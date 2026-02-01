@@ -9,6 +9,6 @@ interface Props {
 export default async function CourseDetailsPage({ params }: Props) {
     const { courseId } = await params;
     return (
-        <CourseDetailsContainer courseId={courseId} />
+        <CourseDetailsContainer courseId={courseId} isAdmin={false} />
     );
 }

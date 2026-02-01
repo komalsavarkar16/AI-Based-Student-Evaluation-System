@@ -1,0 +1,237 @@
+.testContainer {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    padding: 2rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.testHeader {
+    max-width: 900px;
+    margin: 0 auto 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.headerTitle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.headerTitle h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.headerTitle p {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.timer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 0.75rem 1.25rem;
+    border-radius: 99px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.timerUrgent {
+    background: #fef2f2;
+    color: #dc2626;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.testMain {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.progressBar {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #5664f5, #a855f7);
+    transition: width 0.3s ease;
+}
+
+.questionCard {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 24px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.questionHeader {
+    margin-bottom: 1.5rem;
+}
+
+.questionCount {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.questionText {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.4;
+    margin-bottom: 2.5rem;
+}
+
+.optionsGrid {
+    display: grid;
+    gap: 1rem;
+}
+
+.optionBtn {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    background: white;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.optionBtn:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.optionSelected {
+    border-color: #5664f5;
+    background: #f5f3ff;
+}
+
+.optionMarker {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: #64748b;
+    border-radius: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.optionSelected .optionMarker {
+    background: #5664f5;
+    color: white;
+}
+
+.optionTextContent {
+    font-size: 1.0625rem;
+    font-weight: 500;
+    color: #334155;
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.navBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.75rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.navBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.nextBtn,
+.submitBtn {
+    background: #1e293b;
+    color: white;
+}
+
+.submitBtn {
+    background: #5664f5;
+}
+
+.nextBtn:hover,
+.submitBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(86, 100, 245, 0.2);
+}
+
+.loaderContainer {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+}
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #e2e8f0;
+    border-bottom-color: #5664f5;
+    border-radius: 50%;
+    animation: rotation 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

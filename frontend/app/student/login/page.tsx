@@ -51,9 +51,13 @@ export default function StudentLogin() {
 
       toast.success("Login successful 🎉");
 
-      // Store student details
+      // Store student details and token
+      if (data.access_token) {
+        localStorage.setItem("auth_token", data.access_token);
+      }
       if (data.student) {
         localStorage.setItem("student_info", JSON.stringify(data.student));
+        localStorage.setItem("student_id", data.student.id);
       }
 
       if (data.role === "admin") {
