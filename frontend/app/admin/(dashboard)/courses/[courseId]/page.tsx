@@ -1,6 +1,7 @@
 import React from "react";
 import CourseDetailsContainer from "../../../components/CourseDetailsContainer/CourseDetailsContainer";
 import CourseMCQContainer from "@/app/admin/components/CourseMCQContainer/CourseMCQContainer";
+import CourseVideoQuestionsContainer from "@/app/admin/components/CourseVideoQuestionsContainer/CourseVideoQuestionsContainer";
 
 interface Props {
     params: Promise<{
@@ -13,6 +14,7 @@ export default async function CourseDetailsPage({ params }: Props) {
     return (
         <React.Fragment>
             <CourseDetailsContainer courseId={courseId} />
+            <CourseVideoQuestionsContainer courseId={courseId} />
             <CourseMCQContainer courseId={courseId} />
         </React.Fragment>
     );

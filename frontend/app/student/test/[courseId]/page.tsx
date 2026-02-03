@@ -43,6 +43,7 @@ export default function MCQTestPage() {
     const [timeLeft, setTimeLeft] = useState(0); // in seconds
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [score, setScore] = useState(0);
+    const [analysis, setAnalysis] = useState<any>(null);
 
     useEffect(() => {
         fetchMCQs();
@@ -142,6 +143,8 @@ export default function MCQTestPage() {
             });
 
             if (response.ok) {
+                const resultData = await response.json();
+                setAnalysis(resultData.analysis);
                 toast.success("Assessment submitted successfully!");
             } else {
                 const errorData = await response.json();
@@ -174,7 +177,12 @@ export default function MCQTestPage() {
 
     if (isSubmitted) {
         return (
-            <ResultContainer testData={testData} score={score} router={router} />
+            <ResultContainer
+                testData={testData}
+                score={score}
+                router={router}
+                analysis={analysis}
+            />
         );
     }
 

@@ -224,3 +224,25 @@
         transform: rotate(360deg);
     }
 }
+
+.statusSelect {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    background-color: #f8fafc;
+    cursor: pointer;
+    outline: none;
+    margin-top: 0.25rem;
+}
+
+.statusSelect:hover {
+    border-color: #cbd5e1;
+}
+
+.statusSelect:focus {
+    border-color: #5664f5;
+    box-shadow: 0 0 0 1px #5664f5;
+}

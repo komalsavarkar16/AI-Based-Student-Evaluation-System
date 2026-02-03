@@ -15,6 +15,7 @@ students_collection = db["students"]
 admins_collection = db1["admins"]
 courses_collection = courses["Courses"]
 mcq_collection = courses["Courses_MCQs"]
+video_questions_collection = courses["Courses_Video_Questions"]
 results_collection = db["test_results"]
 
 

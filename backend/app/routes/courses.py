@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from app.database.connection import courses_collection
-from app.schemas.courses import CourseCreate
+from app.schemas.courses import CourseCreate, CourseUpdate
 from datetime import datetime
 from bson import ObjectId
 from app.core.dependencies import get_current_user
@@ -70,3 +70,32 @@ def get_course(course_id: str, current_user: dict = Depends(get_current_user)):
 
     course["_id"] = str(course["_id"])
     return course
+
+@router.put("/{course_id}")
+def update_course(course_id: str, course_update: CourseUpdate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can update courses")
+
+    # Check if course exists and belongs to admin
+    course = courses_collection.find_one({"_id": ObjectId(course_id)})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
+    # Optional: restricts admin to only edit their own courses
+    # if str(course.get("createdBy")) != str(current_user["_id"]):
+    #     raise HTTPException(status_code=403, detail="You can only edit your own courses")
+
+    update_data = {k: v for k, v in course_update.dict().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    result = courses_collection.update_one(
+        {"_id": ObjectId(course_id)},
+        {"$set": update_data}
+    )
+
+    if result.modified_count > 0:
+        return {"message": "Course updated successfully"}
+    
+    return {"message": "No changes made to the course"}

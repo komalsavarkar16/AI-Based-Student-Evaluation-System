@@ -39,7 +39,13 @@ export default function CourseMCQContainer({ courseId }: courseDetailsProps) {
 
     useEffect(() => {
         getMCQs();
-    }, []);
+    }, [courseId]);
+
+    useEffect(() => {
+        const handleRefresh = () => getMCQs();
+        window.addEventListener('refreshMCQs', handleRefresh);
+        return () => window.removeEventListener('refreshMCQs', handleRefresh);
+    }, [courseId]);
 
     return (
         <div className={styles.container}>

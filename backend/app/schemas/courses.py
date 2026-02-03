@@ -18,3 +18,12 @@ class Course(CourseBase):
     aiStatus: Dict[str, bool] = {"mcqGenerated": False, "videoQuestionsGenerated": False}
     createdBy: str = "admin"
     createdAt: str # Use datetime string
+
+class CourseUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    level: Optional[str] = None
+    duration: Optional[str] = None
+    skills_required: Optional[List[str]] = None
+    status: Optional[str] = None

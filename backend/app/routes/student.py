@@ -4,6 +4,7 @@ from app.database.connection import db, students_collection, results_collection
 from app.core.security import hash_password, verify_password
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
+from app.services.ai_service import analyze_test_results
 import secrets
 from datetime import datetime, timedelta
 from bson import ObjectId
@@ -94,7 +95,18 @@ async def submit_test(result: TestResult):
     
     results_collection.insert_one(result_dict)
     
-    return {"message": "Test results submitted successfully", "score": result.score}
+    analysis = None
+    if result.score < 70:
+        # Call AI to identify weak areas. Using only incorrect answers might be better or full log?
+        # User requested Identify weak skills (AI) from answers
+        analysis = analyze_test_results(result.answers, result.courseTitle)
+    
+    return {
+        "message": "Test results submitted successfully", 
+        "score": result.score,
+        "pass_status": result.score >= 70,
+        "analysis": analysis
+    }
 @router.get("/check-test-status/{student_id}/{course_id}")
 async def check_test_status(student_id: str, course_id: str):
     try:

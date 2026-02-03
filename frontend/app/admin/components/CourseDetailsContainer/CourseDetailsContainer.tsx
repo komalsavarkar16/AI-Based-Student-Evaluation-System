@@ -19,6 +19,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const [generatingMcq, setGeneratingMcq] = useState(false);
     const [generatingVideo, setGeneratingVideo] = useState(false);
     const [testCompleted, setTestCompleted] = useState(false);
+    const [updatingStatus, setUpdatingStatus] = useState(false);
 
     useEffect(() => {
         fetchCourse()
@@ -72,6 +73,8 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             });
             if (response.ok) {
                 toast.success("MCQs generated successfully!");
+                // Dispatch event to refresh the MCQ container
+                window.dispatchEvent(new Event('refreshMCQs'));
             } else {
                 throw new Error("Failed to generate MCQs");
             }
@@ -136,25 +139,58 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
         // router.push(`/student/video-test/${courseId}`);
     };
 
+    const handleStatusChange = async (newStatus: string) => {
+        setUpdatingStatus(true);
+        try {
+            const token = localStorage.getItem("auth_token");
+            const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
 
-    // const handleGenerateVideoQuestions = async () => {
-    //     setGeneratingVideo(true);
-    //     try {
-    //         const response = await fetch(`${API_BASE_URL}/courses/${courseId}/generate-video-questions`, {
-    //             method: "POST"
-    //         });
-    //         if (response.ok) {
-    //             toast.success("Video questions generated successfully!");
-    //         } else {
-    //             throw new Error("Failed to generate video questions");
-    //         }
-    //     } catch (error) {
-    //         console.error(error);
-    //         toast.error("Error generating video questions");
-    //     } finally {
-    //         setGeneratingVideo(false);
-    //     }
-    // };
+            if (response.ok) {
+                toast.success(`Course status updated to ${newStatus}`);
+                setCourse(prev => prev ? { ...prev, status: newStatus } : null);
+            } else {
+                throw new Error("Failed to update status");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error updating course status");
+        } finally {
+            setUpdatingStatus(false);
+        }
+    };
+
+
+    const handleGenerateVideoQuestions = async () => {
+        setGeneratingVideo(true);
+        try {
+            const token = localStorage.getItem("auth_token");
+            const response = await fetch(`${API_BASE_URL}/ai/generate/video-questions/${courseId}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                toast.success("Video questions generated successfully!");
+                // Dispatch event to refresh the questions container
+                window.dispatchEvent(new Event('refreshVideoQuestions'));
+            } else {
+                throw new Error("Failed to generate video questions");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error generating video questions");
+        } finally {
+            setGeneratingVideo(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -193,7 +229,20 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                 <div className={styles.statCard}>
                     <GraduationCap size={20} color="#10b981" />
                     <span className={styles.statLabel}>Status</span>
-                    <span className={styles.statValue}>{course.status}</span>
+                    {isAdmin ? (
+                        <select
+                            className={styles.statusSelect}
+                            value={course.status}
+                            onChange={(e) => handleStatusChange(e.target.value)}
+                            disabled={updatingStatus}
+                        >
+                            <option value="Draft">Draft</option>
+                            <option value="published">Published</option>
+                            <option value="Archived">Archived</option>
+                        </select>
+                    ) : (
+                        <span className={styles.statValue}>{course.status}</span>
+                    )}
                 </div>
             </div>
 
@@ -217,6 +266,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                             </button>
                             <button
                                 className={`${styles.actionBtn} ${styles.generateVideo}`}
+                                onClick={handleGenerateVideoQuestions}
                                 disabled={generatingVideo}
                             >
                                 {generatingVideo ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <Video size={20} />}
