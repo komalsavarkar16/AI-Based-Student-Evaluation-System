@@ -19,6 +19,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const [generatingMcq, setGeneratingMcq] = useState(false);
     const [generatingVideo, setGeneratingVideo] = useState(false);
     const [testCompleted, setTestCompleted] = useState(false);
+    const [testPassed, setTestPassed] = useState(false);
     const [updatingStatus, setUpdatingStatus] = useState(false);
 
     useEffect(() => {
@@ -35,6 +36,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             if (res.ok) {
                 const data = await res.json();
                 setTestCompleted(data.completed);
+                setTestPassed(data.passed);
             }
         } catch (error) {
             console.error("Error checking test status:", error);
@@ -135,8 +137,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     };
 
     const handleVideoTest = () => {
-        toast.info("Video-based assessment feature is coming soon!");
-        // router.push(`/student/video-test/${courseId}`);
+        router.push(`/student/video-test/${courseId}`);
     };
 
     const handleStatusChange = async (newStatus: string) => {
@@ -284,7 +285,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                                     <Sparkles size={20} />
                                     Enroll Now
                                 </button>
-                            ) : (
+                            ) : testPassed ? (
                                 <button
                                     className={`${styles.actionBtn} ${styles.videoBtn}`}
                                     onClick={handleVideoTest}
@@ -292,6 +293,17 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                                     <Video size={20} />
                                     Give Video Based Test
                                 </button>
+                            ) : (
+                                <div className={styles.failMessage}>
+                                    <p>You did not pass the MCQ test. Please review the recommendations and try again later if possible.</p>
+                                    <button
+                                        className={`${styles.actionBtn} ${styles.enrollBtn}`}
+                                        onClick={handleEnroll}
+                                    >
+                                        <BrainCircuit size={20} />
+                                        Retake MCQ Test
+                                    </button>
+                                </div>
                             )}
                         </div>
                     )}

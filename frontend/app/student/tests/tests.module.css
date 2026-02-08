@@ -1,0 +1,245 @@
+.container {
+    min-height: 100vh;
+    background-color: #f8fafc;
+}
+
+.main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.header {
+    margin-bottom: 3rem;
+}
+
+.pageTitle {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.025em;
+}
+
+.pageSubTitle {
+    font-size: 1.125rem;
+    color: #64748b;
+}
+
+.testsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.testCard {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.testCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.cardHeader {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #8c52ff;
+    letter-spacing: 0.05em;
+}
+
+.courseTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.levelBadge {
+    font-size: 0.7rem;
+    padding: 0.125rem 0.5rem;
+    background: #f1f5f9;
+    color: #64748b;
+    border-radius: 9999px;
+    width: fit-content;
+}
+
+.testsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.testItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.testItem.completed {
+    background: #f0fdf4;
+    border-color: #dcfce7;
+}
+
+.testInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.iconBox {
+    width: 40px;
+    height: 40px;
+    background: #eff6ff;
+    color: #5664f5;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.videoIconBox {
+    background: #f5f3ff;
+    color: #8c52ff;
+}
+
+.testInfo h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.testInfo p {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.startLink {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #5664f5;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.startLink:hover {
+    color: #4351e0;
+}
+
+.statusBadge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+}
+
+.passed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.failed {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.notReadyBadge {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.videoStartBtn {
+    background: linear-gradient(135deg, #8c52ff 0%, #7c3aed 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+.videoStartBtn:hover {
+    transform: scale(1.05);
+}
+
+.lockedMessage {
+    background: #fffbeb;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #fef3c7;
+}
+
+.lockedMessage p {
+    font-size: 0.75rem;
+    color: #92400e;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.loadingContainer {
+    min-height: 100vh;
+    background-color: #f8fafc;
+}
+
+.spinnerWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 70vh;
+    gap: 1rem;
+    color: #64748b;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #8c52ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 640px) {
+    .main {
+        padding: 1rem;
+    }
+
+    .pageTitle {
+        font-size: 1.8rem;
+    }
+}

@@ -92,10 +92,12 @@ function ResultContainer({ testData, score, router, analysis }: ResultContainerP
                 )}
 
                 <div className={styles.actionStack}>
-                    <button onClick={handleProceedToVideo} className={styles.videoBtn}>
-                        <Video size={20} />
-                        Proceed to Video Assessment
-                    </button>
+                    {isPass && (
+                        <button onClick={handleProceedToVideo} className={styles.videoBtn}>
+                            <Video size={20} />
+                            Proceed to Video Assessment
+                        </button>
+                    )}
 
                     <button onClick={() => router.push("/student/dashboard")} className={styles.secondaryBtn}>
                         <LayoutDashboard size={18} />

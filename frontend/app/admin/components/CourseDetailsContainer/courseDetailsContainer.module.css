@@ -246,3 +246,20 @@
     border-color: #5664f5;
     box-shadow: 0 0 0 1px #5664f5;
 }
+
+.failMessage {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    background-color: #fef2f2;
+    border: 1px solid #fee2e2;
+    border-radius: 12px;
+    color: #ef4444;
+}
+
+.failMessage p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}

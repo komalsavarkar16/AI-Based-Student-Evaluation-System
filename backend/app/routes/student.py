@@ -113,7 +113,15 @@ async def check_test_status(student_id: str, course_id: str):
         result = results_collection.find_one({
             "studentId": ObjectId(student_id),
             "courseId": ObjectId(course_id)
-        })
-        return {"completed": result is not None}
+        }, sort=[("timestamp", -1)]) # Get the latest result
+        
+        if not result:
+            return {"completed": False, "passed": False, "score": 0}
+            
+        return {
+            "completed": True, 
+            "passed": result.get("score", 0) >= 70,
+            "score": result.get("score", 0)
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
