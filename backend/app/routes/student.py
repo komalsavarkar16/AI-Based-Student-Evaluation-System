@@ -1,13 +1,17 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form
 from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult
 from app.database.connection import db, students_collection, results_collection
 from app.core.security import hash_password, verify_password
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
 from app.services.ai_service import analyze_test_results
+from app.services.cloudinary_service import upload_video
 import secrets
+import re
+import os
 from datetime import datetime, timedelta
 from bson import ObjectId
+from typing import List
 
 router = APIRouter(prefix="/student", tags=["Student"])
 
@@ -113,7 +117,7 @@ async def check_test_status(student_id: str, course_id: str):
         result = results_collection.find_one({
             "studentId": ObjectId(student_id),
             "courseId": ObjectId(course_id)
-        }, sort=[("timestamp", -1)]) # Get the latest result
+        }, sort={"timestamp": -1}) # Get the latest result
         
         if not result:
             return {"completed": False, "passed": False, "score": 0}
@@ -121,7 +125,90 @@ async def check_test_status(student_id: str, course_id: str):
         return {
             "completed": True, 
             "passed": result.get("score", 0) >= 70,
-            "score": result.get("score", 0)
+            "score": result.get("score", 0),
+            "videoTestSubmittedAt": result.get("videoTestSubmittedAt"),
+            "videoTestEvaluationStatus": result.get("videoTestEvaluationStatus", "not_started")
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@router.post("/submit-video-test")
+async def submit_video_test(
+    studentId: str = Form(...),
+    courseId: str = Form(...),
+    courseTitle: str = Form(...),
+    files: List[UploadFile] = File(...)
+):
+    try:
+        # Sanitize course title for folder name (alphanumeric and underscores only)
+        safe_course_title = re.sub(r'[^a-zA-Z0-9_-]', '_', courseTitle)
+        folder_path = f"student_videos/{safe_course_title}/student_{studentId}"
+        
+        video_urls = []
+        
+        errors = []
+        for file in files:
+            # Clean public_id
+            filename = file.filename or "unknown_file.mp4"
+            public_id = re.sub(r'[^a-zA-Z0-9_-]', '_', filename.split('.')[0])
+            
+            # Read file content
+            content = await file.read()
+            if len(content) == 0:
+                print(f"Warning: File {filename} is empty")
+                errors.append(f"File {filename} is empty")
+                continue
+
+            # Upload to Cloudinary
+            try:
+                response = upload_video(content, folder_path, public_id)
+                if response:
+                    video_urls.append({
+                        "question": public_id,
+                        "url": response.get("secure_url")
+                    })
+            except Exception as upload_err:
+                error_msg = str(upload_err)
+                print(f"Upload failed for {filename}: {error_msg}")
+                errors.append(f"{filename}: {error_msg}")
+        
+        if not video_urls:
+            error_detail = "Failed to upload videos."
+            if errors:
+                error_detail += " Details: " + "; ".join(errors)
+            raise HTTPException(status_code=500, detail=error_detail)
+
+        # Construct a folder link for the admin to see all videos in Cloudinary Console
+        cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+        # Standard Cloudinary Console folder URL pattern
+        folder_url = f"https://console.cloudinary.com/console/c-{cloud_name}/media_library/folders/%2F{folder_path.replace('/', '%2F')}"
+
+        # Update MongoDB
+        # We look for the latest test result to update it with video info
+        update_data = {
+            "videoUrls": video_urls, # Storing all individual video URLs
+            "videoUrl": folder_url, # Now storing the folder link as requested
+            "videoTestSubmittedAt": datetime.utcnow().strftime("%Y-%m-%d"),
+            "videoTestEvaluationStatus": "pending"
+        }
+
+        result = results_collection.find_one_and_update(
+            {
+                "studentId": ObjectId(studentId),
+                "courseId": ObjectId(courseId)
+            },
+            {"$set": update_data},
+            sort={"timestamp": -1}
+        )
+
+        if not result:
+            # If no MCQ result found, create a new one? 
+            # But normally there should be one.
+            # For robustness, we could insert if needed, but let's stick to update as per user's "db also be updated".
+            raise HTTPException(status_code=404, detail="Test result not found for this student and course")
+
+        return {
+            "message": "Video test submitted successfully",
+            "videoUrls": video_urls
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -789,3 +789,9 @@
         transform: rotate(360deg);
     }
 }
+
+.subText {
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin-top: -10px;
+}

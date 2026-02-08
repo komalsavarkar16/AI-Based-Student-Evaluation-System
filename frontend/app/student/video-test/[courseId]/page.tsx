@@ -35,6 +35,7 @@ export default function VideoTestPage() {
     const [recordingTime, setRecordingTime] = useState(0);
     const [totalTimeLeft, setTotalTimeLeft] = useState(1200); // 20 mins in seconds
     const [studentInfo, setStudentInfo] = useState<any>(null);
+    const [submitting, setSubmitting] = useState(false);
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [recordedChunks, setRecordedChunks] = useState<Record<number, Blob[]>>({});
     const [answersCompleted, setAnswersCompleted] = useState<number[]>([]);
@@ -181,9 +182,44 @@ export default function VideoTestPage() {
         }
     };
 
-    const handleFinalSubmit = () => {
-        toast.success("Final submission feature coming soon!");
-        router.push("/student/dashboard");
+    const handleFinalSubmit = async () => {
+        if (answersCompleted.length === 0) {
+            toast.warn("Please record at least one response before submitting.");
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            const formData = new FormData();
+            formData.append("studentId", studentInfo.id);
+            formData.append("courseId", courseId as string);
+            formData.append("courseTitle", courseTitle);
+
+            // Convert recorded chunks to files and append
+            Object.entries(recordedChunks).forEach(([idx, chunks]) => {
+                const blob = new Blob(chunks, { type: 'video/mp4' });
+                const fileName = `question_${parseInt(idx) + 1}.mp4`;
+                formData.append("files", new File([blob], fileName, { type: 'video/mp4' }));
+            });
+
+            const response = await fetch(`${API_BASE_URL}/student/submit-video-test`, {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                toast.success("Video assessment submitted successfully!");
+                router.push("/student/dashboard");
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.detail || "Failed to submit assessment");
+            }
+        } catch (error) {
+            console.error("Submission error:", error);
+            toast.error("An error occurred while submitting the assessment");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const formatTime = (seconds: number) => {
@@ -192,11 +228,12 @@ export default function VideoTestPage() {
         return `${m}:${s.toString().padStart(2, "0")}`;
     };
 
-    if (loading) {
+    if (loading || submitting) {
         return (
             <div className={styles.loadingOverlay}>
                 <div className={styles.spinner}></div>
-                <p>Establishing secure connection...</p>
+                <p>{submitting ? "Uploading your video responses..." : "Establishing secure connection..."}</p>
+                {submitting && <p className={styles.subText}>This may take a moment depending on your connection speed.</p>}
             </div>
         );
     }

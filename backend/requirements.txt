@@ -7,3 +7,5 @@ python-dotenv
 passlib[bcrypt]
 python-jose
 google-genai
+cloudinary
+python-multipart

@@ -166,6 +166,12 @@
     color: #991b1b;
 }
 
+.pending {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #dbeafe;
+}
+
 .notReadyBadge {
     font-size: 0.75rem;
     color: #94a3b8;

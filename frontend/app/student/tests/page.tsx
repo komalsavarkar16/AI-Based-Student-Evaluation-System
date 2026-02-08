@@ -21,6 +21,7 @@ interface TestStatus {
     completed: boolean;
     passed: boolean;
     score: number;
+    videoTestEvaluationStatus?: string;
 }
 
 export default function TestsPage() {
@@ -134,9 +135,15 @@ export default function TestsPage() {
                                                     <p>Communication & soft skills evalutaion</p>
                                                 </div>
                                             </div>
-                                            <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn}>
-                                                <PlayCircle size={18} /> Take Test
-                                            </Link>
+                                            {(status.videoTestEvaluationStatus === "not_started" || !status.videoTestEvaluationStatus) ? (
+                                                <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn}>
+                                                    <PlayCircle size={18} /> Take Test
+                                                </Link>
+                                            ) : (
+                                                <span className={`${styles.statusBadge} ${styles.pending}`}>
+                                                    {status.videoTestEvaluationStatus.charAt(0).toUpperCase() + status.videoTestEvaluationStatus.slice(1)}
+                                                </span>
+                                            )}
                                         </div>
                                     )}
 
