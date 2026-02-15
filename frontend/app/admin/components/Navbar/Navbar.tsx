@@ -7,14 +7,12 @@ import styles from './Navbar.module.css';
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import { BrainCircuit } from 'lucide-react';
 
 const menuItems = [
-    { label: "Dashboard", path: "/admin" },
     { label: "Students", path: "/admin/students" },
-    { label: "Assessments", path: "/admin/assessments" },
     { label: "Courses", path: "/admin/courses" },
     { label: "AI Eval", path: "/admin/ai-evaluations" },
-    { label: "Analytics", path: "/admin/analytics" },
     { label: "Reports", path: "/admin/reports" },
     { label: "Announce", path: "/admin/announcements" },
     { label: "Profile", path: "/admin/profile" },
@@ -41,7 +39,8 @@ export default function Navbar() {
         <nav className={styles.navbar}>
             <div className={styles.navBrand}>
                 <Link href="/admin" className={styles.logo}>
-                    🎓 Admin Panel
+                    <BrainCircuit size={24} style={{ marginRight: '10px', color: '#57cc99' }} />
+                    <span className={styles.brandTitle}>EduBridge AI</span>
                 </Link>
                 <button className={styles.hamburger} onClick={toggleMenu}>
                     {isMenuOpen ? <CloseIcon /> : <MenuIcon />}

@@ -1,9 +1,13 @@
+.mainContent {
+    background-color: #f8fafc;
+}
+
 .container {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     background-color: #f8fafc;
-    font-family: 'Inter', serif;
+    font-family: 'Inter', sans-serif;
 }
 
 .mainContent {
@@ -13,23 +17,99 @@
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* CTA SECTION (Welcome Banner) */
+.ctaSection {
+    background: linear-gradient(135deg, #c7f9cc 0%, #80ed99 100%);
+    border-radius: 20px;
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #1b4332;
+    box-shadow: 0 10px 30px rgba(199, 249, 204, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.ctaText {
+    max-width: 60%;
+    position: relative;
+    z-index: 2;
+}
+
+.ctaText h2 {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 10px;
+    color: #1b4332;
+}
+
+.ctaText p {
+    font-size: 16px;
+    opacity: 0.8;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.quickActions {
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.actionBtn {
+    background: white;
+    color: #2d6a4f;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.actionBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ctaSection::after {
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 250px;
+    height: 250px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
 }
 
 .header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 0;
 }
 
 .title {
-    font-size: 2rem;
+    font-size: 24px;
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.025em;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .subtitle {
     color: #64748b;
-    font-size: 1.125rem;
+    font-size: 1rem;
 }
 
 .statsGrid {

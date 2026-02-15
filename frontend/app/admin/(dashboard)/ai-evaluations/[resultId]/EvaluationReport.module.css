@@ -1,0 +1,194 @@
+.container {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    color: #57cc99;
+    text-decoration: none;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.reportCard {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    padding: 32px;
+}
+
+.header {
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+}
+
+.titleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.studentInfo {
+    color: #64748b;
+    font-size: 16px;
+}
+
+.scoreCircle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 4px solid;
+    font-weight: 800;
+}
+
+.scoreValue {
+    font-size: 24px;
+}
+
+.scoreLabel {
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.summarySection {
+    margin-bottom: 40px;
+}
+
+.sectionTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.skillGapContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.skillCard {
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    color: #991b1b;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.answerGrid {
+    display: grid;
+    gap: 24px;
+}
+
+.answerCard {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 24px;
+    border-left: 4px solid #57cc99;
+}
+
+.questionHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.questionText {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 16px;
+}
+
+.qScore {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.transcript {
+    font-style: italic;
+    color: #475569;
+    margin-bottom: 16px;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.feedbackBox {
+    background: #ffffff;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.feedbackTitle {
+    font-weight: 700;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.feedbackText {
+    color: #334155;
+    line-height: 1.6;
+}
+
+.improvementList {
+    margin-top: 12px;
+    padding-left: 20px;
+}
+
+.improvementItem {
+    font-size: 14px;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.noGap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0fff4;
+    border: 1px solid #c7f9cc;
+    color: #166534;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-weight: 700;
+    color: #57cc99;
+    font-size: 1.25rem;
+}

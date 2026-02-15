@@ -1,20 +1,38 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/app/utils/api';
 import styles from './StudentManagementTable.module.css';
 
 const StudentManagementTable = () => {
-    const students = [
-        { id: 1, name: 'Alice Johnson', email: 'alice@example.com', status: 'Completed', score: 85 },
-        { id: 2, name: 'Bob Smith', email: 'bob@example.com', status: 'Pending', score: '-' },
-        { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', status: 'Completed', score: 92 },
-        { id: 4, name: 'Diana Ross', email: 'diana@example.com', status: 'Completed', score: 78 },
-    ];
+    const [evaluations, setEvaluations] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEvaluations = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setEvaluations(data.slice(0, 5)); // Show only recent 5
+                }
+            } catch (error) {
+                console.error("Error fetching evaluations:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEvaluations();
+    }, []);
+
+    if (loading) return <div className={styles.loading}>Loading student data...</div>;
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h3 className={styles.title}>Recent Students</h3>
-                <Link href="/admin/students" className={styles.viewAll}>View All</Link>
+                <h3 className={styles.title}>Recent AI Evaluations</h3>
+                <Link href="/admin/ai-evaluations" className={styles.viewAll}>View All</Link>
             </div>
 
             <div className={styles.tableContainer}>
@@ -23,35 +41,41 @@ const StudentManagementTable = () => {
                         <tr>
                             <th>Student</th>
                             <th>Status</th>
-                            <th>Score</th>
+                            <th>AI Score</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {students.map((student) => (
-                            <tr key={student.id} className={styles.row}>
-                                <td>
-                                    <div className={styles.studentInfo}>
-                                        <div className={styles.avatar}>
-                                            {student.name.charAt(0)}
+                        {evaluations.length === 0 ? (
+                            <tr><td colSpan={4} style={{ padding: '20px', textAlign: 'center' }}>No reports yet</td></tr>
+                        ) : (
+                            evaluations.map((evalItem) => (
+                                <tr key={evalItem.id} className={styles.row}>
+                                    <td>
+                                        <div className={styles.studentInfo}>
+                                            <div className={styles.avatar}>
+                                                {evalItem.studentName.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div className={styles.name}>{evalItem.studentName}</div>
+                                                <div className={styles.course}>{evalItem.courseTitle}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className={styles.name}>{student.name}</div>
-                                            <div className={styles.email}>{student.email}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span className={`${styles.badge} ${student.status === 'Completed' ? styles.completed : styles.pending}`}>
-                                        {student.status}
-                                    </span>
-                                </td>
-                                <td>{student.score}</td>
-                                <td>
-                                    <button className={styles.actionButton}>View</button>
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
+                                    <td>
+                                        <span className={`${styles.badge} ${styles.completed}`}>
+                                            Evaluated
+                                        </span>
+                                    </td>
+                                    <td>{evalItem.score} / 10</td>
+                                    <td>
+                                        <Link href={`/admin/ai-evaluations/${evalItem.id}`}>
+                                            <button className={styles.actionButton}>View Report</button>
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form
+from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form, BackgroundTasks
 from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult
-from app.database.connection import db, students_collection, results_collection
+from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection
 from app.core.security import hash_password, verify_password
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
 from app.services.ai_service import analyze_test_results
 from app.services.cloudinary_service import upload_video
+from app.services.transcription_service import transcribe_videos
 import secrets
 import re
 import os
@@ -133,6 +134,7 @@ async def check_test_status(student_id: str, course_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 @router.post("/submit-video-test")
 async def submit_video_test(
+    background_tasks: BackgroundTasks,
     studentId: str = Form(...),
     courseId: str = Form(...),
     courseTitle: str = Form(...),
@@ -206,9 +208,133 @@ async def submit_video_test(
             # For robustness, we could insert if needed, but let's stick to update as per user's "db also be updated".
             raise HTTPException(status_code=404, detail="Test result not found for this student and course")
 
+        # Trigger background transcription task
+        background_tasks.add_task(transcribe_videos, studentId, courseId, video_urls)
+
         return {
-            "message": "Video test submitted successfully",
+            "message": "Video test submitted successfully. Transcription is in progress.",
             "videoUrls": video_urls
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+def process_video_test_analysis(student_id: str, course_id: str):
+    try:
+        # 1. Fetch the latest test result
+        result = results_collection.find_one({
+            "studentId": ObjectId(student_id),
+            "courseId": ObjectId(course_id)
+        }, sort=[("timestamp", -1)])
+        
+        if not result or "videoAnswers" not in result:
+            print("No video answers found for analysis")
+            return
+
+        # 2. Fetch course details and video questions
+        course = courses_collection.find_one({"_id": ObjectId(course_id)})
+        video_questions_data = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
+        
+        if not course or not video_questions_data:
+            print("Course or video questions not found")
+            return
+
+        video_questions = video_questions_data.get("videoQuestions", [])
+        
+        # 3. Analyze each answer
+        total_score = 0
+        count = 0
+        weak_skills = []
+        
+        updated_answers = []
+        for q_answer in result["videoAnswers"]:
+            question_id = q_answer.get("questionId") # e.g. "Q1"
+            transcript = q_answer.get("transcript")
+            
+            # Map Q1 -> index 0
+            try:
+                # Extract number from Q1, Q2 etc.
+                num_str = re.search(r'\d+', question_id).group()
+                idx = int(num_str) - 1
+                
+                if idx < len(video_questions):
+                    question_obj = video_questions[idx]
+                else:
+                    question_obj = question_id # Fallback
+                
+                if isinstance(question_obj, dict):
+                    question_text = question_obj.get("question")
+                    related_skill = question_obj.get("relatedSkill", "General")
+                else:
+                    question_text = question_obj
+                    related_skill = "General"
+            except Exception as e:
+                print(f"Index mapping error for {question_id}: {e}")
+                question_text = question_id
+                related_skill = "General"
+
+            # Call AI Evaluation
+            from app.services.ai_service import evaluate_video_answer
+            analysis = evaluate_video_answer(question_text, transcript, course)
+            
+            q_answer["analysis"] = analysis
+            q_answer["relatedSkill"] = related_skill
+            updated_answers.append(q_answer)
+            
+            # Update scoring
+            score = analysis.get("technicalScore", 0)
+            total_score += score
+            count += 1
+            
+            # Skill Gap detection
+            if score < 5:
+                weak_skills.append(related_skill)
+
+        # 4. Final results logic
+        avg_score = total_score / count if count > 0 else 0
+        unique_weak_skills = list(set([s for s in weak_skills if s != "General"]))
+        
+        # 5. Update DB
+        results_collection.update_one(
+            {"_id": result["_id"]},
+            {"$set": {
+                "videoAnswers": updated_answers,
+                "overallVideoScore": avg_score,
+                "skillGap": unique_weak_skills,
+                "videoTestEvaluationStatus": "completed",
+                "evaluatedAt": datetime.utcnow()
+            }}
+        )
+        
+        # 6. Notify Admin
+        notify_admin_of_evaluation(student_id, course_id, avg_score, unique_weak_skills)
+        
+        print(f"AI analysis completed for student {student_id} in course {course_id}")
+        
+    except Exception as e:
+        print(f"Error in process_video_test_analysis: {str(e)}")
+
+def notify_admin_of_evaluation(student_id, course_id, score, skill_gap):
+    try:
+        student = students_collection.find_one({"_id": ObjectId(student_id)})
+        course = courses_collection.find_one({"_id": ObjectId(course_id)})
+        
+        if not student or not course:
+            return
+
+        notification = {
+            "type": "video_test_evaluation",
+            "studentId": ObjectId(student_id),
+            "studentName": f"{student.get('firstName')} {student.get('lastName')}",
+            "courseId": ObjectId(course_id),
+            "courseTitle": course.get('title'),
+            "score": round(score, 2),
+            "skillGap": skill_gap,
+            "status": "unread",
+            "timestamp": datetime.utcnow()
+        }
+        
+        # Insert into a notifications collection in the main db
+        db.notifications.insert_one(notification)
+        print("Admin notification created")
+    except Exception as e:
+        print(f"Failed to notify admin: {str(e)}")

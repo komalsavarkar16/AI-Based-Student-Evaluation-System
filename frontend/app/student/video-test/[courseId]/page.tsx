@@ -17,7 +17,7 @@ interface Question {
 }
 
 interface VideoQuestionsData {
-    videoQuestions: string[];
+    videoQuestions: Question[];
     courseTitle: string;
 }
 
@@ -27,7 +27,7 @@ export default function VideoTestPage() {
     const courseId = params.courseId;
 
     // State
-    const [questions, setQuestions] = useState<string[]>([]);
+    const [questions, setQuestions] = useState<Question[]>([]);
     const [courseTitle, setCourseTitle] = useState("");
     const [currentIdx, setCurrentIdx] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -198,7 +198,7 @@ export default function VideoTestPage() {
             // Convert recorded chunks to files and append
             Object.entries(recordedChunks).forEach(([idx, chunks]) => {
                 const blob = new Blob(chunks, { type: 'video/mp4' });
-                const fileName = `question_${parseInt(idx) + 1}.mp4`;
+                const fileName = `Q${parseInt(idx) + 1}.mp4`;
                 formData.append("files", new File([blob], fileName, { type: 'video/mp4' }));
             });
 
@@ -297,7 +297,7 @@ export default function VideoTestPage() {
 
                         <div className={styles.questionSection}>
                             <h2 className={styles.questionText}>
-                                Q{currentIdx + 1}: {currentQuestion}
+                                Q{currentIdx + 1}: {currentQuestion?.question}
                             </h2>
                             <div className={styles.aspectsBox}>
                                 <p className={styles.aspectsTitle}>In your response, please cover the following aspects:</p>

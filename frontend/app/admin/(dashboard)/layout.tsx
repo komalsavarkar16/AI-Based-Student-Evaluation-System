@@ -5,9 +5,11 @@ export default function layout({
     children: React.ReactNode;
 }) {
     return (
-        <>
+        <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
             <Navbar />
-            {children}
-        </>
+            <main style={{ paddingTop: '70px' }}>
+                {children}
+            </main>
+        </div>
     );
 }

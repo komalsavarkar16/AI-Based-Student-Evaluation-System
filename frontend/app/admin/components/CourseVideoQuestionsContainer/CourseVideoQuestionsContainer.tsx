@@ -8,8 +8,13 @@ interface courseDetailsProps {
     courseId: string;
 }
 
+interface VideoQuestion {
+    question: string;
+    relatedSkill: string;
+}
+
 export default function CourseVideoQuestionsContainer({ courseId }: courseDetailsProps) {
-    const [videoQuestions, setVideoQuestions] = useState<string[]>([]);
+    const [videoQuestions, setVideoQuestions] = useState<VideoQuestion[]>([]);
     const [loading, setLoading] = useState(true);
 
     const getVideoQuestions = async () => {
@@ -61,7 +66,8 @@ export default function CourseVideoQuestionsContainer({ courseId }: courseDetail
                                 <span className={styles.questionNumber}>Question {index + 1}</span>
                                 <HelpCircle size={18} className={styles.helpIcon} />
                             </div>
-                            <p className={styles.questionText}>{question}</p>
+                            <p className={styles.questionText}>{question.question}</p>
+                            <p className={styles.relatedSkill}>Skill: {question.relatedSkill}</p>
                         </div>
                     ))}
                 </div>

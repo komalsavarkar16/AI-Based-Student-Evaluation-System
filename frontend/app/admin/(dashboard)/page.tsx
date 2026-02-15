@@ -11,9 +11,24 @@ import styles from './dashboard.module.css';
 export default function AdminDashboard() {
     return (
         <div className={styles.mainContent}>
+            <section className={styles.ctaSection}>
+                <div className={styles.ctaText}>
+                    <h2>Hello, Admin! 👋</h2>
+                    <p>The system is running smoothly. All student assessments are being processed in real-time with EduBridge AI.</p>
+                </div>
+                <div className={styles.quickActions}>
+                    <button className={styles.actionBtn}>
+                        <BrainCircuit size={18} /> System Check
+                    </button>
+                    <button className={styles.actionBtn}>
+                        <Users size={18} /> Manage Students
+                    </button>
+                </div>
+            </section>
+
             <div className={styles.header}>
-                <h1 className={styles.title}>Dashboard Overview</h1>
-                <p className={styles.subtitle}>Welcome back, Admin! Here&apos;s what&apos;s happening today.</p>
+                <h1 className={styles.title}>System Overview</h1>
+                <p className={styles.subtitle}>Real-time monitoring and advanced student analytics.</p>
             </div>
 
             <div className={styles.statsGrid}>
@@ -22,14 +37,14 @@ export default function AdminDashboard() {
                     value="2,543"
                     icon={Users}
                     trend={{ value: '12%', isPositive: true }}
-                    color="#6366f1"
+                    color="#57cc99"
                 />
                 <StatsCard
                     title="Available Courses"
                     value="12"
                     icon={LibraryBig}
                     trend={{ value: '2', isPositive: true }}
-                    color="#a855f7"
+                    color="#38a3a5"
                 />
             </div>
 

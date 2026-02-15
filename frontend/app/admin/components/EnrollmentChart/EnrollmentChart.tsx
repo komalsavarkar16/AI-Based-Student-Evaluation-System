@@ -35,7 +35,7 @@ const EnrollmentChart = () => {
                             cursor={{ fill: '#f1f5f9' }}
                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                         />
-                        <Bar dataKey="students" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                        <Bar dataKey="students" fill="#80ed99" radius={[0, 4, 4, 0]} barSize={20} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
