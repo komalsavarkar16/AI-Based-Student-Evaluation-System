@@ -29,6 +29,11 @@
     white-space: nowrap;
 }
 
+.logoEmoji {
+    color: #8c52ff;
+    font-size: 40px;
+}
+
 .navLinks {
     display: flex;
     align-items: center;
@@ -40,23 +45,24 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.85rem;
-    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
     color: #64748b;
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
 }
 
 .menuItem:hover {
-    background: rgba(140, 82, 255, 0.05);
+    background: rgba(140, 82, 255, 0.08);
     color: #8c52ff;
+    transform: translateY(-1px);
 }
 
 .active {
-    background: rgba(140, 82, 255, 0.1);
+    background: rgba(140, 82, 255, 0.12);
     color: #8c52ff;
     font-weight: 600;
 }
@@ -138,7 +144,7 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.4rem 0.8rem;
+    padding: 0.5rem 1rem;
     border-radius: 8px;
     border: 1px solid #fee2e2;
     background: #fff;
@@ -152,6 +158,7 @@
 .logout:hover {
     background: #fee2e2;
     color: #dc2626;
+    transform: translateY(-1px);
 }
 
 .navBrand {
@@ -174,7 +181,45 @@
     display: none;
 }
 
-@media (max-width: 1024px) {
+/* RESPONSIVENESS */
+
+/* 1. Large screens (High-res desktops) */
+@media (min-width: 1281px) {
+    .navbar {
+        padding: 0 4rem;
+    }
+}
+
+/* 2. Tablets & Laptops (Desktop-like Layout) */
+@media (min-width: 768px) and (max-width: 1280px) {
+    .navbar {
+        padding: 0 1rem;
+    }
+
+    .categoryTitle {
+        display: none;
+    }
+
+    .navLinks {
+        gap: 0.25rem;
+    }
+
+    .menuItem {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .searchBar {
+        width: 150px;
+    }
+
+    .searchBar:focus-within {
+        width: 180px;
+    }
+}
+
+/* 3. Mobile (Hamburger Menu threshold) */
+@media (max-width: 767px) {
     .navBrand {
         width: 100%;
     }
@@ -207,6 +252,8 @@
         width: 100%;
         padding: 1rem;
         font-size: 1.1rem;
+        border-radius: 8px;
+        /* Rect on mobile drawer */
     }
 
     .actions {
@@ -220,7 +267,15 @@
         margin-top: 1rem;
         border-top: 1px solid #f1f5f9;
         padding-top: 1rem;
-        gap: 1.5rem;
+        gap: 1.25rem;
+    }
+
+    .mobileUtility {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        padding: 0.5rem 0;
     }
 
     .mobileActions .searchBar {
@@ -231,5 +286,20 @@
     .mobileActions .logout {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* 4. Small Screens (Phones) */
+@media (min-width: 320px) and (max-width: 480px) {
+    .logo {
+        font-size: 1rem;
+    }
+
+    .navbar {
+        padding: 0 1rem;
+    }
+
+    .mobileUtility {
+        gap: 1.5rem;
     }
 }

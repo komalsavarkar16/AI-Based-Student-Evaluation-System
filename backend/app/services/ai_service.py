@@ -96,28 +96,6 @@ def generate_video_questions(course):
     Return ONLY the JSON array.
     """
 
-
-    # prompt = f"""
-    # You are an expert educator. 
-    # We want to test basic knowledge of the student in the following course to check if he is eligible for the next level, so give only basic questions:
-    # We only basic questions to check eligiblity of student for following course:
-    # Generate 3 basic course specific questions:
-    
-    # Title: {course.get('title')}
-    # Description: {course.get('description')}
-    # Skills Required: {', '.join(course.get('skills_required', []))}
-    # Level: {course.get('level')}
-    
-    # Requirements:
-    # 1. The questions should be related to the course content.
-    # 2. The questions should be of basic level.
-    # 3. Output should be in JSON format as an array of objects.
-    # 4. Each object should have "question" and "relatedSkill" (the specific skill being tested).
-    
-    # Return ONLY the JSON array.
-    # """
-
-
     try:
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
@@ -181,51 +159,135 @@ def analyze_test_results(answers, course_title):
             "recommendations": ["Review the core concepts of the course again."]
         }
 
-def evaluate_video_answer(question, transcript, course_details):
+def evaluate_video_answer(question_data, transcript, course_details):
     """
     Evaluates a single video answer transcript using Gemini.
+    Structured for skill-based eligibility evaluation.
+    """
+
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+    question_text = question_data.get("question")
+    related_skill = question_data.get("relatedSkill")
+    expected_concepts = question_data.get("expectedConcepts", [])
+
+    prompt = f"""
+You are a senior technical interviewer conducting a structured admission evaluation.
+
+Your task is to evaluate whether the student demonstrates sufficient foundational 
+knowledge in the given skill area.
+
+Course Context:
+- Title: {course_details.get('title')}
+- Level: {course_details.get('level')}
+
+Evaluated Skill:
+{related_skill}
+
+Question:
+{question_text}
+
+Expected Key Concepts:
+{expected_concepts}
+
+Student Transcript:
+{transcript}
+
+Evaluation Guidelines:
+
+1. Check how many expected concepts were correctly covered.
+2. Identify incorrect or misleading statements.
+3. Evaluate conceptual clarity.
+4. Evaluate explanation structure and coherence.
+5. Ignore minor grammar mistakes — focus on knowledge.
+
+Scoring Framework:
+
+- conceptCoverageScore (0–10): Coverage of expected concepts
+- technicalScore (0–10): Correctness of explanations
+- clarityScore (0–10): Structure and communication clarity
+- overallScore (0–10): Weighted evaluation
+- skillLevelAssessment: Strong / Moderate / Weak
+
+Return ONLY a valid JSON object in this format:
+
+{{
+  "skill": "",
+  "conceptCoverageScore": 0,
+  "technicalScore": 0,
+  "feedback": "",
+  "improvementAreas": [],
+  "clarityScore": 0,
+  "overallScore": 0,
+  "skillLevelAssessment": "",
+  "strengths": [],
+  "weakAreas": [],
+  "improvementSuggestions": []
+}}
+"""
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+            config={"response_mime_type": "application/json"}
+        )
+
+        return json.loads(response.text)
+
+    except Exception as e:
+        print(f"Error in evaluate_video_answer: {str(e)}")
+        return {
+            "skill": related_skill,
+            "conceptCoverageScore": 0,
+            "technicalScore": 0,
+            "feedback": "Evaluation failed",
+            "improvementAreas": [],
+            "clarityScore": 0,
+            "overallScore": 0,
+            "skillLevelAssessment": "Weak",
+            "strengths": [],
+            "weakAreas": ["Evaluation failed"],
+            "improvementSuggestions": ["Retry evaluation"]
+        }
+
+def generate_overall_video_evaluation(evaluations, course_details):
+    """
+    Generate an overall eligibility signal and summary based on all per-answer evaluations.
     """
     client = genai.Client(api_key=GEMINI_API_KEY)
-    
+
     prompt = f"""
-    You are an expert technical interviewer. Evaluate the following student response for a technical question.
-    
-    Course Context:
-    - Title: {course_details.get('title')}
-    - Level: {course_details.get('level')}
-    - Required Skills: {', '.join(course_details.get('skills_required', []))}
-    
-    Evaluation Criteria:
-    Question: {question}
-    Student's Answer (Transcript): {transcript}
-    
+    You are a senior admissions officer. Evaluate a student's overall eligibility for the course:
+    Course: {course_details.get('title')} ({course_details.get('level')})
+
+    Below are the individual skill evaluations from their video test:
+    {json.dumps(evaluations, indent=2)}
+
     Requirements:
-    1. Provide a "technicalScore" between 0 and 10.
-    2. Provide "feedback" on the answer (what was good, what was missing).
-    3. Identify "improvementAreas" (array of strings).
-    4. The output MUST be a valid JSON object.
-    
-    Return ONLY the JSON object.
+    1. Provide an overall eligibility signal: "Pass", "Borderline", or "Fail".
+    2. Write a concise executive summary of the student's performance.
+    3. The output MUST be a valid JSON object.
+
+    Return ONLY this JSON format:
+    {{
+      "overallEligibilitySignal": "",
+      "executiveSummary": "",
+      "overallReasoning": ""
+    }}
     """
 
     try:
         response = client.models.generate_content(
             model="gemini-3-flash-preview",
-            contents=prompt
+            contents=prompt,
+            config={"response_mime_type": "application/json"}
         )
-        
-        text = response.text.strip()
-        
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0].strip()
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0].strip()
-            
-        return json.loads(text)
+        return json.loads(response.text)
     except Exception as e:
-        print(f"Error in evaluate_video_answer: {str(e)}")
+        print(f"Error in generate_overall_video_evaluation: {str(e)}")
         return {
-            "technicalScore": 0,
-            "feedback": "Evaluation failed due to an error.",
-            "improvementAreas": ["Check connection or retry evaluation."]
+            "overallEligibilitySignal": "Borderline",
+            "executiveSummary": "Manual review required due to evaluation error.",
+            "overallReasoning": "Technical error during overall evaluation aggregation."
         }

@@ -117,6 +117,10 @@
   justify-content: space-between;
 }
 
+.imageContainerMobile {
+  display: none;
+}
+
 .heroSection {
   display: flex;
   justify-content: space-between;
@@ -386,14 +390,255 @@
   display: block;
 }
 
+@media (max-width: 1200px) {
+  .heroSection {
+    padding: 3rem;
+  }
+
+  .heroSection .content {
+    padding: 1rem 2rem 1rem 0;
+  }
+
+  .heroSection .content .heading {
+    font-size: 45px;
+  }
+
+  .content .subHeading {
+    font-size: 22px;
+  }
+
+  .featuresSection .featuresHeading {
+    font-size: 38px;
+  }
+
+  .processSection .heading {
+    font-size: 42px;
+  }
+
+  .processSection .container {
+    gap: 4rem;
+  }
+}
+
 @media (max-width: 1024px) {
+  .heroSection {
+    flex-direction: column;
+    padding: 4rem 2rem;
+    min-height: auto;
+    text-align: center;
+  }
+
+  .heroSection .content {
+    padding: 0;
+    align-items: center;
+    margin-bottom: 3rem;
+  }
+
+  .heroSection .content .heading {
+    font-size: 40px;
+  }
+
+  .content .subHeading {
+    font-size: 20px;
+  }
+
+  .content .buttonContainer {
+    justify-content: center;
+    column-gap: 2rem;
+  }
+
+  .heroSection .imageContainer {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .featuresSection .featuresHeading {
+    font-size: 35px;
+  }
+
+  .processSection .heading {
+    font-size: 38px;
+  }
+
   .processSection .container {
     flex-direction: column;
-    gap: 4rem;
-    padding: 0 2rem;
+    gap: 3rem;
+    padding: 0;
+    margin-bottom: 6rem;
   }
 
   .processSection .container:nth-child(even) {
-    flex-direction: column-reverse;
+    flex-direction: column;
+  }
+
+  .container .content {
+    width: 100%;
+    order: 2;
+  }
+
+  .processSection .imageCard {
+    width: 100%;
+    order: 1;
+    max-width: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .imageContainerMobile {
+    display: block;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 12px;
+    margin: 1rem 2rem;
+    max-width: 500px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  .imageContainerMobile img {
+    border-radius: 10px;
+  }
+
+  .imageContainer {
+    display: none;
+  }
+
+  .heroSection {
+    padding: 3rem 1.5rem;
+  }
+
+  .heroSection .content .heading {
+    font-size: 32px;
+  }
+
+  .content .subHeading {
+    font-size: 18px;
+  }
+
+  .content .buttonContainer {
+    flex-direction: column;
+    row-gap: 1.25rem;
+    width: 100%;
+    align-items: center;
+  }
+
+  .actionButton {
+    width: 100%;
+    max-width: 320px;
+    font-size: 18px;
+  }
+
+  .featuresSection {
+    padding: 3rem 1.5rem;
+  }
+
+  .featuresSection .featuresHeading {
+    font-size: 30px;
+  }
+
+  .featuresSection .featuresSubHeading {
+    font-size: 18px;
+  }
+
+  .processSection {
+    padding: 4rem 1.5rem;
+  }
+
+  .processSection .heading {
+    font-size: 30px;
+  }
+
+  .processSection .subHeading {
+    font-size: 18px;
+    margin-bottom: 4rem;
+  }
+
+  .stepContent .stepTitle {
+    font-size: 20px;
+  }
+
+  .stepContent .stepDescription {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroSection {
+    padding: 2rem 1rem;
+  }
+
+  .heroSection .content .heading {
+    font-size: 25px;
+  }
+
+  .content .subHeading {
+    font-size: 16px;
+  }
+
+  .content .buttonContainer {
+    column-gap: 2rem;
+  }
+
+  .actionButton {
+    padding: 12px 16px;
+    width: 70%;
+    font-size: 16px;
+    align-self: center;
+    gap: 8px;
+  }
+
+  .featuresSection .featuresHeading {
+    font-size: 25px;
+  }
+
+  .featuresSection .featuresSubHeading {
+    font-size: 16px;
+    margin-bottom: 1rem;
+  }
+
+  .featureCard {
+    padding: 24px;
+    align-items: center;
+  }
+
+  .featureCard .featureTitle {
+    font-size: 20px;
+  }
+
+  .featureCard .featureDescription {
+    font-size: 14px;
+  }
+
+  .processSection .heading {
+    font-size: 25px;
+  }
+
+  .processSection .subHeading {
+    font-size: 16px;
+    margin-bottom: 1rem;
+  }
+
+  .processSection .container {
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .processSection .imageCard {
+    margin: 0 4rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stepContent .stepTitle {
+    font-size: 18px;
+  }
+
+  .stepContent .stepDescription {
+    font-size: 14px;
+  }
+
+  .step .stepNumber {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
   }
 }

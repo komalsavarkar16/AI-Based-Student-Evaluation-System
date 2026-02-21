@@ -9,7 +9,8 @@ import {
     Search as SearchIcon,
     NotificationsNone as BellIcon,
     Menu as MenuIcon,
-    Close as CloseIcon
+    Close as CloseIcon,
+    School as SchoolIcon
 } from "@mui/icons-material";
 
 export default function StudentNavbar() {
@@ -54,7 +55,8 @@ export default function StudentNavbar() {
         <nav className={styles.navbar}>
             <div className={styles.navBrand}>
                 <Link href="/student/dashboard" className={styles.logo}>
-                    🎓 Student Portal
+                    <SchoolIcon className={styles.logoEmoji} sx={{ fontSize: 40 }} />
+                    <span className={styles.categoryTitle}>Student Portal</span>
                 </Link>
                 <button className={styles.hamburger} onClick={toggleMenu}>
                     {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
@@ -74,10 +76,16 @@ export default function StudentNavbar() {
                 ))}
 
                 <div className={styles.mobileActions}>
-                    <div className={styles.searchBar}>
-                        <SearchIcon style={{ color: '#94a3b8', fontSize: 18 }} />
-                        <input type="text" placeholder="Search..." className={styles.searchInput} />
+                    <div className={styles.mobileUtility}>
+                        <button className={styles.iconBtn}>
+                            <BellIcon />
+                            <span className={styles.badge}></span>
+                        </button>
+                        <Link href="/student/profile" className={styles.profilePic} onClick={() => setIsMenuOpen(false)}>
+                            {studentName.charAt(0).toUpperCase()}
+                        </Link>
                     </div>
+
                     <button className={styles.logout} onClick={handleLogout}>
                         <LogoutIcon fontSize="small" />
                         <span>Logout</span>
@@ -86,10 +94,6 @@ export default function StudentNavbar() {
             </div>
 
             <div className={styles.actions}>
-                <div className={styles.searchBar}>
-                    <SearchIcon style={{ color: '#94a3b8', fontSize: 18 }} />
-                    <input type="text" placeholder="Search..." className={styles.searchInput} />
-                </div>
 
                 <button className={styles.iconBtn}>
                     <BellIcon />

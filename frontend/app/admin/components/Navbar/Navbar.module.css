@@ -30,6 +30,11 @@
     text-decoration: none;
 }
 
+.logoIcon {
+    color: #57cc99;
+    margin-right: '10px',
+}
+
 .brandTitle {
     font-size: 1.25rem;
     font-weight: 800;
@@ -60,25 +65,27 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px;
     color: #64748b;
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
 }
 
 .menuItem:hover {
-    background: rgba(199, 249, 204, 0.2);
+    background: rgba(199, 249, 204, 0.3);
     color: #2d6a4f;
+    transform: translateY(-1px);
 }
 
 .active {
     background: #c7f9cc;
-    color: #57cc99;
+    color: #00a896;
     font-weight: 700;
+    box-shadow: 0 4px 12px rgba(199, 249, 204, 0.4);
 }
 
 .actions {
@@ -95,7 +102,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 8px;
     border: 1px solid #fee2e2;
     background: #fff;
@@ -109,9 +116,49 @@
 .logout:hover {
     background: #fee2e2;
     color: #dc2626;
+    transform: translateY(-1px);
 }
 
-@media (max-width: 1024px) {
+/* RESPONSIVENESS */
+
+/* 1. Large screens (High-res desktops) */
+@media (min-width: 1281px) {
+    .navbar {
+        padding: 0 3rem;
+    }
+
+    .menuItem {
+        font-size: 1rem;
+    }
+}
+
+/* 2. Tablets & Laptops (Desktop-like Layout) */
+@media (min-width: 768px) and (max-width: 1280px) {
+    .navbar {
+        padding: 0 1rem;
+    }
+
+    .navLinks {
+        gap: 0.25rem;
+    }
+
+    .logoIcon {
+        height: 30px;
+        width: 40px;
+    }
+
+    .menuItem {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .brandTitle {
+        display: none;
+    }
+}
+
+/* 3. Mobile (Hamburger Menu threshold) */
+@media (max-width: 767px) {
     .navbar {
         padding: 0 1rem;
     }
@@ -154,6 +201,8 @@
         width: 100%;
         padding: 1rem;
         font-size: 1.1rem;
+        border-radius: 8px;
+        /* Standard rect for mobile drawer */
     }
 
     .actions {
@@ -171,5 +220,16 @@
     .mobileActions .logout {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* 4. Small Screens (Phones) */
+@media (max-width: 480px) {
+    .brandTitle {
+        font-size: 1rem;
+    }
+
+    .logo {
+        gap: 0.25rem;
     }
 }

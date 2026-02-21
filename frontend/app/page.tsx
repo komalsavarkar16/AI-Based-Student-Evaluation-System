@@ -60,6 +60,9 @@ export default function LandingPage() {
           <p className={styles.subHeading}>
             Advanced AI-driven assessment system that evaluates students through MCQ and video-based tests, providing personalized bridge course recommendations for optimal learning paths.
           </p>
+          <div className={styles.imageContainerMobile}>
+            <Image src={AIImage} alt="AI Image" />
+          </div>
           <div className={styles.buttonContainer}>
             <Link href="/student/login" className={`${styles.actionButton} ${styles.studentBtn}`}>
               <SchoolIcon /> Continue as Student

@@ -139,7 +139,34 @@
     gap: 1.5rem;
 }
 
-@media (max-width: 1200px) {
+/* RESPONSIVENESS */
+
+/* 1. Large screens (High-res desktops) */
+@media (min-width: 1281px) {
+    .mainContent {
+        max-width: 1400px;
+    }
+}
+
+/* 2. Laptops/Desktops (Standard) */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .mainContent {
+        max-width: 1200px;
+        padding: 1.5rem;
+    }
+
+    .ctaText h2 {
+        font-size: 28px;
+    }
+}
+
+/* 3. Tablets (Portrait) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .mainContent {
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+
     .statsGrid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -148,18 +175,108 @@
     .secondaryGrid {
         grid-template-columns: 1fr;
     }
-}
 
-@media (max-width: 640px) {
-    .statsGrid {
-        grid-template-columns: 1fr;
+    .ctaSection {
+        padding: 30px;
     }
 
+    .ctaText h2 {
+        font-size: 24px;
+    }
+}
+
+/* 4. Tablets (Landscape) */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .statsGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .mainGrid {
+        grid-template-columns: 1.5fr 1fr;
+    }
+}
+
+/* 5. Mobile (Landscape) or Large phones */
+@media (min-width: 481px) and (max-width: 767px) {
     .mainContent {
         padding: 1rem;
     }
 
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .mainGrid,
+    .secondaryGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .ctaSection {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px;
+        gap: 20px;
+    }
+
+    .ctaText {
+        max-width: 100%;
+    }
+
+    .ctaText h2 {
+        font-size: 22px;
+    }
+
+    .quickActions {
+        justify-content: center;
+    }
+}
+
+/* 6. Small Screens (Phones) */
+@media (min-width: 320px) and (max-width: 480px) {
+    .mainContent {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .mainGrid,
+    .secondaryGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .ctaSection {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .ctaText {
+        max-width: 100%;
+    }
+
+    .ctaText h2 {
+        font-size: 20px;
+    }
+
+    .ctaText p {
+        font-size: 14px;
+    }
+
+    .quickActions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .actionBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
     .title {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 }

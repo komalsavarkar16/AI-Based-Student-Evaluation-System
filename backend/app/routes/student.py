@@ -262,19 +262,19 @@ def process_video_test_analysis(student_id: str, course_id: str):
                     question_obj = question_id # Fallback
                 
                 if isinstance(question_obj, dict):
-                    question_text = question_obj.get("question")
+                    question_data = question_obj
                     related_skill = question_obj.get("relatedSkill", "General")
                 else:
-                    question_text = question_obj
+                    question_data = {"question": question_id, "relatedSkill": "General"}
                     related_skill = "General"
             except Exception as e:
                 print(f"Index mapping error for {question_id}: {e}")
-                question_text = question_id
+                question_data = {"question": question_id, "relatedSkill": "General"}
                 related_skill = "General"
 
             # Call AI Evaluation
             from app.services.ai_service import evaluate_video_answer
-            analysis = evaluate_video_answer(question_text, transcript, course)
+            analysis = evaluate_video_answer(question_data, transcript, course)
             
             q_answer["analysis"] = analysis
             q_answer["relatedSkill"] = related_skill
@@ -293,6 +293,10 @@ def process_video_test_analysis(student_id: str, course_id: str):
         avg_score = total_score / count if count > 0 else 0
         unique_weak_skills = list(set([s for s in weak_skills if s != "General"]))
         
+        # 4.1 Overall Performance Signal (AI-based)
+        from app.services.ai_service import generate_overall_video_evaluation
+        overall_eval = generate_overall_video_evaluation(updated_answers, course)
+
         # 5. Update DB
         results_collection.update_one(
             {"_id": result["_id"]},
@@ -301,6 +305,9 @@ def process_video_test_analysis(student_id: str, course_id: str):
                 "overallVideoScore": avg_score,
                 "skillGap": unique_weak_skills,
                 "videoTestEvaluationStatus": "completed",
+                "eligibilitySignal": overall_eval.get("overallEligibilitySignal"),
+                "executiveSummary": overall_eval.get("executiveSummary"),
+                "overallReasoning": overall_eval.get("overallReasoning"),
                 "evaluatedAt": datetime.utcnow()
             }}
         )

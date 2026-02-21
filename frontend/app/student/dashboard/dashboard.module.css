@@ -377,26 +377,87 @@
 }
 
 /* RESPONSIVE */
-@media (max-width: 1024px) {
+/* RESPONSIVENESS */
+
+/* 1. Large screens (High-res desktops) */
+@media (min-width: 1281px) {
+    .dashboardContent {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+}
+
+/* 2. Laptops/Desktops (Standard) */
+@media (min-width: 1025px) and (max-width: 1280px) {
     .statsRow {
-        grid-template-columns: 1fr;
-        /* Stack stats on tablet */
+        column-gap: 2rem;
+    }
+
+    .ctaText h2 {
+        font-size: 24px;
+    }
+}
+
+/* 3. Tablets (Portrait) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .statsRow {
+        flex-direction: column;
+        gap: 20px;
     }
 
     .insightsRow {
         grid-template-columns: 1fr;
-        /* Stack insights */
+    }
+
+    .ctaSection {
+        padding: 30px;
+    }
+
+    .ctaText h2 {
+        font-size: 22px;
+    }
+
+    .contentHeader {
+        padding: 20px 20px 0;
+    }
+
+    .dashboardContent {
+        padding: 20px;
     }
 }
 
-@media (max-width: 768px) {
-    .mainContent {
-        padding: 20px;
+/* 4. Tablets (Landscape) */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .statsRow {
+        flex-direction: row;
+        column-gap: 1.5rem;
+    }
+
+    .insightsRow {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* 5. Mobile (Large phones) */
+@media (min-width: 481px) and (max-width: 767px) {
+    .container {
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .statsRow {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .insightsRow {
+        grid-template-columns: 1fr;
     }
 
     .ctaSection {
         flex-direction: column;
         text-align: center;
+        padding: 25px;
         gap: 20px;
     }
 
@@ -404,5 +465,77 @@
         max-width: 100%;
     }
 
-    /* Handle Sidebar collapse logic if needed (Assuming sidebar logic from prev step is intact) */
+    .ctaText h2 {
+        font-size: 20px;
+    }
+
+    .startBtn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .contentHeader {
+        padding: 15px 15px 0;
+    }
+
+    .dashboardContent {
+        padding: 15px;
+        gap: 20px;
+    }
+}
+
+/* 6. Small Screens (Phones) */
+@media (min-width: 320px) and (max-width: 480px) {
+    .container {
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .statsRow {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .insightsRow {
+        grid-template-columns: 1fr;
+    }
+
+    .ctaSection {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .ctaText {
+        max-width: 100%;
+    }
+
+    .ctaText h2 {
+        font-size: 18px;
+    }
+
+    .ctaText p {
+        font-size: 14px;
+    }
+
+    .startBtn {
+        width: 100%;
+        text-align: center;
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+
+    .welcomeMsg h2 {
+        font-size: 20px;
+    }
+
+    .contentHeader {
+        padding: 15px 15px 0;
+    }
+
+    .dashboardContent {
+        padding: 10px;
+        gap: 15px;
+    }
 }
