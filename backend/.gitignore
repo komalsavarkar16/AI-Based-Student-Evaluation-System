@@ -8,8 +8,7 @@ pyvenv.cfg
 __pycache__/
 *.pyc
 
-# Environment variables
-.env
+
 
 # Node / Next.js
 node_modules/
