@@ -1,6 +1,6 @@
 .container {
   display: flex;
-  /* height: 100vh; */
+  height: 100vh;
   color: white;
   font-family: serif;
 }
@@ -14,6 +14,7 @@
   flex-direction: column;
   justify-content: center;
   background-size: cover;
+  height: 100vh;
 }
 
 
@@ -46,7 +47,11 @@
   width: 65%;
   background: #ffffff;
   backdrop-filter: blur(18px);
-  padding: 2rem;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* align-items: center; */
 }
 
 .title {

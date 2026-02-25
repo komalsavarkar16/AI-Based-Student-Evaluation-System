@@ -135,7 +135,7 @@
 .heroSection .content {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   padding: 2rem 4rem 2rem 0;
   row-gap: 25px;
 }

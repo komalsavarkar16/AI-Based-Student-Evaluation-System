@@ -118,10 +118,10 @@ export default function RegisterPage() {
           Start your AI-powered skill evaluation and personalized learning
           journey.
         </p>
-        <div className={styles.avatar}>
+        {/* <div className={styles.avatar}>
           <span>+</span>
         </div>
-        <p>Upload a profile picture</p>
+        <p>Upload a profile picture</p> */}
 
         {/* Form */}
         <form className={styles.form} onSubmit={handleSubmit}>
