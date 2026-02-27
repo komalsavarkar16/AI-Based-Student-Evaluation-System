@@ -40,7 +40,6 @@ export default function Navbar() {
             <div className={styles.navBrand}>
                 <Link href="/admin" className={styles.logo}>
                     <BrainCircuit size={24} className={styles.logoIcon} />
-                    <span className={styles.brandTitle}>EduBridge AI</span>
                 </Link>
                 <button className={styles.hamburger} onClick={toggleMenu}>
                     {isMenuOpen ? <CloseIcon /> : <MenuIcon />}

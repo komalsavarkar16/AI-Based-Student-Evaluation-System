@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Course } from "../../../types/course";
 import styles from "./courseDetailsContainer.module.css";
-import { BrainCircuit, Video, Clock, BarChart, GraduationCap, Sparkles } from "lucide-react";
+import { LayoutList, Video, Clock, BarChart, GraduationCap, Sparkles } from "lucide-react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/app/utils/api";
@@ -262,7 +262,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                                 onClick={handleGenerateMCQ}
                                 disabled={generatingMcq}
                             >
-                                {generatingMcq ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <BrainCircuit size={20} />}
+                                {generatingMcq ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <LayoutList size={20} />}
                                 {generatingMcq ? "Generating..." : "Generate MCQ"}
                             </button>
                             <button
@@ -300,7 +300,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                                         className={`${styles.actionBtn} ${styles.enrollBtn}`}
                                         onClick={handleEnroll}
                                     >
-                                        <BrainCircuit size={20} />
+                                        <LayoutList size={20} />
                                         Retake MCQ Test
                                     </button>
                                 </div>

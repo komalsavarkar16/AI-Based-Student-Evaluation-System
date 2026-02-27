@@ -3,6 +3,7 @@
     border-radius: 10px;
     margin: 4rem;
     padding: 2rem;
+    background-color: #ffffff;
 }
 
 .title {
@@ -26,11 +27,12 @@
     font-size: 20px;
     font-weight: 800;
     margin-block: 5px;
+    color: #a855f7;
 }
 
 .mcqContainer .answer {
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .loadingContainer,
