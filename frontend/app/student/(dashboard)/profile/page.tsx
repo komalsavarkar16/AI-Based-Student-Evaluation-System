@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./profile.module.css";
-import StudentNavbar from "../components/StudentNavbar/StudentNavbar";
+import StudentNavbar from "../../components/StudentNavbar/StudentNavbar";
 import Link from "next/link";
-import ProfileProgressBar from "../components/ProgressBar/ProfileProgressBar";
+import ProfileProgressBar from "../../components/ProgressBar/ProfileProgressBar";
 import {
     Person as PersonIcon,
     School as SchoolIcon,
@@ -95,8 +95,6 @@ export default function StudentProfile() {
 
     return (
         <div className={styles.container}>
-            <StudentNavbar />
-
             <main className={styles.mainContent}>
                 {/* Profile Header */}
                 <header className={styles.profileHeader}>

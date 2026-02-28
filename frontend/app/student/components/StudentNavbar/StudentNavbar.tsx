@@ -44,8 +44,7 @@ export default function StudentNavbar() {
     };
 
     const navItems = [
-        { label: "Dashboard", path: "/student/dashboard" },
-        { label: "My Course", path: "/student/courses" },
+        { label: "Courses", path: "/student/courses" },
         { label: "Tests", path: "/student/tests" },
         { label: "Results", path: "#" },
         { label: "My profile", path: "/student/profile" },
@@ -54,7 +53,7 @@ export default function StudentNavbar() {
     return (
         <nav className={styles.navbar}>
             <div className={styles.navBrand}>
-                <Link href="/student/dashboard" className={styles.logo}>
+                <Link href="/student" className={styles.logo}>
                     <SchoolIcon className={styles.logoEmoji} sx={{ fontSize: 40 }} />
                 </Link>
                 <button className={styles.hamburger} onClick={toggleMenu}>

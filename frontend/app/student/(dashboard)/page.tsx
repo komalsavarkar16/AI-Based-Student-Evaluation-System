@@ -6,7 +6,6 @@ import {
   WarningAmber as GapIcon,
   Lightbulb as IdeaIcon
 } from "@mui/icons-material";
-import StudentNavbar from "../components/StudentNavbar/StudentNavbar";
 
 export default function StudentDashboard() {
   const [studentName, setStudentName] = useState("Student");
@@ -34,8 +33,6 @@ export default function StudentDashboard() {
 
   return (
     <div className={styles.container}>
-      <StudentNavbar />
-
       {/* MAIN CONTENT */}
       <main className={styles.mainContent}>
         <div className={styles.dashboardContent}>

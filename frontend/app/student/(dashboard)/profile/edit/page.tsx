@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./edit.module.css";
-import StudentNavbar from "../../components/StudentNavbar/StudentNavbar";
+import StudentNavbar from "../../../components/StudentNavbar/StudentNavbar";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { API_BASE_URL } from "@/app/utils/api";
@@ -120,7 +120,6 @@ export default function EditProfile() {
 
     return (
         <div className={styles.container}>
-            <StudentNavbar />
             <main className={styles.mainContent}>
                 <div className={styles.card}>
                     <h2>Edit Your Profile</h2>

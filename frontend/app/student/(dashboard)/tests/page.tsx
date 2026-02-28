@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import StudentNavbar from '../components/StudentNavbar/StudentNavbar';
+import StudentNavbar from '../../components/StudentNavbar/StudentNavbar';
 import styles from './tests.module.css';
 import { API_BASE_URL } from '@/app/utils/api';
 import { Brain, Video, ListChecks, ArrowRight, PlayCircle } from 'lucide-react';
@@ -76,7 +76,6 @@ export default function TestsPage() {
 
     return (
         <div className={styles.container}>
-            <StudentNavbar />
             <main className={styles.main}>
                 <header className={styles.header}>
                     <h1 className={styles.pageTitle}>Available Assessments</h1>

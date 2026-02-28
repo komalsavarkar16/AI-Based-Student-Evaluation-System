@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./courses.module.css";
-import { Course } from "../../types/course";
+import { Course } from "../../../types/course";
 import Link from "next/link";
-import StudentNavbar from "../components/StudentNavbar/StudentNavbar";
+import StudentNavbar from "../../components/StudentNavbar/StudentNavbar";
 import {
     School as SchoolIcon,
     Category as CategoryIcon,
@@ -44,8 +44,6 @@ export default function StudentCourses() {
 
     return (
         <div className={styles.container}>
-            <StudentNavbar />
-
             <main className={styles.mainContent}>
                 <div className={styles.headerSection}>
                     <div className={styles.headerText}>

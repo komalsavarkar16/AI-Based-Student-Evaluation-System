@@ -62,9 +62,9 @@ export default function StudentLogin() {
       }
 
       if (data.role === "admin") {
-        router.push("/admin/dashboard");
+        router.push("/admin");
       } else {
-        router.push("/student/dashboard");
+        router.push("/student");
       }
     } catch (err) {
       console.error(err);

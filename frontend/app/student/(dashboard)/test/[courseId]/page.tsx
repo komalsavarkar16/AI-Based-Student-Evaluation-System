@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import styles from "./test.module.css";
 import { toast } from "react-toastify";
-import ResultContainer from "../../components/MCQResultContainer/ResultContainer";
+import ResultContainer from "../../../components/MCQResultContainer/ResultContainer";
 import { API_BASE_URL } from "@/app/utils/api";
 import {
     Timer as TimerIcon,
