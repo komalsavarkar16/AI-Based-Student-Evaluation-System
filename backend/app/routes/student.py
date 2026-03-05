@@ -128,7 +128,14 @@ async def check_test_status(student_id: str, course_id: str):
             "passed": result.get("score", 0) >= 70,
             "score": result.get("score", 0),
             "videoTestSubmittedAt": result.get("videoTestSubmittedAt"),
-            "videoTestEvaluationStatus": result.get("videoTestEvaluationStatus", "not_started")
+            "videoTestEvaluationStatus": result.get("videoTestEvaluationStatus", "not_started"),
+            "videoAnswers": result.get("videoAnswers", []),
+            "overallVideoScore": result.get("overallVideoScore", 0),
+            "skillGap": result.get("skillGap", []),
+            "eligibilitySignal": result.get("eligibilitySignal", "-"),
+            "executiveSummary": result.get("executiveSummary", ""),
+            "overallReasoning": result.get("overallReasoning", ""),
+            "analysis": result.get("analysis", {})
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

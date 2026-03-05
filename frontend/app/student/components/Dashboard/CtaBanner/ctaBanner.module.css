@@ -1,0 +1,132 @@
+.ctaSection {
+    background: linear-gradient(135deg, #8c52ff 0%, #7b3fe6 100%);
+    border-radius: 20px;
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 10px 30px rgba(140, 82, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.ctaText {
+    max-width: 60%;
+    position: relative;
+    z-index: 2;
+}
+
+.ctaText h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.ctaText p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.startBtn {
+    background: white;
+    color: #8c52ff;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 2;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.startBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Decorative circles */
+.ctaSection::before {
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.ctaSection::after {
+    content: "";
+    position: absolute;
+    bottom: -30px;
+    left: 20%;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .ctaText h2 {
+        font-size: 24px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .ctaSection {
+        padding: 30px;
+    }
+
+    .ctaText h2 {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 767px) {
+    .ctaSection {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px;
+        gap: 20px;
+    }
+
+    .ctaText {
+        max-width: 100%;
+    }
+
+    .ctaText h2 {
+        font-size: 20px;
+    }
+
+    .startBtn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .ctaSection {
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .ctaText h2 {
+        font-size: 18px;
+    }
+
+    .ctaText p {
+        font-size: 14px;
+    }
+
+    .startBtn {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+}

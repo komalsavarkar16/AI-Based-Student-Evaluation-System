@@ -75,27 +75,24 @@ export default function RegisterPage() {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/student/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            password: formData.password,
-          }),
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}/student/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.detail)
-        console.log(formData)
+        toast.error(data.detail);
+        console.log(formData);
         return;
       }
 
@@ -103,7 +100,7 @@ export default function RegisterPage() {
       router.push("/student/login");
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong")
+      toast.error("Something went wrong");
       console.log(error);
     }
   };
@@ -111,132 +108,262 @@ export default function RegisterPage() {
   console.log(formData);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.rightPanel}>
-        <h2 className={styles.title}>Create Your Student Account</h2>
-        <p>
-          Start your AI-powered skill evaluation and personalized learning
-          journey.
-        </p>
-        {/* <div className={styles.avatar}>
-          <span>+</span>
-        </div>
-        <p>Upload a profile picture</p> */}
-
-        {/* Form */}
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.row}>
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputField}>
-                <PersonOutlineIcon className={styles.icon} />
-                <input
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                />
-              </div>
-              {errors.firstName && (
-                <span className={styles.error}>{errors.firstName}</span>
-              )}
-            </div>
-
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputField}>
-                <PersonOutlineIcon className={styles.icon} />
-                <input
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-              </div>
-              {errors.lastName && (
-                <span className={styles.error}>{errors.lastName}</span>
-              )}
-            </div>
-          </div>
-
-          <div className={styles.inputWrapper}>
-            <div className={styles.inputField}>
-              <EmailOutlinedIcon className={styles.icon} />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            {errors.email && (
-              <span className={styles.error}>{errors.email}</span>
-            )}
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputField}>
-                <LockOutlinedIcon className={styles.icon} />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <span
-                  className={styles.eyeIcon}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </span>
-              </div>
-              {errors.password && (
-                <span className={styles.error}>{errors.password}</span>
-              )}
-            </div>
-
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputField}>
-                <LockOutlinedIcon className={styles.icon} />
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </div>
-              {errors.confirmPassword && (
-                <span className={styles.error}>{errors.confirmPassword}</span>
-              )}
-            </div>
-          </div>
-          <button type="submit" className={styles.submitBtn}>
-            Get Started
-          </button>
-        </form>
-        <p className={styles.footer}>
-          © 2025 AI Student Evaluation System Built for academic & skill
-          assessment
-        </p>
-      </div>
-
-      <div className={styles.leftPanel}>
-        <h2>Welcome</h2>
-        <h4 className={styles.subHeading}>
-          This platform evaluates your skills using AI, identifies knowledge
-          gaps, and recommends personalized courses to improve your performance.
-        </h4>
-        <span className={styles.text}>Already have an account?</span>
-        <Link href="/student/login" className={styles.logIn}>
-          Log In
-        </Link>
-
-        <p className={styles.footer}>Terms of Use & Privacy Policy</p>
-      </div>
+    <>
+      <div className={styles.container}>
+        <div className={styles.rightPanel}>
+          <h2 className={styles.title}>Create Your Student Account</h2>
+          <p>
+            Start your AI-powered skill evaluation and personalized learning
+            journey.
+          </p>
+          {/* <div className={styles.avatar}>
+      <span>+</span>
     </div>
+    <p>Upload a profile picture</p> */}
+
+          {/* Form */}
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <div className={styles.row}>
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <PersonOutlineIcon className={styles.icon} />
+                  <input
+                    type="text"
+                    name="firstName"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.firstName && (
+                  <span className={styles.error}>{errors.firstName}</span>
+                )}
+              </div>
+
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <PersonOutlineIcon className={styles.icon} />
+                  <input
+                    type="text"
+                    name="lastName"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.lastName && (
+                  <span className={styles.error}>{errors.lastName}</span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.inputWrapper}>
+              <div className={styles.inputField}>
+                <EmailOutlinedIcon className={styles.icon} />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              {errors.email && (
+                <span className={styles.error}>{errors.email}</span>
+              )}
+            </div>
+
+            <div className={styles.row}>
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <LockOutlinedIcon className={styles.icon} />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <span
+                    className={styles.eyeIcon}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </span>
+                </div>
+                {errors.password && (
+                  <span className={styles.error}>{errors.password}</span>
+                )}
+              </div>
+
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <LockOutlinedIcon className={styles.icon} />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <span className={styles.error}>{errors.confirmPassword}</span>
+                )}
+              </div>
+            </div>
+            <button type="submit" className={styles.submitBtn}>
+              Get Started
+            </button>
+          </form>
+          <p className={styles.footer}>
+            © 2025 AI Student Evaluation System Built for academic & skill
+            assessment
+          </p>
+        </div>
+
+        <div className={styles.leftPanel}>
+          <h2>Welcome</h2>
+          <h4 className={styles.subHeading}>
+            This platform evaluates your skills using AI, identifies knowledge
+            gaps, and recommends personalized courses to improve your
+            performance.
+          </h4>
+          <span className={styles.text}>Already have an account?</span>
+          <Link href="/student/login" className={styles.logIn}>
+            Log In
+          </Link>
+
+          <p className={styles.footer}>Terms of Use & Privacy Policy</p>
+        </div>
+      </div>
+      <div className={styles.mobileContainer}>
+        <div className={styles.leftPanel}>
+          <h2>Welcome</h2>
+          <h4 className={styles.subHeading}>
+            This platform evaluates your skills using AI, identifies knowledge
+            gaps, and recommends personalized courses to improve your
+            performance.
+          </h4>
+          <span className={styles.text}>Already have an account?</span>
+          <Link href="/student/login" className={styles.logIn}>
+            Log In
+          </Link>
+
+          <p className={styles.footer}>Terms of Use & Privacy Policy</p>
+        </div>
+        <div className={styles.rightPanel}>
+          <h2 className={styles.title}>Create Your Student Account</h2>
+          <p>
+            Start your AI-powered skill evaluation and personalized learning
+            journey.
+          </p>
+          {/* <div className={styles.avatar}>
+      <span>+</span>
+    </div>
+    <p>Upload a profile picture</p> */}
+
+          {/* Form */}
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <div className={styles.row}>
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <PersonOutlineIcon className={styles.icon} />
+                  <input
+                    type="text"
+                    name="firstName"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.firstName && (
+                  <span className={styles.error}>{errors.firstName}</span>
+                )}
+              </div>
+
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <PersonOutlineIcon className={styles.icon} />
+                  <input
+                    type="text"
+                    name="lastName"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.lastName && (
+                  <span className={styles.error}>{errors.lastName}</span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.inputWrapper}>
+              <div className={styles.inputField}>
+                <EmailOutlinedIcon className={styles.icon} />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              {errors.email && (
+                <span className={styles.error}>{errors.email}</span>
+              )}
+            </div>
+
+            <div className={styles.row}>
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <LockOutlinedIcon className={styles.icon} />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <span
+                    className={styles.eyeIcon}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </span>
+                </div>
+                {errors.password && (
+                  <span className={styles.error}>{errors.password}</span>
+                )}
+              </div>
+
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <LockOutlinedIcon className={styles.icon} />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <span className={styles.error}>{errors.confirmPassword}</span>
+                )}
+              </div>
+            </div>
+            <button type="submit" className={styles.submitBtn}>
+              Get Started
+            </button>
+          </form>
+          <p className={styles.footer}>
+            © 2025 AI Student Evaluation System Built for academic & skill
+            assessment
+          </p>
+        </div>
+      </div>
+    </>
   );
 }

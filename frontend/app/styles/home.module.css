@@ -563,15 +563,17 @@
 
 @media (max-width: 480px) {
   .heroSection {
-    padding: 2rem 1rem;
+    padding: 4rem 2rem;
   }
 
   .heroSection .content .heading {
     font-size: 25px;
+    color: #000000;
   }
 
   .content .subHeading {
     font-size: 16px;
+    line-height: 100%;
   }
 
   .content .buttonContainer {
@@ -586,8 +588,13 @@
     gap: 8px;
   }
 
+  .featuresSection {
+    background-color: #FDFBFF;
+  }
+
   .featuresSection .featuresHeading {
     font-size: 25px;
+    color: #000000;
   }
 
   .featuresSection .featuresSubHeading {
@@ -607,6 +614,7 @@
   .featureCard .featureDescription {
     font-size: 14px;
   }
+
 
   .processSection .heading {
     font-size: 25px;

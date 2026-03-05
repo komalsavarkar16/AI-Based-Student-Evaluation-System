@@ -8,6 +8,25 @@
     overflow: hidden;
 }
 
+.spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid #8c52ff;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 /* MAIN CONTENT AREA */
 .mainContent {
     flex: 1;
@@ -36,10 +55,12 @@
 
 /* CONTENT CONTAINER for grid */
 .dashboardContent {
-    padding: 30px 40px;
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     gap: 30px;
+    width: 90%;
+    margin: 0 auto;
 }
 
 

@@ -1,0 +1,91 @@
+.historySection {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sectionTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+}
+
+.viewLink {
+    font-size: 13px;
+    color: #8c52ff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.historyTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    min-width: 600px;
+}
+
+.historyTable th {
+    text-align: left;
+    padding: 15px;
+    font-size: 13px;
+    color: #888;
+    font-weight: 600;
+    border-bottom: 1px solid #eee;
+}
+
+.historyTable td {
+    padding: 15px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.statusTag {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.statusTag.completed {
+    background: #e6fffa;
+    color: #047857;
+}
+
+.statusTag.pending {
+    background: #fffbeb;
+    color: #b45309;
+}
+
+.statusTag.failed {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.actionLink {
+    color: #8c52ff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.emptyState {
+    padding: 30px;
+    text-align: center;
+    color: #64748b;
+    background: #f8fafc;
+    border-radius: 12px;
+    font-size: 14px;
+}

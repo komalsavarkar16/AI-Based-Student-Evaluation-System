@@ -1,0 +1,251 @@
+.container {
+    padding: 2rem 4rem;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+    min-height: calc(100vh - 80px);
+}
+
+/* 1. Overall Status Banner */
+.statusBanner {
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.statusBanner h1 {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 10px;
+}
+
+.statusBanner p {
+    font-size: 16px;
+    margin: 0;
+    font-weight: 500;
+}
+
+.bannerPass {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.bannerBorderline {
+    background-color: #fef9c3;
+    color: #854d0e;
+}
+
+.bannerFail {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.bannerUnknown {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+/* 2. Overall Score Breakdown */
+.scoreGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.scoreCard {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.scoreCard h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.scoreValue {
+    font-size: 36px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+/* 3. Common Section Styling */
+.section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.sectionTitle {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 1.5rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+/* Skill Table */
+.skillTableWrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.skillTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.skillTable th {
+    text-align: left;
+    padding: 12px 15px;
+    background-color: #f8fafc;
+    font-size: 14px;
+    color: #475569;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.skillTable td {
+    padding: 15px;
+    font-size: 14px;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.assessmentBadge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badgeStrong {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badgeModerate {
+    background-color: #fef9c3;
+    color: #854d0e;
+}
+
+.badgeWeak {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Strengths & Weaknesses */
+.listGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.listColumn h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.listColumn.strengths h4 {
+    color: #059669;
+}
+
+.listColumn.weaknesses h4 {
+    color: #dc2626;
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.list li {
+    font-size: 14px;
+    color: #475569;
+    padding-left: 24px;
+    position: relative;
+    line-height: 1.5;
+}
+
+.listColumn.strengths .list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #059669;
+    font-weight: bold;
+}
+
+.listColumn.weaknesses .list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #dc2626;
+    font-weight: bold;
+}
+
+/* Loader */
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    color: #64748b;
+}
+
+.spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top: 3px solid #8c52ff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .scoreGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .listGrid {
+        grid-template-columns: 1fr;
+    }
+}

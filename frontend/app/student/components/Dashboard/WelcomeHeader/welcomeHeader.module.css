@@ -1,0 +1,32 @@
+.contentHeader {
+    padding: 20px 40px 0;
+}
+
+.welcomeMsg h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.welcomeMsg p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 5px 0 0;
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .contentHeader {
+        padding: 20px 20px 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .contentHeader {
+        padding: 15px 15px 0;
+    }
+
+    .welcomeMsg h2 {
+        font-size: 20px;
+    }
+}

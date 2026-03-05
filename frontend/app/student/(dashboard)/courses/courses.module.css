@@ -199,3 +199,13 @@
         font-size: 1.75rem;
     }
 }
+
+@media (min-width: 320px) and (max-width: 480px) {
+    .mainContent {
+        padding: 1rem;
+    }
+
+    .courseCard {
+        padding: 1rem;
+    }
+}

@@ -46,7 +46,7 @@ export default function StudentNavbar() {
     const navItems = [
         { label: "Courses", path: "/student/courses" },
         { label: "Tests", path: "/student/tests" },
-        { label: "Results", path: "#" },
+        { label: "Results", path: "/student/results" },
         { label: "My profile", path: "/student/profile" },
     ];
 

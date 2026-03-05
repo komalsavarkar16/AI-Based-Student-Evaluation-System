@@ -1,0 +1,87 @@
+.statsRow {
+    display: flex;
+    column-gap: 4rem;
+}
+
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem 4rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Skill Status Widget */
+.skillWidget h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #555;
+    margin: 0 0 15px;
+}
+
+.skillItem {
+    margin-bottom: 12px;
+}
+
+.progressBarBack {
+    width: 100%;
+    height: 10px;
+    background: #f1f2f6;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progressBarFill {
+    height: 100%;
+    background: linear-gradient(90deg, #8c52ff, #a980ff);
+    border-radius: 10px;
+}
+
+.skillMeta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #888;
+}
+
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .statsRow {
+        column-gap: 2rem;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .card {
+        padding: 2rem;
+    }
+
+    .statsRow {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .card {
+        padding: 2rem;
+    }
+
+    .statsRow {
+        flex-direction: row;
+        column-gap: 1.5rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .card {
+        padding: 1rem;
+    }
+
+    .statsRow {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
