@@ -50,4 +50,6 @@ class TestResult(BaseModel):
     totalQuestions: int
     correctAnswers: int
     answers: List[dict]
+    status: Optional[str] = "Pending"
+    decisionNotes: Optional[str] = None
     timestamp: datetime = None

@@ -206,8 +206,10 @@ async def get_all_evaluations():
             "id": str(eval["_id"]),
             "studentName": f"{student.get('firstName')} {student.get('lastName')}" if student else "Unknown",
             "courseTitle": eval.get("courseTitle"),
-            "score": round(eval.get("overallVideoScore", 0), 2) if "overallVideoScore" in eval else "Pending",
-            "skillGap": eval.get("skillGap", []),
+            "mcqScore": eval.get("score", 0),
+            "videoScore": round(eval.get("overallVideoScore", 0), 2) if "overallVideoScore" in eval else "Pending",
+            "eligibilitySignal": eval.get("eligibilitySignal", "-"),
+            "status": eval.get("status", "Pending"),
             "timestamp": eval.get("evaluatedAt") or eval.get("timestamp")
         })
     return results
@@ -230,12 +232,44 @@ async def get_evaluation_report(result_id: str):
             "email": student.get("email") if student else "N/A"
         },
         "courseTitle": result.get("courseTitle"),
+        "mcqScore": result.get("score", 0),
         "overallScore": round(result.get("overallVideoScore", 0), 2) if "overallVideoScore" in result else 0,
+        "eligibilitySignal": result.get("eligibilitySignal", "-"),
+        "executiveSummary": result.get("executiveSummary", ""),
+        "overallReasoning": result.get("overallReasoning", ""),
         "skillGap": result.get("skillGap", []),
         "videoAnswers": result.get("videoAnswers", []),
+        "status": result.get("status", "Pending"),
+        "decisionNotes": result.get("decisionNotes", ""),
         "timestamp": result.get("evaluatedAt") or result.get("timestamp")
     }
     return report
+
+@router.post("/submit-decision/{result_id}")
+async def submit_decision(result_id: str, decision_data: dict):
+    if not ObjectId.is_valid(result_id):
+        raise HTTPException(status_code=400, detail="Invalid Result ID")
+    
+    status = decision_data.get("status")
+    notes = decision_data.get("notes", "")
+    
+    if status not in ["Approved", "Bridge Course Recommended", "Retry Required"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    result = db.test_results.find_one_and_update(
+        {"_id": ObjectId(result_id)},
+        {"$set": {
+            "status": status,
+            "decisionNotes": notes,
+            "decidedAt": datetime.utcnow()
+        }},
+        return_document=True
+    )
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+    
+    return {"message": f"Decision submitted: {status}"}
 
 @router.get("/students")
 async def get_students():

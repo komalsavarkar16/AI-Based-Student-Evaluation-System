@@ -11,7 +11,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "@/app/utils/api";
 
-export default function RegisterPage() {
+export default function AdminRegister() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -30,6 +30,10 @@ export default function RegisterPage() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+    setErrors((prev: any) => ({
+      ...prev,
+      [name]: "",
     }));
   };
 
@@ -69,21 +73,18 @@ export default function RegisterPage() {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/admin/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            password: formData.password,
-          }),
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}/admin/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
       const data = await res.json();
 
@@ -101,47 +102,49 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        {/* LEFT PANEL - FORM */}
-        <div className={styles.leftPanel}>
-          <h2 className={styles.title}>Create Account</h2>
+    <>
+      <div className={styles.container}>
+        <div className={styles.rightPanel}>
+          <h2 className={styles.title}>Create Admin Account</h2>
+          <p>
+            Join the administration team to manage the system and evaluation process.
+          </p>
 
-          {/* Form */}
           <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputField}>
-                <PersonOutlineIcon className={styles.icon} />
-                <input
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                />
+            <div className={styles.row}>
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <PersonOutlineIcon className={styles.icon} />
+                  <input
+                    type="text"
+                    name="firstName"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.firstName && (
+                  <span className={styles.error}>{errors.firstName}</span>
+                )}
               </div>
-              {errors.firstName && (
-                <span className={styles.error}>{errors.firstName}</span>
-              )}
+
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <PersonOutlineIcon className={styles.icon} />
+                  <input
+                    type="text"
+                    name="lastName"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.lastName && (
+                  <span className={styles.error}>{errors.lastName}</span>
+                )}
+              </div>
             </div>
 
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputField}>
-                <PersonOutlineIcon className={styles.icon} />
-                <input
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-              </div>
-              {errors.lastName && (
-                <span className={styles.error}>{errors.lastName}</span>
-              )}
-            </div>
-
-            {/* Email */}
             <div className={styles.inputWrapper}>
               <div className={styles.inputField}>
                 <EmailOutlinedIcon className={styles.icon} />
@@ -158,62 +161,189 @@ export default function RegisterPage() {
               )}
             </div>
 
-            {/* Password + Confirm */}
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputField}>
-                <LockOutlinedIcon className={styles.icon} />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <span
-                  className={styles.eyeIcon}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </span>
+            <div className={styles.row}>
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <LockOutlinedIcon className={styles.icon} />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <span
+                    className={styles.eyeIcon}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </span>
+                </div>
+                {errors.password && (
+                  <span className={styles.error}>{errors.password}</span>
+                )}
               </div>
-              {errors.password && (
-                <span className={styles.error}>{errors.password}</span>
-              )}
-            </div>
 
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputField}>
-                <LockOutlinedIcon className={styles.icon} />
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <LockOutlinedIcon className={styles.icon} />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <span className={styles.error}>{errors.confirmPassword}</span>
+                )}
               </div>
-              {errors.confirmPassword && (
-                <span className={styles.error}>{errors.confirmPassword}</span>
-              )}
             </div>
-
             <button type="submit" className={styles.submitBtn}>
               Sign Up
             </button>
           </form>
+          <p className={styles.footer}>
+            © 2025 AI Student Evaluation System Built for academic & skill
+            assessment
+          </p>
         </div>
 
-        {/* RIGHT PANEL - WELCOME */}
-        <div className={styles.rightPanel}>
-          <h2 className={styles.welcomeTitle}>Get Started</h2>
+        <div className={styles.leftPanel}>
+          <h2>Welcome</h2>
           <h4 className={styles.subHeading}>
-            Already have an account?
+            Manage the platform that evaluates skills using AI, identifies knowledge
+            gaps, and provides personalized recommendations.
           </h4>
+          <span className={styles.text}>Already have an account?</span>
           <Link href="/admin/login" className={styles.logIn}>
-            Log in
+            Log In
           </Link>
+
+          <p className={styles.footer}>Terms of Use & Privacy Policy</p>
         </div>
       </div>
-    </div>
+      <div className={styles.mobileContainer}>
+        <div className={styles.leftPanel}>
+          <h2>Welcome</h2>
+          <h4 className={styles.subHeading}>
+            Manage the platform that evaluates skills using AI, identifies knowledge
+            gaps, and provides personalized recommendations.
+          </h4>
+          <span className={styles.text}>Already have an account?</span>
+          <Link href="/admin/login" className={styles.logIn}>
+            Log In
+          </Link>
+
+          <p className={styles.footer}>Terms of Use & Privacy Policy</p>
+        </div>
+        <div className={styles.rightPanel}>
+          <h2 className={styles.title}>Create Admin Account</h2>
+          <p>
+            Join the administration team to manage the system and evaluation process.
+          </p>
+
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <div className={styles.row}>
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <PersonOutlineIcon className={styles.icon} />
+                  <input
+                    type="text"
+                    name="firstName"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.firstName && (
+                  <span className={styles.error}>{errors.firstName}</span>
+                )}
+              </div>
+
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <PersonOutlineIcon className={styles.icon} />
+                  <input
+                    type="text"
+                    name="lastName"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.lastName && (
+                  <span className={styles.error}>{errors.lastName}</span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.inputWrapper}>
+              <div className={styles.inputField}>
+                <EmailOutlinedIcon className={styles.icon} />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+              {errors.email && (
+                <span className={styles.error}>{errors.email}</span>
+              )}
+            </div>
+
+            <div className={styles.row}>
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <LockOutlinedIcon className={styles.icon} />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <span
+                    className={styles.eyeIcon}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </span>
+                </div>
+                {errors.password && (
+                  <span className={styles.error}>{errors.password}</span>
+                )}
+              </div>
+
+              <div className={styles.inputWrapper}>
+                <div className={styles.inputField}>
+                  <LockOutlinedIcon className={styles.icon} />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <span className={styles.error}>{errors.confirmPassword}</span>
+                )}
+              </div>
+            </div>
+            <button type="submit" className={styles.submitBtn}>
+              Sign Up
+            </button>
+          </form>
+          <p className={styles.footer}>
+            © 2025 AI Student Evaluation System Built for academic & skill
+            assessment
+          </p>
+        </div>
+      </div>
+    </>
   );
 }

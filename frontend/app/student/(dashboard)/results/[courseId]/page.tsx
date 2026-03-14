@@ -33,6 +33,8 @@ interface TestResult {
     eligibilitySignal: string;
     executiveSummary: string;
     overallReasoning: string;
+    status: string;
+    decisionNotes: string;
 }
 
 export default function ResultDetail() {
@@ -148,6 +150,34 @@ export default function ResultDetail() {
                 <h1>{bannerTitle}</h1>
                 <p>{bannerRec}</p>
             </div>
+
+            {/* Admission Decision Section */}
+            {result.status && result.status !== 'Pending' && (
+                <div className={styles.section} style={{ background: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <h2 className={styles.sectionTitle} style={{ color: '#0f172a' }}>🏛 Admission Decision</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <span style={{
+                            padding: '6px 16px',
+                            borderRadius: '9999px',
+                            fontWeight: 700,
+                            fontSize: '14px',
+                            backgroundColor: result.status === 'Approved' ? '#dcfce7' :
+                                result.status === 'Bridge Course Recommended' ? '#e0f2fe' : '#fee2e2',
+                            color: result.status === 'Approved' ? '#166534' :
+                                result.status === 'Bridge Course Recommended' ? '#0369a1' : '#991b1b'
+                        }}>
+                            {result.status}
+                        </span>
+                    </div>
+                    {result.decisionNotes && (
+                        <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                            <p style={{ margin: 0, fontSize: '14px', color: '#475569', lineHeight: 1.6 }}>
+                                <strong>Admin Note:</strong> {result.decisionNotes}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* 2. Overall Score Breakdown */}
             <div className={styles.scoreGrid}>

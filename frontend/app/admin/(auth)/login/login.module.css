@@ -1,46 +1,128 @@
 .container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   justify-content: center;
   align-items: center;
   background-color: #f1f2f6;
-  font-family: 'Inter', sans-serif;
-  padding: 20px;
 }
 
 .card {
   display: flex;
   width: 900px;
-  max-width: 100%;
-  min-height: 550px;
+  max-width: 95%;
+  height: fit-content;
   background: white;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-/* LEFT PANEL (FORM) */
+/* LEFT PANEL (WELCOME / BRANDING) */
 .leftPanel {
-  flex: 1;
-  padding: 60px 50px;
+  width: 50%;
+  height: 100vh;
+  background: #8c52ff;
+  padding: 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: #f8f7fa;
+  align-items: center;
+  color: white;
+  text-align: center;
+}
+
+.leftPanel::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.leftPanel .welcomeTitle {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.leftPanel .subHeading {
+  font-size: 16px;
+  margin-bottom: 40px;
+  opacity: 0.9;
+  line-height: 1.5;
+  max-width: 80%;
+}
+
+.signUpLink {
+  background: #FF4742;
+  border: 1px solid #FF4742;
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 16px;
+  min-height: 40px;
+  outline: 0;
+  padding: 12px 14px;
+  text-align: center;
+  text-rendering: geometricprecision;
+  text-transform: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+}
+
+.signUpLink:hover,
+.signUpLink:active {
+  background-color: initial;
+  background-position: 0 0;
+  color: #FF4742;
+}
+
+.signUpLink:active {
+  opacity: .5;
+}
+
+/* RIGHT PANEL (FORM) */
+.rightPanel {
+  width: 50%;
+  height: 100vh;
+  padding: 40px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
 }
 
 .title {
-  text-align: center;
+  text-align: left;
   font-size: 28px;
   font-weight: 700;
-  color: #8c52ff;
-  margin-bottom: 35px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  text-align: left;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 30px;
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: 25px;
+  width: 80%;
 }
 
 .inputWrapper {
@@ -54,18 +136,19 @@
 
 .inputField input {
   width: 100%;
-  padding: 12px 10px 12px 40px;
+  padding: 10px 0 10px 30px;
   background: transparent;
   border: none;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 1px solid #d1d5db;
   font-size: 15px;
-  color: #1e293b;
+  color: #333;
   transition: all 0.3s ease;
   outline: none;
+  border-radius: 0;
 }
 
 .inputField input::placeholder {
-  color: #94a3b8;
+  color: #a0a0a0;
 }
 
 .inputField input:focus {
@@ -75,135 +158,94 @@
 .icon {
   position: absolute;
   top: 50%;
-  left: 5px;
+  left: 0;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: #bbb;
   font-size: 20px;
+  pointer-events: none;
 }
 
 .eyeIcon {
   position: absolute;
   top: 50%;
-  right: 5px;
+  right: 0;
   transform: translateY(-50%);
   cursor: pointer;
-  color: #94a3b8;
+  color: #bbb;
+  transition: color 0.3s;
+}
+
+.eyeIcon:hover {
+  color: #8c52ff;
 }
 
 .error {
   color: #ef4444;
   font-size: 12px;
-  margin-top: 6px;
+  margin-top: 5px;
   display: block;
 }
 
-.submitBtn {
-  background: #8c52ff;
-  padding: 14px;
-  font-weight: 600;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-top: 25px;
-  width: 100%;
-  transition: all 0.3s ease;
-  font-size: 16px;
-  box-shadow: 0 4px 6px -1px rgba(140, 82, 255, 0.2);
-}
-
-.submitBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(140, 82, 255, 0.3);
-}
-
-.forgotPassWrapper {
+.optionsRow {
   display: flex;
-  justify-content: flex-end;
-  margin-top: -10px;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
+  margin-top: -5px;
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
 }
 
 .forgotPass {
   color: #8c52ff;
   text-decoration: none;
-  font-size: 14px;
   font-weight: 500;
-  transition: all 0.3s ease;
 }
 
 .forgotPass:hover {
   text-decoration: underline;
-  color: #7b3fe6;
 }
 
-/* RIGHT PANEL (WELCOME) */
-.rightPanel {
-  flex: 0.8;
+.submitBtn {
   background: #8c52ff;
-  padding: 50px 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  text-align: center;
-}
-
-.welcomeTitle {
-  font-size: 36px;
-  font-weight: 700;
-  margin-bottom: 15px;
-  color: #e6ff00;
-}
-
-.subHeading {
-  font-size: 16px;
-  margin-bottom: 35px;
-  opacity: 0.9;
-  line-height: 1.5;
-}
-
-.createAccount {
-  padding: 10px 40px;
-  background: transparent;
-  border: 2px solid #e6ff00;
-  color: white;
-  border-radius: 25px;
-  text-decoration: none;
-  font-size: 15px;
+  padding: 10px;
   font-weight: 600;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
   transition: all 0.3s ease;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(140, 82, 255, 0.3);
 }
 
-.createAccount:hover {
-  background: #e6ff00;
-  color: #8c52ff;
+.submitBtn:hover {
+  background: #7b3fe6;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(140, 82, 255, 0.4);
 }
 
-/* Media Queries */
+/* RESPONSIVE DESIGN */
 
+/* Large Tablets / Laptops (max-width: 1024px) */
 @media (max-width: 1024px) {
   .card {
     width: 90%;
-  }
-}
-
-@media (max-width: 768px) {
-  .card {
-    flex-direction: column;
-    width: 100%;
-    max-width: 450px;
     height: auto;
+    min-height: 500px;
   }
 
-  .leftPanel {
-    padding: 40px 30px;
-  }
-
+  .leftPanel,
   .rightPanel {
-    padding: 40px 30px;
-    order: -1;
-    /* Welcome panel on top for mobile */
+    padding: 30px;
   }
 
   .welcomeTitle {
@@ -212,49 +254,134 @@
 
   .title {
     font-size: 24px;
-    margin-bottom: 25px;
   }
 }
 
-@media (max-width: 420px) {
+/* Tablets / Mobile Devices (max-width: 768px) */
+@media (max-width: 768px) {
   .container {
-    padding: 0;
+    flex-direction: column;
+    height: auto;
+    /* Allow scrolling content */
+    min-height: 100vh;
   }
 
   .card {
+    flex-direction: column;
+    width: 100%;
+    height: auto;
     border-radius: 0;
+    max-width: 100%;
   }
 
-  .leftPanel,
-  .rightPanel {
-    padding: 1rem 1.5rem;
+  /* Left Panel moves to top */
+  .leftPanel {
+    width: 100%;
+    height: auto;
+    min-height: 250px;
+    padding: 40px 20px;
+    order: 1;
   }
 
-  .welcomeTitle {
+  .leftPanel::before {
+    display: none;
+    /* Hide decorative circles to prevent layout issues */
+  }
+
+  .leftPanel .welcomeTitle {
     font-size: 24px;
+    margin-bottom: 10px;
   }
 
-  .subHeading {
+  .leftPanel .subHeading {
     font-size: 14px;
     margin-bottom: 20px;
   }
 
-  .createAccount {
-    padding: 10px 20px;
+  .signUpLink {
     font-size: 14px;
+    padding: 10px 20px;
+    min-height: auto;
+  }
+
+  /* Right Panel details */
+  .rightPanel {
+    width: 100%;
+    height: auto;
+    padding: 40px 20px;
+    order: 2;
+  }
+
+  .title {
+    font-size: 22px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 25px;
+  }
+
+  .form {
+    width: 100%;
+    max-width: 400px;
+    /* Keep form form stretching too wide on tablet portrait */
+    gap: 20px;
+  }
+
+  .inputField input {
+    font-size: 14px;
+  }
+
+  .checkboxContainer,
+  .forgotPass,
+  .optionsRow {
+    font-size: 12px;
+  }
+
+  .submitBtn {
+    font-size: 14px;
+    padding: 12px;
+  }
+}
+
+/* Small Mobile Devices (max-width: 480px) */
+@media (max-width: 480px) {
+  .container {
+    display: block;
+  }
+
+  .leftPanel {
+    padding: 2rem 1rem;
+    height: 40vh;
+  }
+
+  .welcomeTitle {
+    font-size: 20px;
+  }
+
+  .subHeading {
+    font-size: 13px;
+    max-width: 100%;
+  }
+
+  .rightPanel {
+    padding: 30px 15px;
+    height: 60vh;
   }
 
   .title {
     font-size: 20px;
   }
 
-  .inputField input {
-    padding: 12px 10px 12px 40px;
-    font-size: 14px;
+  .form {
+    width: 100%;
   }
 
-  .submitBtn {
-    padding: 10px 20px;
-    font-size: 14px;
+  .inputField input {
+    font-size: 13px;
   }
 }

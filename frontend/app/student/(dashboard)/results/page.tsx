@@ -16,6 +16,8 @@ interface CompletedResult {
     score: number;
     overallVideoScore: number;
     eligibilitySignal: string;
+    status: string;
+    decisionNotes: string;
 }
 
 export default function ResultsList() {
@@ -53,7 +55,9 @@ export default function ResultsList() {
                             course: course,
                             score: statusData.score,
                             overallVideoScore: statusData.overallVideoScore || 0,
-                            eligibilitySignal: statusData.eligibilitySignal || "-"
+                            eligibilitySignal: statusData.eligibilitySignal || "-",
+                            status: statusData.status || "Pending",
+                            decisionNotes: statusData.decisionNotes || ""
                         });
                     }
                 }
@@ -99,9 +103,21 @@ export default function ResultsList() {
                                     <span className={styles.scoreValue}>{item.score}%</span>
                                 </div>
                                 <div className={styles.scoreRow}>
-                                    <span className={styles.scoreLabel}>Analysis Status:</span>
-                                    <span className={styles.scoreValue} style={{ color: '#047857' }}>Ready</span>
+                                    <span className={styles.scoreLabel}>Admission Status:</span>
+                                    <span className={styles.scoreValue} style={{
+                                        color: item.status === 'Approved' ? '#10b981' :
+                                            item.status === 'Bridge Course Recommended' ? '#0369a1' :
+                                                item.status === 'Retry Required' ? '#ef4444' : '#f59e0b',
+                                        fontWeight: 700
+                                    }}>
+                                        {item.status}
+                                    </span>
                                 </div>
+                                {item.decisionNotes && (
+                                    <div className={styles.noteBox}>
+                                        <p><strong>Admin Note:</strong> {item.decisionNotes}</p>
+                                    </div>
+                                )}
                                 <Link
                                     href={`/student/results/${item.course._id}`}
                                     className={styles.viewBtn}

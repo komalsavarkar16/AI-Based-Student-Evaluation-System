@@ -12,9 +12,9 @@ import { BrainCircuit } from 'lucide-react';
 const menuItems = [
     { label: "Students", path: "/admin/students" },
     { label: "Courses", path: "/admin/courses" },
-    { label: "AI Eval", path: "/admin/ai-evaluations" },
-    { label: "Reports", path: "/admin/reports" },
-    { label: "Announce", path: "/admin/announcements" },
+    { label: "Evaluations", path: "/admin/evaluations" },
+    { label: "AI Reports", path: "/admin/ai-evaluations" },
+    { label: "Announcements", path: "/admin/announcements" },
     { label: "Profile", path: "/admin/profile" },
     { label: "Settings", path: "/admin/settings" },
 ];

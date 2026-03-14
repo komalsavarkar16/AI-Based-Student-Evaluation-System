@@ -135,6 +135,8 @@ async def check_test_status(student_id: str, course_id: str):
             "eligibilitySignal": result.get("eligibilitySignal", "-"),
             "executiveSummary": result.get("executiveSummary", ""),
             "overallReasoning": result.get("overallReasoning", ""),
+            "status": result.get("status", "Pending"),
+            "decisionNotes": result.get("decisionNotes", ""),
             "analysis": result.get("analysis", {})
         }
     except Exception as e:
