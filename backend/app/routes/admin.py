@@ -268,6 +268,33 @@ async def submit_decision(result_id: str, decision_data: dict):
     
     if not result:
         raise HTTPException(status_code=404, detail="Test result not found")
+        
+    # --- Create a notification for the student ---
+    student_id = result.get("studentId")
+    course_id = result.get("courseId")
+    course_title = result.get("courseTitle", "Assessment")
+    
+    if student_id:
+        notification_msg = f"Your evaluation for '{course_title}' has been reviewed."
+        if status == "Approved":
+            notification_msg = f"Congratulations! Your evaluation for '{course_title}' was Approved."
+        elif status == "Bridge Course Recommended":
+            notification_msg = f"A Bridge Course has been recommended for '{course_title}'."
+        elif status == "Retry Required":
+            notification_msg = f"You are required to retry the '{course_title}' assessment."
+            
+        notification = {
+            "type": "admin_decision",
+            "studentId": ObjectId(student_id),
+            "courseId": ObjectId(course_id) if course_id else None,
+            "courseTitle": course_title,
+            "decision": status,
+            "message": notification_msg,
+            "notes": notes,
+            "isRead": False,
+            "timestamp": datetime.utcnow()
+        }
+        db.notifications.insert_one(notification)
     
     return {"message": f"Decision submitted: {status}"}
 

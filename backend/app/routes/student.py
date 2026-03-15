@@ -354,3 +354,38 @@ def notify_admin_of_evaluation(student_id, course_id, score, skill_gap):
         print("Admin notification created")
     except Exception as e:
         print(f"Failed to notify admin: {str(e)}")
+
+@router.get("/notifications/{student_id}")
+async def get_student_notifications(student_id: str):
+    if not ObjectId.is_valid(student_id):
+        raise HTTPException(status_code=400, detail="Invalid student ID")
+        
+    notifications = list(db.notifications.find({
+        "studentId": ObjectId(student_id),
+        "type": "admin_decision" 
+    }).sort("timestamp", -1))
+    
+    results = []
+    for n in notifications:
+        n["_id"] = str(n["_id"])
+        n["studentId"] = str(n["studentId"])
+        if "courseId" in n and n["courseId"]:
+            n["courseId"] = str(n["courseId"])
+        results.append(n)
+        
+    return results
+
+@router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str):
+    if not ObjectId.is_valid(notification_id):
+        raise HTTPException(status_code=400, detail="Invalid notification ID")
+        
+    result = db.notifications.update_one(
+        {"_id": ObjectId(notification_id)},
+        {"$set": {"isRead": True}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+        
+    return {"message": "Notification marked as read"}

@@ -75,10 +75,10 @@ export default function StudentNavbar() {
 
                 <div className={styles.mobileActions}>
                     <div className={styles.mobileUtility}>
-                        <button className={styles.iconBtn}>
+                        <Link href="/student/notifications" className={styles.iconBtn} onClick={() => setIsMenuOpen(false)}>
                             <BellIcon />
                             <span className={styles.badge}></span>
-                        </button>
+                        </Link>
                         <Link href="/student/profile" className={styles.profilePic} onClick={() => setIsMenuOpen(false)}>
                             {studentName.charAt(0).toUpperCase()}
                         </Link>
@@ -93,10 +93,10 @@ export default function StudentNavbar() {
 
             <div className={styles.actions}>
 
-                <button className={styles.iconBtn}>
+                <Link href="/student/notifications" className={styles.iconBtn}>
                     <BellIcon />
                     <span className={styles.badge}></span>
-                </button>
+                </Link>
 
                 <Link href="/student/profile" className={styles.profilePic} title={studentName}>
                     {studentName.charAt(0).toUpperCase()}

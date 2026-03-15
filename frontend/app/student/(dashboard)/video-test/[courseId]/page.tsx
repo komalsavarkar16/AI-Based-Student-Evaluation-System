@@ -246,7 +246,6 @@ export default function VideoTestPage() {
             {/* Header */}
             <header className={styles.header}>
                 <div className={styles.brand}>
-                    <span className={styles.logo}>EduBridge AI</span>
                     <span className={styles.subTitle}>Video Assessment • {courseTitle}</span>
                 </div>
                 <div className={styles.headerRight}>
@@ -255,9 +254,6 @@ export default function VideoTestPage() {
                         <span>{formatTime(totalTimeLeft)}</span>
                     </div>
                     <div className={styles.studentProfile}>
-                        <div className={styles.avatar}>
-                            {studentInfo?.firstName?.charAt(0) || "S"}
-                        </div>
                         <div className={styles.studentInfo}>
                             <span className={styles.studentName}>
                                 {studentInfo?.firstName} {studentInfo?.lastName}

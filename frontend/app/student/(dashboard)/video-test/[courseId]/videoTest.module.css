@@ -795,3 +795,106 @@
     color: #6B7280;
     margin-top: -10px;
 }
+
+/* --- Responsive Adjustments --- */
+
+@media (max-width: 1024px) {
+    .mainContainer {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        order: -1;
+        /* optionally keep sidebar below on tablet, or keep natural order */
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        align-items: flex-start;
+    }
+
+    .headerRight {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .studentProfile {
+        padding-left: 0;
+        border-left: none;
+    }
+
+    .mainContainer {
+        padding: 1rem;
+    }
+
+    .videoBanner {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+
+    .controls {
+        flex-direction: column;
+        padding: 0 1.5rem;
+    }
+
+    .btnStart,
+    .btnStop,
+    .btnRetake {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .qualityRow {
+        grid-template-columns: 1fr;
+    }
+
+    .analysisGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .footerRight {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btnPrev,
+    .btnReview,
+    .btnNext {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .navGrid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .navGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .videoArea {
+        margin: 0 1rem 1rem;
+    }
+
+    .tipsBox {
+        margin: 0 1rem 1rem;
+    }
+
+    .qualityRow {
+        margin: 0 1rem 1rem;
+    }
+}
