@@ -205,7 +205,7 @@ const EvaluationDetailPage = () => {
                 <section className={styles.section}>
                     <h3 className={styles.sectionTitle}><Lightbulb size={20} color="#6366f1" /> Section 5: AI Recommendation</h3>
                     <div className={`${styles.recommendationBox} ${report.eligibilitySignal === 'Bridge Course' ? styles.bridge : ''}`}>
-                        <h4 className={styles.recommendationTitle}>
+                        <h4 className={styles.noGap}>
                             <Info size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
                             Signal: {report.eligibilitySignal}
                         </h4>
@@ -219,7 +219,7 @@ const EvaluationDetailPage = () => {
                 </section>
 
                 <section className={styles.decisionSection}>
-                    <h3 className={styles.decisionTitle}><CheckCircle size={24} color="#57cc99" /> Admin Decision (Admission Control)</h3>
+                    <h3 className={styles.noGap}><CheckCircle size={24} color="#57cc99" /> <strong className={styles.admTitle}>Admin Decision</strong></h3>
 
                     <div className={styles.radioGroup}>
                         <div
@@ -228,7 +228,7 @@ const EvaluationDetailPage = () => {
                         >
                             <input type="radio" checked={decision === 'Approved'} readOnly />
                             <div className={styles.labelContent}>
-                                <span className={styles.optionLabel}>✅ Approve Admission</span>
+                                <span className={styles.optionLabel}>Approve Admission</span>
                                 <span className={styles.optionDesc}>Student meets all criteria and can enroll.</span>
                             </div>
                         </div>
@@ -239,7 +239,7 @@ const EvaluationDetailPage = () => {
                         >
                             <input type="radio" checked={decision === 'Bridge Course Recommended'} readOnly />
                             <div className={styles.labelContent}>
-                                <span className={styles.optionLabel}>📘 Recommend Bridge Course</span>
+                                <span className={styles.optionLabel}>Recommend Bridge Course</span>
                                 <span className={styles.optionDesc}>Student must learn basics first as per AI skill gap analysis.</span>
                             </div>
                         </div>
@@ -250,7 +250,7 @@ const EvaluationDetailPage = () => {
                         >
                             <input type="radio" checked={decision === 'Retry Required'} readOnly />
                             <div className={styles.labelContent}>
-                                <span className={styles.optionLabel}>❌ Reject / Retry</span>
+                                <span className={styles.optionLabel}>Reject / Retry</span>
                                 <span className={styles.optionDesc}>Student must improve and attempt the evaluation again.</span>
                             </div>
                         </div>

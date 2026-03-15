@@ -50,7 +50,7 @@ export default function StudentLogin() {
         return;
       }
 
-      toast.success("Login successful 🎉");
+      toast.success("Login successful");
 
       // Store student details and token
       if (data.access_token) {

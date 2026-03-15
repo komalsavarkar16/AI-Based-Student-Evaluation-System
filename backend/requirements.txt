@@ -9,9 +9,4 @@ python-jose
 google-genai
 cloudinary
 python-multipart
-faster-whisper
-torch
-torchaudio
-moviepy
 requests
-imageio-ffmpeg

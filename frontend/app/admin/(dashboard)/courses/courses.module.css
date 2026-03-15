@@ -1,7 +1,6 @@
 .mainContainer {
     display: flex;
     flex-direction: column;
-    font-family: 'Inter', serif;
     background-color: #f8fafc;
     background-size: cover;
     min-height: 100vh;

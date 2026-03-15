@@ -50,7 +50,7 @@ export default function AdminLogin() {
         return;
       }
 
-      toast.success("Login successful 🎉");
+      toast.success("Login successful");
 
       // Store admin details and token
       if (data.access_token) {

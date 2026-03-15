@@ -131,6 +131,7 @@
     border-radius: 9999px;
     font-weight: 700;
     font-size: 12px;
+    width: max-content;
 }
 
 .feedbackText {
@@ -159,6 +160,16 @@
 .noGap {
     color: #166534;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    column-gap: 10px;
+}
+
+.admTitle {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
 }
 
 /* Recommendation Section */
@@ -261,7 +272,6 @@
     border-radius: 12px;
     min-height: 120px;
     margin-bottom: 24px;
-    font-family: inherit;
     resize: vertical;
     outline: none;
 }

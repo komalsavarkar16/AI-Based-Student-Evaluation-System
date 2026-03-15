@@ -6,8 +6,9 @@ from bson import ObjectId
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    from app.routes.student import process_video_test_analysis
-    print("Successfully imported process_video_test_analysis")
+    from app.services.transcription_service import transcribe_videos
+    from app.database.connection import results_collection
+    print("Successfully imported transcription_service and database connection")
 except ImportError as e:
     print(f"Error importing app modules: {e}")
     sys.exit(1)
@@ -28,24 +29,56 @@ def main():
         print("Invalid studentId or courseId format. Must be a 24-character hex string.")
         sys.exit(1)
 
-    print(f"Starting manual video analysis for:")
+    print(f"Starting full transcription & analysis pipeline for:")
     print(f"  Student ID: {student_id}")
     print(f"  Course ID:  {course_id}")
     
-    # Step 1: Clear existing data
+    # Step 1: Fetch existing data to get the video URLs
     try:
-        from app.database.connection import results_collection
+        record = results_collection.find_one({
+            "studentId": ObjectId(student_id),
+            "courseId": ObjectId(course_id)
+        })
         
-        # We also need to clear nested fields in 'videoAnswers' array
-        # This unsets the analysis and relatedSkill for all items in the array
+        if not record:
+            print("No test result record found for this student and course.")
+            sys.exit(1)
+            
+        video_answers = record.get("videoAnswers", [])
+        if not video_answers:
+            print("No video answers found in the record.")
+            sys.exit(1)
+            
+        # Reconstruct the video_urls array format expected by transcribe_videos
+        video_urls_to_process = []
+        for answer in video_answers:
+            if "videoUrl" in answer and "questionId" in answer:
+                video_urls_to_process.append({
+                    "question": answer["questionId"],
+                    "url": answer["videoUrl"]
+                })
+        
+        if not video_urls_to_process:
+            print("Could not extract any valid video URLs from the answers.")
+            sys.exit(1)
+            
+        print(f"Found {len(video_urls_to_process)} videos to process.")
+        
+    except Exception as e:
+         print(f"Error fetching data from DB: {e}")
+         sys.exit(1)
+
+    # Step 2: Clear existing data
+    try:
         reset_query = {
             "studentId": ObjectId(student_id),
             "courseId": ObjectId(course_id)
         }
         
+        # We need to unset the transcript, analysis, and relatedSkill for all items in the array
         update_op = {
             "$set": {
-                "videoTestEvaluationStatus": "transcribed"
+                "videoTestEvaluationStatus": "pending"
             },
             "$unset": {
                 "overallVideoScore": "",
@@ -54,25 +87,26 @@ def main():
                 "executiveSummary": "",
                 "overallReasoning": "",
                 "evaluatedAt": "",
+                "videoAnswers.$[].transcript": "",
                 "videoAnswers.$[].analysis": "",
                 "videoAnswers.$[].relatedSkill": ""
             }
         }
         
-        print("Clearing existing video analysis data from DB...")
+        print("Clearing existing video analysis and transcription data from DB...")
         res = results_collection.update_many(reset_query, update_op)
         print(f"DB reset complete. Modified {res.modified_count} records.")
 
     except Exception as e:
         print(f"Warning: Failed to clear existing data: {e}")
 
-    # Step 2: Trigger analysis
+    # Step 3: Trigger full pipeline (Transcription -> Analysis)
     try:
-        process_video_test_analysis(student_id, course_id)
-        print("\nAnalysis process triggered successfully.")
-        print("Check the console logs above for progress and any errors from Gemini.")
+        print("Starting Gemini Video Transcription process...")
+        transcribe_videos(student_id, course_id, video_urls_to_process)
+        print("\nPipeline finished.")
     except Exception as e:
-        print(f"An error occurred during analysis: {e}")
+        print(f"An error occurred during pipeline execution: {e}")
 
 if __name__ == "__main__":
     main()
