@@ -10,3 +10,4 @@ google-genai
 cloudinary
 python-multipart
 requests
+argon2-cffi
