@@ -203,20 +203,33 @@ async def submit_video_test(
             "videoTestEvaluationStatus": "pending"
         }
 
-        result = results_collection.find_one_and_update(
+        # Try to find the latest existing document
+        existing_result = results_collection.find_one(
             {
                 "studentId": ObjectId(studentId),
                 "courseId": ObjectId(courseId)
             },
-            {"$set": update_data},
-            sort={"timestamp": -1}
+            sort=[("timestamp", -1)]
         )
 
-        if not result:
-            # If no MCQ result found, create a new one? 
-            # But normally there should be one.
-            # For robustness, we could insert if needed, but let's stick to update as per user's "db also be updated".
-            raise HTTPException(status_code=404, detail="Test result not found for this student and course")
+        if existing_result:
+            results_collection.update_one(
+                {"_id": existing_result["_id"]},
+                {"$set": update_data}
+            )
+        else:
+            # If no MCQ result was found, create a new combined entry 
+            new_record = {
+                "studentId": ObjectId(studentId),
+                "courseId": ObjectId(courseId),
+                "courseTitle": courseTitle,
+                "timestamp": datetime.utcnow(),
+                "score": 0,
+                "answers": [],
+                "status": "Pending"
+            }
+            new_record.update(update_data)
+            results_collection.insert_one(new_record)
 
         # Trigger background transcription task
         background_tasks.add_task(transcribe_videos, studentId, courseId, video_urls)

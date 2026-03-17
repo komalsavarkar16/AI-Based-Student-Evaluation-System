@@ -84,6 +84,10 @@ const EvaluationDetailPage = () => {
                                     <span className={styles.questionText}>{item.questionId}: {item.relatedSkill}</span>
                                     <span className={styles.qScore}>Score: {item.analysis?.technicalScore}/10</span>
                                 </div>
+                                <div style={{ display: 'flex', gap: '16px', marginBottom: '12px', fontSize: '14px', color: '#475569' }}>
+                                    <div><strong>Confidence:</strong> {item.confidenceScore !== undefined ? `${item.confidenceScore}/10` : 'N/A'}</div>
+                                    <div><strong>Expression:</strong> {item.facialExpression || 'N/A'}</div>
+                                </div>
                                 <div className={styles.transcript}>
                                     "{item.transcript}"
                                 </div>

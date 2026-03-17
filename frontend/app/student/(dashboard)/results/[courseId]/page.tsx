@@ -19,6 +19,8 @@ interface VideoAnswer {
     questionId: string;
     relatedSkill: string;
     transcript: string;
+    facialExpression?: string;
+    confidenceScore?: number;
     analysis: EvaluationAnalysis;
 }
 
@@ -235,6 +237,8 @@ export default function ResultDetail() {
                                 <th>Concept Coverage</th>
                                 <th>Technical Score</th>
                                 <th>Clarity Score</th>
+                                <th>Confidence</th>
+                                <th>Facial Expression</th>
                                 <th>Assessment</th>
                             </tr>
                         </thead>
@@ -247,6 +251,8 @@ export default function ResultDetail() {
                                         <td>{analysis.conceptCoverageScore || 0} / 10</td>
                                         <td>{analysis.technicalScore || 0} / 10</td>
                                         <td>{analysis.clarityScore || 0} / 10</td>
+                                        <td>{ans.confidenceScore !== undefined ? `${ans.confidenceScore} / 10` : 'N/A'}</td>
+                                        <td>{ans.facialExpression || 'N/A'}</td>
                                         <td>
                                             <span className={`${styles.assessmentBadge} ${getBadgeClass(analysis.skillLevelAssessment || "")}`}>
                                                 {analysis.skillLevelAssessment || "Moderate"}

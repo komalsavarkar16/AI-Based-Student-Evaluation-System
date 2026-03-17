@@ -151,6 +151,8 @@ const EvaluationDetailPage = () => {
                                     <th>Question</th>
                                     <th>Transcript</th>
                                     <th>AI Score</th>
+                                    <th>Confidence</th>
+                                    <th>Facial Expression</th>
                                     <th>Feedback</th>
                                 </tr>
                             </thead>
@@ -167,6 +169,16 @@ const EvaluationDetailPage = () => {
                                                 color: (item.analysis?.technicalScore || 0) >= 7 ? '#166534' : (item.analysis?.technicalScore || 0) >= 5 ? '#854d0e' : '#991b1b',
                                             }}>
                                                 {item.analysis?.technicalScore || 0} / 10
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span style={{ fontWeight: 600, color: '#475569' }}>
+                                                {item.confidenceScore !== undefined ? `${item.confidenceScore} / 10` : 'N/A'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span style={{ padding: '4px 8px', borderRadius: '4px', background: '#f1f5f9', color: '#334155', fontSize: '13px' }}>
+                                                {item.facialExpression || 'N/A'}
                                             </span>
                                         </td>
                                         <td>

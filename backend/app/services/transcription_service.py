@@ -54,17 +54,33 @@ def transcribe_videos(student_id: str, course_id: str, video_urls: list):
             
             # Step 3: Ask Gemini to Transcribe
             print(f"Generating transcript for {question_id}...")
-            prompt = "Please provide a highly accurate, word-for-word transcript of the speech in this video. Do not include any other commentary, stage directions, or text other than the spoken words."
+            prompt = """Please provide a highly accurate, word-for-word transcript of the speech in this video. Do not include any other commentary, stage directions, or text other than the spoken words.
+            Additionally, analyze the facial expressions and confidence of the student.
+            Return a JSON object with the following keys:
+            - "transcript": The word-for-word transcript. If audio is empty, put "[Audio was empty or indiscernible]".
+            - "facialExpression": A short description recognizing the main facial expression (e.g. "Neutral", "Smiling", "Nervous").
+            - "confidenceScore": A number out of 10 representing the student's confidence."""
             
             gemini_response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=[
                     uploaded_file,
                     prompt
-                ]
+                ],
+                config={"response_mime_type": "application/json"}
             )
             
-            transcript_text = gemini_response.text.strip()
+            import json
+            try:
+                result_json = json.loads(gemini_response.text.strip())
+                transcript_text = result_json.get("transcript", "[Audio was empty or indiscernible]")
+                facial_expression = result_json.get("facialExpression", "Neutral")
+                confidence_score = result_json.get("confidenceScore", 5)
+            except Exception as parse_e:
+                print("Failed to parse gemini JSON:", parse_e)
+                transcript_text = gemini_response.text.strip()
+                facial_expression = "Neutral"
+                confidence_score = 5
             if not transcript_text:
                  transcript_text = "[Audio was empty or indiscernible]"
                  
@@ -72,7 +88,9 @@ def transcribe_videos(student_id: str, course_id: str, video_urls: list):
             transcripts.append({
                 "questionId": question_id,
                 "videoUrl": video_url,
-                "transcript": transcript_text
+                "transcript": transcript_text,
+                "facialExpression": facial_expression,
+                "confidenceScore": confidence_score
             })
             print(f"Successfully transcribed {question_id}")
             
