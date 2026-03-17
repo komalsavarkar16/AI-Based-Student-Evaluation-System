@@ -30,6 +30,7 @@ interface TestResult {
     videoAnswers: VideoAnswer[];
     overallVideoScore: number;
     skillGap: string[];
+    detailedSkillGap: any[];
     eligibilitySignal: string;
     executiveSummary: string;
     overallReasoning: string;
@@ -194,10 +195,38 @@ export default function ResultDetail() {
                     <div className={styles.scoreValue}>{overallScoreFormatted} / 10</div>
                 </div>
             </div>
+            
+            {/* Gap Discovery Section */}
+            {result.detailedSkillGap && result.detailedSkillGap.length > 0 && (
+                <div className={styles.section}>
+                    <h2 className={styles.sectionTitle}>🧠 Gap Discovery Analysis</h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+                        {result.detailedSkillGap.map((cat: any, i: number) => (
+                            <div key={i} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc' }}>
+                                <h3 style={{ margin: '0 0 12px 0', color: '#1e293b', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ width: '10px', height: '10px', background: '#8b5cf6', borderRadius: '50%' }}></span>
+                                    {cat.category}
+                                </h3>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                                    {cat.skills.filter((s: any) => s.isGap).map((skill: any, j: number) => (
+                                        <div key={j} style={{ background: '#fee2e2', color: '#991b1b', padding: '12px', borderRadius: '6px', fontSize: '14px', width: '100%' }}>
+                                            <div style={{ fontWeight: 600 }}>{skill.skillName} (Score: {skill.score}/{skill.threshold})</div>
+                                            <div style={{ marginTop: '6px', fontSize: '13px', color: '#7f1d1d', lineHeight: 1.4 }}>{skill.reasoning}</div>
+                                        </div>
+                                    ))}
+                                    {cat.skills.filter((s: any) => s.isGap).length === 0 && (
+                                        <div style={{ fontSize: '14px', color: '#64748b', fontStyle: 'italic', padding: '12px' }}>Excellent! No significant gaps flagged in this category.</div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* 3. Skill-wise Performance Table */}
             <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Skill-wise Performance Table</h2>
+                <h2 className={styles.sectionTitle}>Skill-wise Video Performance</h2>
                 <div className={styles.skillTableWrapper}>
                     <table className={styles.skillTable}>
                         <thead>

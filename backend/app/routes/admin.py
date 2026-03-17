@@ -238,6 +238,7 @@ async def get_evaluation_report(result_id: str):
         "executiveSummary": result.get("executiveSummary", ""),
         "overallReasoning": result.get("overallReasoning", ""),
         "skillGap": result.get("skillGap", []),
+        "detailedSkillGap": result.get("detailedSkillGap", []),
         "videoAnswers": result.get("videoAnswers", []),
         "status": result.get("status", "Pending"),
         "decisionNotes": result.get("decisionNotes", ""),

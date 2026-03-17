@@ -127,7 +127,7 @@ def analyze_test_results(answers, course_title):
     Based on the following question and answer log, identify the student's weak areas and provide specific learning recommendations.
     
     Test Answers:
-    {json.dumps(answers, indent=2)}
+    {json.dumps(answers, indent=2, default=str)}
     
     Requirements:
     1. Identify 2-3 specific weak skills/topics.
@@ -251,6 +251,59 @@ Return ONLY a valid JSON object in this format:
             "improvementSuggestions": ["Retry evaluation"]
         }
 
+def discover_skill_gaps(mcq_answers, video_answers, course_details, threshold=6.5):
+    """
+    Consolidates MCQ marks (Theory) and Video metrics (Application) per skill,
+    comparing against a threshold to flag and categorize gaps.
+    """
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    
+    prompt = f"""
+    You are an AI gap discovery engine. The student took an MCQ test and a Video test.
+    Course Details:
+    {json.dumps(course_details, indent=2, default=str)}
+    
+    MCQ Answers (Theory - mostly out of 100/boolean per question): 
+    {json.dumps(mcq_answers, indent=2, default=str)}
+    
+    Video Answers (Application - out of 10 per skill):
+    {json.dumps(video_answers, indent=2, default=str)}
+    
+    Required Proficiency Threshold equivalent: {threshold * 10}% (or {threshold}/10).
+    
+    Tasks:
+    1. For each foundational skill taught in this course, consolidate an overall estimated score out of 10 by blending the MCQ correctness (related to that skill) and the Video technical Score for that skill.
+    2. Compare this consolidated score against the threshold of {threshold}/10.
+    3. If score < threshold, flag it as a "Gap".
+    4. Categorize all flagged gaps into broader topics (e.g., "Logic Building", "Syntax", "Soft Skills", "Domain Concepts").
+    
+    Output strictly in this JSON format:
+    [
+      {{
+        "category": "Topic Name",
+        "skills": [
+          {{
+            "skillName": "Specific Skill",
+            "score": 5.5,
+            "threshold": {threshold},
+            "isGap": true,
+            "reasoning": "Failed MCQ on this topic and scored poorly on video application."
+          }}
+        ]
+      }}
+    ]
+    """
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+            config={"response_mime_type": "application/json"}
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Error in discover_skill_gaps: {str(e)}")
+        return []
+
 def generate_overall_video_evaluation(evaluations, course_details):
     """
     Generate an overall eligibility signal and summary based on all per-answer evaluations.
@@ -262,7 +315,7 @@ def generate_overall_video_evaluation(evaluations, course_details):
     Course: {course_details.get('title')} ({course_details.get('level')})
 
     Below are the individual skill evaluations from their video test:
-    {json.dumps(evaluations, indent=2)}
+    {json.dumps(evaluations, indent=2, default=str)}
 
     Requirements:
     1. Provide an overall eligibility signal: "Pass", "Borderline", or "Fail".

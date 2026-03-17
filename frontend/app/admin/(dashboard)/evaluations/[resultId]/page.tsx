@@ -187,9 +187,31 @@ const EvaluationDetailPage = () => {
                 </section>
 
                 <section className={styles.section}>
-                    <h3 className={styles.sectionTitle}><Brain size={20} color="#8b5cf6" /> Section 4: Skill Analysis</h3>
+                    <h3 className={styles.sectionTitle}><Brain size={20} color="#8b5cf6" /> Section 4: Gap Discovery Analysis</h3>
                     <div className={styles.skillGapContainer}>
-                        {report.skillGap.length > 0 ? (
+                        {report.detailedSkillGap && report.detailedSkillGap.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+                                {report.detailedSkillGap.map((cat: any, i: number) => (
+                                    <div key={i} style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc' }}>
+                                        <h4 style={{ margin: '0 0 10px 0', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ width: '8px', height: '8px', background: '#8b5cf6', borderRadius: '50%' }}></span>
+                                            {cat.category}
+                                        </h4>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                            {cat.skills.filter((s: any) => s.isGap).map((skill: any, j: number) => (
+                                                <div key={j} style={{ background: '#fee2e2', color: '#991b1b', padding: '10px', borderRadius: '6px', fontSize: '13px', width: '100%' }}>
+                                                    <div style={{ fontWeight: 600 }}>{skill.skillName} (Score: {skill.score}/{skill.threshold})</div>
+                                                    <div style={{ marginTop: '4px', fontSize: '12px', color: '#7f1d1d' }}>{skill.reasoning}</div>
+                                                </div>
+                                            ))}
+                                            {cat.skills.filter((s: any) => s.isGap).length === 0 && (
+                                                <div style={{ fontSize: '12px', color: '#64748b', fontStyle: 'italic' }}>No significant gaps in this category.</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : report.skillGap && report.skillGap.length > 0 ? (
                             report.skillGap.map((skill: string, i: number) => (
                                 <div key={i} className={styles.skillCard}>{skill}</div>
                             ))

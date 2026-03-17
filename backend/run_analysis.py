@@ -44,22 +44,21 @@ def main():
             print("No test result record found for this student and course.")
             sys.exit(1)
             
-        video_answers = record.get("videoAnswers", [])
-        if not video_answers:
-            print("No video answers found in the record.")
-            sys.exit(1)
-            
-        # Reconstruct the video_urls array format expected by transcribe_videos
-        video_urls_to_process = []
-        for answer in video_answers:
-            if "videoUrl" in answer and "questionId" in answer:
-                video_urls_to_process.append({
-                    "question": answer["questionId"],
-                    "url": answer["videoUrl"]
-                })
+        # Try to get videoUrls first (new schema)
+        video_urls_to_process = record.get("videoUrls", [])
+        
+        # Fallback to reconstructing from videoAnswers (old schema)
+        if not video_urls_to_process:
+            video_answers = record.get("videoAnswers", [])
+            for answer in video_answers:
+                if "videoUrl" in answer and "questionId" in answer:
+                    video_urls_to_process.append({
+                        "question": answer["questionId"],
+                        "url": answer["videoUrl"]
+                    })
         
         if not video_urls_to_process:
-            print("Could not extract any valid video URLs from the answers.")
+            print("Could not find any video URLs in the record (checked videoUrls and videoAnswers).")
             sys.exit(1)
             
         print(f"Found {len(video_urls_to_process)} videos to process.")
@@ -75,21 +74,20 @@ def main():
             "courseId": ObjectId(course_id)
         }
         
-        # We need to unset the transcript, analysis, and relatedSkill for all items in the array
+        # We need to unset the old analysis results to start fresh
         update_op = {
             "$set": {
                 "videoTestEvaluationStatus": "pending"
             },
             "$unset": {
                 "overallVideoScore": "",
+                "detailedSkillGap": "",
                 "skillGap": "",
                 "eligibilitySignal": "",
                 "executiveSummary": "",
                 "overallReasoning": "",
                 "evaluatedAt": "",
-                "videoAnswers.$[].transcript": "",
-                "videoAnswers.$[].analysis": "",
-                "videoAnswers.$[].relatedSkill": ""
+                "videoAnswers": ""
             }
         }
         

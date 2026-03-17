@@ -132,6 +132,7 @@ async def check_test_status(student_id: str, course_id: str):
             "videoAnswers": result.get("videoAnswers", []),
             "overallVideoScore": result.get("overallVideoScore", 0),
             "skillGap": result.get("skillGap", []),
+            "detailedSkillGap": result.get("detailedSkillGap", []),
             "eligibilitySignal": result.get("eligibilitySignal", "-"),
             "executiveSummary": result.get("executiveSummary", ""),
             "overallReasoning": result.get("overallReasoning", ""),
@@ -252,7 +253,6 @@ def process_video_test_analysis(student_id: str, course_id: str):
         # 3. Analyze each answer
         total_score = 0
         count = 0
-        weak_skills = []
         
         updated_answers = []
         for q_answer in result["videoAnswers"]:
@@ -293,14 +293,22 @@ def process_video_test_analysis(student_id: str, course_id: str):
             score = analysis.get("technicalScore", 0)
             total_score += score
             count += 1
-            
-            # Skill Gap detection
-            if score < 5:
-                weak_skills.append(related_skill)
 
         # 4. Final results logic
         avg_score = total_score / count if count > 0 else 0
-        unique_weak_skills = list(set([s for s in weak_skills if s != "General"]))
+        
+        from app.services.ai_service import discover_skill_gaps
+        mcq_answers = result.get("answers", [])
+        detailed_skill_gaps = discover_skill_gaps(mcq_answers, updated_answers, course, threshold=7.0)
+        
+        # Flatten the detailed categorical gaps into a simple list of skills to not break old frontend code just in case
+        unique_weak_skills = []
+        for cat in detailed_skill_gaps:
+            for skill in cat.get("skills", []):
+                if skill.get("isGap", False):
+                    unique_weak_skills.append(skill.get("skillName"))
+        unique_weak_skills = list(set([s for s in unique_weak_skills if s != "General"]))
+
         
         # 4.1 Overall Performance Signal (AI-based)
         from app.services.ai_service import generate_overall_video_evaluation
@@ -312,6 +320,7 @@ def process_video_test_analysis(student_id: str, course_id: str):
             {"$set": {
                 "videoAnswers": updated_answers,
                 "overallVideoScore": avg_score,
+                "detailedSkillGap": detailed_skill_gaps,
                 "skillGap": unique_weak_skills,
                 "videoTestEvaluationStatus": "completed",
                 "eligibilitySignal": overall_eval.get("overallEligibilitySignal"),
