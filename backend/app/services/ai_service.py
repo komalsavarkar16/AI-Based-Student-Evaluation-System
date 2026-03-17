@@ -307,6 +307,7 @@ def discover_skill_gaps(mcq_answers, video_answers, course_details, threshold=6.
 def generate_overall_video_evaluation(evaluations, course_details):
     """
     Generate an overall eligibility signal and summary based on all per-answer evaluations.
+    Provides a "Golden Report" containing competency gap, vibe check, and AI verdict.
     """
     client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -314,19 +315,25 @@ def generate_overall_video_evaluation(evaluations, course_details):
     You are a senior admissions officer. Evaluate a student's overall eligibility for the course:
     Course: {course_details.get('title')} ({course_details.get('level')})
 
-    Below are the individual skill evaluations from their video test:
+    Below are the individual skill evaluations from their video test. It includes transcripts, facial expressions, and confidence scores:
     {json.dumps(evaluations, indent=2, default=str)}
 
     Requirements:
     1. Provide an overall eligibility signal: "Pass", "Borderline", or "Fail".
     2. Write a concise executive summary of the student's performance.
-    3. The output MUST be a valid JSON object.
+    3. Determine the 'competencyGap': A summary of what technical or theoretical skills the student is lacking.
+    4. Provide a 'vibeCheck': Insights derived from the video data (e.g. facial expression, confidence, communication skills, like "The student understands the logic but struggles to explain it clearly").
+    5. Give an 'aiVerdict': A direct final recommendation (e.g., "Not Ready: Requires 2 weeks of Bridge Training in Java Basics", or "Ready: Shows strong potential and clear concepts").
+    6. The output MUST be a valid JSON object.
 
     Return ONLY this JSON format:
     {{
       "overallEligibilitySignal": "",
       "executiveSummary": "",
-      "overallReasoning": ""
+      "overallReasoning": "",
+      "competencyGap": "",
+      "vibeCheck": "",
+      "aiVerdict": ""
     }}
     """
 
@@ -342,5 +349,8 @@ def generate_overall_video_evaluation(evaluations, course_details):
         return {
             "overallEligibilitySignal": "Borderline",
             "executiveSummary": "Manual review required due to evaluation error.",
-            "overallReasoning": "Technical error during overall evaluation aggregation."
+            "overallReasoning": "Technical error during overall evaluation aggregation.",
+            "competencyGap": "Unable to determine",
+            "vibeCheck": "Unable to determine",
+            "aiVerdict": "Unable to determine"
         }

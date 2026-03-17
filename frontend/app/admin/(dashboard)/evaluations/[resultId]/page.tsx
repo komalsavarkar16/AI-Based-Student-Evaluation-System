@@ -14,7 +14,8 @@ import {
     Lightbulb,
     CheckCircle,
     Info,
-    MessageSquare
+    MessageSquare,
+    AlertTriangle
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -237,18 +238,39 @@ const EvaluationDetailPage = () => {
                 </section>
 
                 <section className={styles.section}>
-                    <h3 className={styles.sectionTitle}><Lightbulb size={20} color="#6366f1" /> Section 5: AI Recommendation</h3>
-                    <div className={`${styles.recommendationBox} ${report.eligibilitySignal === 'Bridge Course' ? styles.bridge : ''}`}>
-                        <h4 className={styles.noGap}>
-                            <Info size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                            Signal: {report.eligibilitySignal}
-                        </h4>
-                        <p className={styles.recommendationText}>
-                            <strong>Executive Summary:</strong> {report.executiveSummary}
-                        </p>
-                        <p className={styles.recommendationText} style={{ marginTop: '12px' }}>
-                            <strong>Reasoning:</strong> {report.overallReasoning}
-                        </p>
+                    <h3 className={styles.sectionTitle}><Lightbulb size={20} color="#6366f1" /> Section 5: Golden Report (AI Recommendation)</h3>
+                    <div className={`${styles.recommendationBox} ${report.eligibilitySignal === 'Bridge Course' ? styles.bridge : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        
+                        <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #ef4444', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <h4 style={{ margin: '0 0 8px 0', color: '#7f1d1d', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <AlertTriangle size={18} /> 1. The Competency Gap
+                            </h4>
+                            <p style={{ margin: 0, fontSize: '14px', color: '#475569', lineHeight: 1.6 }}>
+                                {report.competencyGapReport || "No detailed competency gap recorded."}
+                            </p>
+                        </div>
+
+                        <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #3b82f6', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <h4 style={{ margin: '0 0 8px 0', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Video size={18} /> 2. The "Vibe" Check (Video Insights)
+                            </h4>
+                            <p style={{ margin: 0, fontSize: '14px', color: '#475569', lineHeight: 1.6 }}>
+                                {report.vibeCheck || "No vibe check Insights recorded."}
+                            </p>
+                        </div>
+
+                        <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #8b5cf6', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+                            <h4 style={{ margin: '0 0 8px 0', color: '#4c1d95', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Brain size={18} /> 3. The AI Verdict
+                            </h4>
+                            <p style={{ margin: 0, fontSize: '14px', color: '#475569', lineHeight: 1.6 }}>
+                                <strong>{report.aiVerdict || "No specific AI verdict reached."}</strong>
+                            </p>
+                            <div style={{ marginTop: '12px', fontSize: '13px', color: '#64748b' }}>
+                                <em>Additional summary: {report.executiveSummary}</em>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
 

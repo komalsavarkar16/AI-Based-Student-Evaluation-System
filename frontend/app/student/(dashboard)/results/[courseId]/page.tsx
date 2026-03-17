@@ -179,6 +179,49 @@ export default function ResultDetail() {
                             </p>
                         </div>
                     )}
+
+                    {result.status === 'Bridge Course Recommended' && (
+                        <div style={{ marginTop: '24px', background: '#eef2ff', padding: '24px', borderRadius: '12px', border: '1px solid #c7d2fe' }}>
+                            <h3 style={{ color: '#4338ca', marginTop: 0, marginBottom: '8px', fontSize: '20px' }}>🌉 Choose Your Bridge Path</h3>
+                            <p style={{ color: '#4f46e5', marginBottom: '20px', fontSize: '15px' }}>
+                                You have great potential, but need to fill some technical gaps before full enrollment. Choose how you would like to prepare:
+                            </p>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                                {/* Path A */}
+                                <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', cursor: 'pointer', border: '2px solid transparent', transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#6366f1'}
+                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
+                                >
+                                    <h4 style={{ color: '#1e1b4b', marginTop: 0, fontSize: '18px' }}>Path A: Guided Learning</h4>
+                                    <p style={{ fontSize: '14px', color: '#475569', minHeight: '60px', lineHeight: 1.5 }}>
+                                        Use our internal course modules (Videos & PDFs). The system will automatically compile the exact lessons that match your weak spots.
+                                    </p>
+                                    <button style={{ background: '#4f46e5', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'background 0.2s ease' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
+                                            onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
+                                            onClick={() => window.alert("Enrolling in Guided Learning... We're assigning custom videos to your dashboard now.")}
+                                    >Select Path A</button>
+                                </div>
+
+                                {/* Path B */}
+                                <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', cursor: 'pointer', border: '2px solid transparent', transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#6366f1'}
+                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
+                                >
+                                    <h4 style={{ color: '#1e1b4b', marginTop: 0, fontSize: '18px' }}>Path B: Self-Paced Checklist</h4>
+                                    <p style={{ fontSize: '14px', color: '#475569', minHeight: '60px', lineHeight: 1.5 }}>
+                                        Study on your own using an AI-generated Concept Checklist. The AI organizes concepts you need to learn from easiest to hardest based on your gaps.
+                                    </p>
+                                    <button style={{ background: '#fff', color: '#4f46e5', border: '2px solid #4f46e5', padding: '10px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.background = '#eef2ff'; }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; }}
+                                            onClick={() => window.alert("Generating Self-Paced Checklist... Your custom AI study plan is preparing.")}
+                                    >Select Path B</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

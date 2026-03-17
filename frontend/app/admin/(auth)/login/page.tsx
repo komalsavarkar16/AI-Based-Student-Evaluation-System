@@ -63,7 +63,7 @@ export default function AdminLogin() {
       if (data.role === "admin") {
         router.push("/admin");
       } else {
-        router.push("/student/dashboard");
+        router.push("/student");
       }
     } catch (err) {
       console.error(err);

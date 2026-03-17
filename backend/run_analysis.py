@@ -86,6 +86,9 @@ def main():
                 "eligibilitySignal": "",
                 "executiveSummary": "",
                 "overallReasoning": "",
+                "competencyGapReport": "",
+                "vibeCheck": "",
+                "aiVerdict": "",
                 "evaluatedAt": "",
                 "videoAnswers": ""
             }

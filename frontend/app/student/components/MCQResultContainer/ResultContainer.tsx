@@ -99,7 +99,7 @@ function ResultContainer({ testData, score, router, analysis }: ResultContainerP
                         </button>
                     )}
 
-                    <button onClick={() => router.push("/student/dashboard")} className={styles.secondaryBtn}>
+                    <button onClick={() => router.push("/student")} className={styles.secondaryBtn}>
                         <LayoutDashboard size={18} />
                         Back to Dashboard
                     </button>

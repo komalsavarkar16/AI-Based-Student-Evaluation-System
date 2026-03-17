@@ -98,7 +98,30 @@ async def submit_test(result: TestResult):
     result_dict["courseId"] = ObjectId(result.courseId)
     result_dict["timestamp"] = datetime.utcnow()
     
-    results_collection.insert_one(result_dict)
+    # Check if a pending document for this test already exists (e.g. from a video test submitted first)
+    existing_result = results_collection.find_one(
+        {
+            "studentId": ObjectId(result.studentId),
+            "courseId": ObjectId(result.courseId)
+        },
+        sort=[("timestamp", -1)]
+    )
+
+    if existing_result:
+        # Update existing record
+        results_collection.update_one(
+            {"_id": existing_result["_id"]},
+            {"$set": {
+                "score": result.score,
+                "totalQuestions": result.totalQuestions,
+                "correctAnswers": result.correctAnswers,
+                "answers": result.answers,
+                "courseTitle": result.courseTitle,
+                "timestamp": datetime.utcnow()
+            }}
+        )
+    else:
+        results_collection.insert_one(result_dict)
     
     analysis = None
     if result.score < 70:
@@ -339,6 +362,9 @@ def process_video_test_analysis(student_id: str, course_id: str):
                 "eligibilitySignal": overall_eval.get("overallEligibilitySignal"),
                 "executiveSummary": overall_eval.get("executiveSummary"),
                 "overallReasoning": overall_eval.get("overallReasoning"),
+                "competencyGapReport": overall_eval.get("competencyGap"),
+                "vibeCheck": overall_eval.get("vibeCheck"),
+                "aiVerdict": overall_eval.get("aiVerdict"),
                 "evaluatedAt": datetime.utcnow()
             }}
         )

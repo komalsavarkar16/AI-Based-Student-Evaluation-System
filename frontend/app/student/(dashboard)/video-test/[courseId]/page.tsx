@@ -209,7 +209,7 @@ export default function VideoTestPage() {
 
             if (response.ok) {
                 toast.success("Video assessment submitted successfully!");
-                router.push("/student/dashboard");
+                router.push("/student");
             } else {
                 const errorData = await response.json();
                 toast.error(errorData.detail || "Failed to submit assessment");
