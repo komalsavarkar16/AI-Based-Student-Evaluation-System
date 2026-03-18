@@ -354,3 +354,48 @@ def generate_overall_video_evaluation(evaluations, course_details):
             "vibeCheck": "Unable to determine",
             "aiVerdict": "Unable to determine"
         }
+
+def generate_bridge_path_b_content(skill_gaps):
+    """
+    Generate an AI Concept Checklist with at least 4 internet reference links based on skill gaps.
+    """
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+    prompt = f"""
+    You are an expert tutor. A student needs a Bridge Path to learn the following missing skills before enrolling in a course:
+    {json.dumps(skill_gaps, indent=2)}
+
+    Create a "Concept Checklist". Requirements:
+    1. Break down the missing skills into ideas they need to understand, organized from easiest to hardest.
+    2. Provide at least 4 high-quality reference links from the internet (e.g., official docs, reputable tutorials) where they can learn.
+    3. The output MUST be a valid JSON object matching this exact schema:
+    {{
+      "checklist": [
+        {{ "concept": "string", "difficulty": "EASY|MEDIUM|HARD", "description": "string" }}
+      ],
+      "references": [
+        {{ "title": "string", "url": "string" }}
+      ]
+    }}
+    """
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+            config={"response_mime_type": "application/json"}
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Error in generate_bridge_path_b_content: {{str(e)}}")
+        return {
+            "checklist": [
+                { "concept": "General Assessment Review", "difficulty": "EASY", "description": "Review the basic principles of the course material." }
+            ],
+            "references": [
+                { "title": "Google Search", "url": "https://www.google.com" },
+                { "title": "MDN Web Docs", "url": "https://developer.mozilla.org" },
+                { "title": "W3Schools", "url": "https://www.w3schools.com" },
+                { "title": "GeeksforGeeks", "url": "https://www.geeksforgeeks.org" }
+            ]
+        }

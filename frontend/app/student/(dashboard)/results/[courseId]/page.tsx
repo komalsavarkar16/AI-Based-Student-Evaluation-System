@@ -44,6 +44,9 @@ export default function ResultDetail() {
     const { courseId } = useParams();
     const [result, setResult] = useState<TestResult | null>(null);
     const [loading, setLoading] = useState(true);
+    const [pathAData, setPathAData] = useState<any>(null);
+    const [pathBData, setPathBData] = useState<any>(null);
+    const [loadingPath, setLoadingPath] = useState<boolean>(false);
 
     useEffect(() => {
         fetchResultData();
@@ -64,6 +67,46 @@ export default function ResultDetail() {
             console.error("Error fetching detailed result:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSelectPathA = async () => {
+        setLoadingPath(true);
+        setPathBData(null);
+        try {
+            const res = await fetch(`${API_BASE_URL}/student/bridge-path-a`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ skillGap: result?.skillGap || [] })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setPathAData(data.modules);
+            }
+        } catch (error) {
+            console.error("Error fetching Path A", error);
+        } finally {
+            setLoadingPath(false);
+        }
+    };
+
+    const handleSelectPathB = async () => {
+        setLoadingPath(true);
+        setPathAData(null);
+        try {
+            const res = await fetch(`${API_BASE_URL}/student/bridge-path-b`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ skillGap: result?.skillGap || [] })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setPathBData(data);
+            }
+        } catch (error) {
+            console.error("Error fetching Path B", error);
+        } finally {
+            setLoadingPath(false);
         }
     };
 
@@ -200,8 +243,9 @@ export default function ResultDetail() {
                                     <button style={{ background: '#4f46e5', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'background 0.2s ease' }}
                                             onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
                                             onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
-                                            onClick={() => window.alert("Enrolling in Guided Learning... We're assigning custom videos to your dashboard now.")}
-                                    >Select Path A</button>
+                                            onClick={handleSelectPathA}
+                                            disabled={loadingPath}
+                                    >{loadingPath && !pathBData && !pathAData ? "Loading..." : "Select Path A"}</button>
                                 </div>
 
                                 {/* Path B */}
@@ -216,10 +260,47 @@ export default function ResultDetail() {
                                     <button style={{ background: '#fff', color: '#4f46e5', border: '2px solid #4f46e5', padding: '10px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'all 0.2s ease' }}
                                             onMouseEnter={(e) => { e.currentTarget.style.background = '#eef2ff'; }}
                                             onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; }}
-                                            onClick={() => window.alert("Generating Self-Paced Checklist... Your custom AI study plan is preparing.")}
-                                    >Select Path B</button>
+                                            onClick={handleSelectPathB}
+                                            disabled={loadingPath}
+                                    >{loadingPath && !pathAData && !pathBData ? "Loading..." : "Select Path B"}</button>
                                 </div>
                             </div>
+
+                            {/* Path Content Rendering */}
+                            {pathAData && (
+                                <div style={{ marginTop: '24px', background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <h4 style={{ color: '#1e293b', marginTop: 0, fontSize: '18px' }}>Your Guided Learning Modules</h4>
+                                    <ul style={{ listStyleType: 'none', padding: 0 }}>
+                                        {pathAData.map((module: any, idx: number) => (
+                                            <li key={idx} style={{ padding: '12px', background: '#f8fafc', marginBottom: '8px', borderRadius: '6px', borderLeft: '4px solid #4f46e5' }}>
+                                                <strong>{module.title}</strong> - {module.type} ({module.duration})
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {pathBData && (
+                                <div style={{ marginTop: '24px', background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <h4 style={{ color: '#1e293b', marginTop: 0, fontSize: '18px' }}>Your AI Concept Checklist</h4>
+                                    <div style={{ marginBottom: '16px' }}>
+                                        {pathBData.checklist?.map((item: any, idx: number) => (
+                                            <div key={idx} style={{ padding: '12px', background: '#f8fafc', marginBottom: '8px', borderRadius: '6px', borderLeft: item.difficulty === 'HARD' ? '4px solid #ef4444' : item.difficulty === 'MEDIUM' ? '4px solid #f59e0b' : '4px solid #10b981' }}>
+                                                <div style={{ fontWeight: 'bold' }}>{item.concept} <span style={{ fontSize: '12px', padding: '2px 6px', background: '#e2e8f0', borderRadius: '4px', marginLeft: '8px' }}>{item.difficulty}</span></div>
+                                                <div style={{ fontSize: '14px', color: '#475569', marginTop: '4px' }}>{item.description}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <h4 style={{ color: '#1e293b', marginTop: '20px', fontSize: '16px' }}>Recommended Reference Links</h4>
+                                    <ul style={{ paddingLeft: '20px', color: '#475569' }}>
+                                        {pathBData.references?.map((ref: any, idx: number) => (
+                                            <li key={idx} style={{ marginBottom: '4px' }}>
+                                                <a href={ref.url} target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'none' }}>{ref.title}</a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

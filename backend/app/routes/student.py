@@ -437,3 +437,30 @@ async def mark_notification_read(notification_id: str):
         raise HTTPException(status_code=404, detail="Notification not found")
         
     return {"message": "Notification marked as read"}
+
+class BridgePathRequest(BaseModel):
+    skillGap: list[str]
+
+@router.post("/bridge-path-a")
+async def get_bridge_path_a(request: BridgePathRequest):
+    # Simulated guided learning from internal system
+    modules = []
+    for skill in request.skillGap:
+        modules.append({
+            "title": f"Fundamentals of {skill}",
+            "type": "Video Course",
+            "duration": "45 mins"
+        })
+    if not modules:
+        modules = [{"title": "General System Review", "type": "Interactive PDF", "duration": "30 mins"}]
+    
+    return {"modules": modules}
+
+@router.post("/bridge-path-b")
+async def get_bridge_path_b(request: BridgePathRequest):
+    try:
+        from app.services.ai_service import generate_bridge_path_b_content
+        content = generate_bridge_path_b_content(request.skillGap)
+        return content
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
