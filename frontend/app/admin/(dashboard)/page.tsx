@@ -1,14 +1,52 @@
-import React from 'react';
-import { Users, BookOpen, BrainCircuit, LibraryBig } from 'lucide-react';
+"use client";
+import React, { useEffect, useState } from 'react';
+import { Users, BookOpen, BrainCircuit, LibraryBig, Percent, GraduationCap } from 'lucide-react';
 import StatsCard from '../components/StatsCard/StatsCard';
 import StudentManagementTable from '../components/StudentManagementTable/StudentManagementTable';
 import EnrollmentChart from '../components/EnrollmentChart/EnrollmentChart';
 import EvaluationReports from '../components/EvaluationReports/EvaluationReports';
 import PendingDecisions from '../components/PendingDecisions/PendingDecisions';
 import SkillGapAnalytics from '../components/SkillGapAnalytics/SkillGapAnalytics';
+import { API_BASE_URL } from '@/app/utils/api';
 import styles from './dashboard.module.css';
 
 export default function AdminDashboard() {
+    const [stats, setStats] = useState<any>({
+        totalStudents: 0,
+        availableCourses: 0,
+        passRate: 0,
+        bridgeStudents: 0
+    });
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            const token = localStorage.getItem("auth_token");
+            const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+            
+            try {
+                const [studentsRes, coursesRes, statusRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/admin/students`, { headers }),
+                    fetch(`${API_BASE_URL}/courses/`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/analytics/overall-status`, { headers })
+                ]);
+
+                const students = studentsRes.ok ? await studentsRes.json() : [];
+                const courses = coursesRes.ok ? await coursesRes.json() : [];
+                const status = statusRes.ok ? await statusRes.json() : { passPercent: 0, bridge: 0 };
+
+                setStats({
+                    totalStudents: students.length,
+                    availableCourses: courses.length,
+                    passRate: status.passPercent,
+                    bridgeStudents: status.bridge
+                });
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+            }
+        };
+        fetchDashboardData();
+    }, []);
+
     return (
         <div className={styles.mainContent}>
             <section className={styles.ctaSection}>
@@ -34,32 +72,45 @@ export default function AdminDashboard() {
             <div className={styles.statsGrid}>
                 <StatsCard
                     title="Total Students"
-                    value="2,543"
+                    value={stats.totalStudents.toLocaleString()}
                     icon={Users}
-                    trend={{ value: '12%', isPositive: true }}
+                    trend={{ value: 'Real-time', isPositive: true }}
                     color="#57cc99"
                 />
                 <StatsCard
                     title="Available Courses"
-                    value="12"
+                    value={stats.availableCourses.toString()}
                     icon={LibraryBig}
-                    trend={{ value: '2', isPositive: true }}
+                    trend={{ value: 'Updated', isPositive: true }}
                     color="#38a3a5"
+                />
+                <StatsCard
+                    title="Avg. Pass Rate"
+                    value={`${stats.passRate}%`}
+                    icon={Percent}
+                    trend={{ value: 'AI Verified', isPositive: true }}
+                    color="#80ed99"
+                />
+                <StatsCard
+                    title="Bridge Course"
+                    value={stats.bridgeStudents.toString()}
+                    icon={GraduationCap}
+                    trend={{ value: 'Requires Attention', isPositive: false }}
+                    color="#ff9f1c"
                 />
             </div>
 
             <div className={styles.mainGrid}>
                 <StudentManagementTable />
-                {/* <PendingDecisions /> */}
+            </div>
+
+            <div className={styles.reportsGrid}>
+                <SkillGapAnalytics />
             </div>
 
             <div className={styles.secondaryGrid}>
                 <EnrollmentChart />
                 <EvaluationReports />
-            </div>
-
-            <div className={styles.reportsGrid}>
-                <SkillGapAnalytics />
             </div>
         </div>
     );

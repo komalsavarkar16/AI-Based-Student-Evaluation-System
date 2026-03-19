@@ -38,13 +38,14 @@ interface TestResult {
     overallReasoning: string;
     status: string;
     decisionNotes: string;
+    enrollmentLetter?: string;
+    evaluationHistory?: any[];
 }
 
 export default function ResultDetail() {
     const { courseId } = useParams();
     const [result, setResult] = useState<TestResult | null>(null);
     const [loading, setLoading] = useState(true);
-    const [pathAData, setPathAData] = useState<any>(null);
     const [pathBData, setPathBData] = useState<any>(null);
     const [loadingPath, setLoadingPath] = useState<boolean>(false);
 
@@ -62,6 +63,10 @@ export default function ResultDetail() {
             if (res.ok) {
                 const data = await res.json();
                 setResult(data);
+                
+                if (data.status === 'Bridge Course Recommended') {
+                    fetchAllPaths(data.skillGap || []);
+                }
             }
         } catch (error) {
             console.error("Error fetching detailed result:", error);
@@ -70,41 +75,21 @@ export default function ResultDetail() {
         }
     };
 
-    const handleSelectPathA = async () => {
+    const fetchAllPaths = async (skillGap: string[]) => {
         setLoadingPath(true);
-        setPathBData(null);
         try {
-            const res = await fetch(`${API_BASE_URL}/student/bridge-path-a`, {
+            const resB = await fetch(`${API_BASE_URL}/student/bridge-path-b`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ skillGap: result?.skillGap || [] })
+                body: JSON.stringify({ skillGap })
             });
-            if (res.ok) {
-                const data = await res.json();
-                setPathAData(data.modules);
-            }
-        } catch (error) {
-            console.error("Error fetching Path A", error);
-        } finally {
-            setLoadingPath(false);
-        }
-    };
 
-    const handleSelectPathB = async () => {
-        setLoadingPath(true);
-        setPathAData(null);
-        try {
-            const res = await fetch(`${API_BASE_URL}/student/bridge-path-b`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ skillGap: result?.skillGap || [] })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setPathBData(data);
+            if (resB.ok) {
+                const dataB = await resB.json();
+                setPathBData(dataB);
             }
         } catch (error) {
-            console.error("Error fetching Path B", error);
+            console.error("Error fetching path:", error);
         } finally {
             setLoadingPath(false);
         }
@@ -119,7 +104,10 @@ export default function ResultDetail() {
         );
     }
 
-    if (!result || result.videoTestEvaluationStatus !== "completed") {
+    const hasHistory = (result?.evaluationHistory?.length ?? 0) > 0;
+    const isCurrentReady = result?.videoTestEvaluationStatus === "completed";
+
+    if (!result || (!isCurrentReady && !hasHistory)) {
         return (
             <div className={styles.container}>
                 <div className={styles.section} style={{ textAlign: "center" }}>
@@ -225,84 +213,114 @@ export default function ResultDetail() {
 
                     {result.status === 'Bridge Course Recommended' && (
                         <div style={{ marginTop: '24px', background: '#eef2ff', padding: '24px', borderRadius: '12px', border: '1px solid #c7d2fe' }}>
-                            <h3 style={{ color: '#4338ca', marginTop: 0, marginBottom: '8px', fontSize: '20px' }}>🌉 Choose Your Bridge Path</h3>
+                            <h3 style={{ color: '#4338ca', marginTop: 0, marginBottom: '8px', fontSize: '20px' }}>🌉 Bridge Path Assigned: AI Concept Checklist</h3>
                             <p style={{ color: '#4f46e5', marginBottom: '20px', fontSize: '15px' }}>
-                                You have great potential, but need to fill some technical gaps before full enrollment. Choose how you would like to prepare:
+                                You have great potential, but need to fill some technical gaps before full enrollment. Follow this personalized study plan to bridge your gaps using the AI-generated Concept Checklist organized from easiest to hardest.
                             </p>
                             
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-                                {/* Path A */}
-                                <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', cursor: 'pointer', border: '2px solid transparent', transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
-                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#6366f1'}
-                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
-                                >
-                                    <h4 style={{ color: '#1e1b4b', marginTop: 0, fontSize: '18px' }}>Path A: Guided Learning</h4>
-                                    <p style={{ fontSize: '14px', color: '#475569', minHeight: '60px', lineHeight: 1.5 }}>
-                                        Use our internal course modules (Videos & PDFs). The system will automatically compile the exact lessons that match your weak spots.
-                                    </p>
-                                    <button style={{ background: '#4f46e5', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'background 0.2s ease' }}
-                                            onMouseEnter={(e) => e.currentTarget.style.background = '#4338ca'}
-                                            onMouseLeave={(e) => e.currentTarget.style.background = '#4f46e5'}
-                                            onClick={handleSelectPathA}
-                                            disabled={loadingPath}
-                                    >{loadingPath && !pathBData && !pathAData ? "Loading..." : "Select Path A"}</button>
-                                </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', border: '2px solid transparent', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                                    
+                                    {loadingPath && !pathBData ? (
+                                        <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>AI is analyzing your skill gaps and generating study concepts...</div>
+                                    ) : pathBData && (
+                                        <>
+                                            <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                                <h5 style={{ color: '#1e293b', marginTop: 0, fontSize: '15px' }}>Your AI Concept Checklist:</h5>
+                                                <div style={{ marginBottom: '16px' }}>
+                                                    {pathBData.checklist?.map((item: any, idx: number) => (
+                                                        <div key={idx} style={{ padding: '12px', background: '#fff', marginBottom: '8px', borderRadius: '6px', borderLeft: item.difficulty === 'HARD' ? '4px solid #ef4444' : item.difficulty === 'MEDIUM' ? '4px solid #f59e0b' : '4px solid #10b981', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+                                                            <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.concept} <span style={{ fontSize: '11px', padding: '2px 6px', background: '#e2e8f0', borderRadius: '4px', marginLeft: '6px', verticalAlign: 'middle' }}>{item.difficulty}</span></div>
+                                                            <div style={{ fontSize: '13px', color: '#475569', marginTop: '6px', lineHeight: 1.4 }}><em>{item.description}</em></div>
+                                                            {item.subtopics && item.subtopics.length > 0 && (
+                                                                <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '13px', color: '#1e293b' }}>
+                                                                    {item.subtopics.map((sub: string, sIdx: number) => (
+                                                                        <li key={sIdx} style={{ marginBottom: '2px' }}>{sub}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <h5 style={{ color: '#1e293b', marginTop: '0', fontSize: '15px' }}>Recommended Reading Links:</h5>
+                                                <ul style={{ paddingLeft: '20px', color: '#475569', margin: 0, fontSize: '14px' }}>
+                                                    {pathBData.references?.map((ref: any, idx: number) => (
+                                                        <li key={idx} style={{ marginBottom: '6px' }}>
+                                                            <a href={ref.url} target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'none' }}>{ref.title}</a>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
 
-                                {/* Path B */}
-                                <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', cursor: 'pointer', border: '2px solid transparent', transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
-                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#6366f1'}
-                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
-                                >
-                                    <h4 style={{ color: '#1e1b4b', marginTop: 0, fontSize: '18px' }}>Path B: Self-Paced Checklist</h4>
-                                    <p style={{ fontSize: '14px', color: '#475569', minHeight: '60px', lineHeight: 1.5 }}>
-                                        Study on your own using an AI-generated Concept Checklist. The AI organizes concepts you need to learn from easiest to hardest based on your gaps.
-                                    </p>
-                                    <button style={{ background: '#fff', color: '#4f46e5', border: '2px solid #4f46e5', padding: '10px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'all 0.2s ease' }}
-                                            onMouseEnter={(e) => { e.currentTarget.style.background = '#eef2ff'; }}
-                                            onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; }}
-                                            onClick={handleSelectPathB}
-                                            disabled={loadingPath}
-                                    >{loadingPath && !pathAData && !pathBData ? "Loading..." : "Select Path B"}</button>
+                                            <button style={{ background: '#4f46e5', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'background 0.2s ease' }}
+                                                    onMouseEnter={(e) => { e.currentTarget.style.background = '#4338ca'; }}
+                                                    onMouseLeave={(e) => { e.currentTarget.style.background = '#4f46e5'; }}
+                                                    onClick={async () => {
+                                                        try {
+                                                            const studentId = localStorage.getItem("student_id");
+                                                            if (!studentId) return;
+                                                            const res = await fetch(`${API_BASE_URL}/student/start-bridge-course/${studentId}/${courseId}`, {
+                                                                method: 'POST'
+                                                            });
+                                                            if (res.ok) {
+                                                                window.alert("You are now enrolled in the Bridge Course! Follow the study plan to bridge your gaps.");
+                                                                // Redirect them directly to the active checklist (runs inside the video-test wrapper)
+                                                                window.location.href = `/student/video-test/${courseId}`;
+                                                            }
+                                                        } catch (err) {
+                                                            console.error("Failed to start bridge path:", err);
+                                                        }
+                                                    }}
+                                            >Accept & Start Bridge Course</button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
-
-                            {/* Path Content Rendering */}
-                            {pathAData && (
-                                <div style={{ marginTop: '24px', background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                    <h4 style={{ color: '#1e293b', marginTop: 0, fontSize: '18px' }}>Your Guided Learning Modules</h4>
-                                    <ul style={{ listStyleType: 'none', padding: 0 }}>
-                                        {pathAData.map((module: any, idx: number) => (
-                                            <li key={idx} style={{ padding: '12px', background: '#f8fafc', marginBottom: '8px', borderRadius: '6px', borderLeft: '4px solid #4f46e5' }}>
-                                                <strong>{module.title}</strong> - {module.type} ({module.duration})
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {pathBData && (
-                                <div style={{ marginTop: '24px', background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                    <h4 style={{ color: '#1e293b', marginTop: 0, fontSize: '18px' }}>Your AI Concept Checklist</h4>
-                                    <div style={{ marginBottom: '16px' }}>
-                                        {pathBData.checklist?.map((item: any, idx: number) => (
-                                            <div key={idx} style={{ padding: '12px', background: '#f8fafc', marginBottom: '8px', borderRadius: '6px', borderLeft: item.difficulty === 'HARD' ? '4px solid #ef4444' : item.difficulty === 'MEDIUM' ? '4px solid #f59e0b' : '4px solid #10b981' }}>
-                                                <div style={{ fontWeight: 'bold' }}>{item.concept} <span style={{ fontSize: '12px', padding: '2px 6px', background: '#e2e8f0', borderRadius: '4px', marginLeft: '8px' }}>{item.difficulty}</span></div>
-                                                <div style={{ fontSize: '14px', color: '#475569', marginTop: '4px' }}>{item.description}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <h4 style={{ color: '#1e293b', marginTop: '20px', fontSize: '16px' }}>Recommended Reference Links</h4>
-                                    <ul style={{ paddingLeft: '20px', color: '#475569' }}>
-                                        {pathBData.references?.map((ref: any, idx: number) => (
-                                            <li key={idx} style={{ marginBottom: '4px' }}>
-                                                <a href={ref.url} target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'none' }}>{ref.title}</a>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* 📜 Enrollment Letter / Certificate of Clearance */}
+            {result.status === 'Approved' && result.enrollmentLetter && (
+                <div className={styles.enrollmentSection}>
+                    <div className={styles.letterDecoration}></div>
+                    <div className={styles.letterHeader}>
+                        <img src="/logo.png" alt="Institute Logo" style={{ width: '80px', marginBottom: '10px' }} 
+                             onError={(e) => { (e.currentTarget as any).src = "https://cdn-icons-png.flaticon.com/512/2641/2641333.png"; }} />
+                        <h2>Certificate of Enrollment</h2>
+                        <p style={{ color: '#64748b', fontSize: '14px' }}>Official Clearance Certificate & Welcome Letter</p>
+                    </div>
+                    
+                    <pre className={styles.letterContent}>
+                        {result.enrollmentLetter}
+                    </pre>
+
+                    <div className={styles.letterFooter}>
+                        <p><strong>Signed by,</strong></p>
+                        <p style={{ marginTop: '5px', fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>The Admissions Dean</p>
+                        <p style={{ fontSize: '14px', color: '#64748b' }}>AI Training Institute</p>
+                        <div className={styles.letterStamp}>OFFICIALLY CLEARED</div>
+                    </div>
+                    
+                    <button 
+                        onClick={() => window.print()}
+                        style={{
+                            marginTop: '40px',
+                            background: '#1e293b',
+                            color: 'white',
+                            border: 'none',
+                            padding: '10px 20px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '14px'
+                        }}
+                    >
+                        🖨 Download / Print Certificate
+                    </button>
                 </div>
             )}
 
@@ -422,6 +440,58 @@ export default function ResultDetail() {
                     </div>
                 </div>
             </div>
+            
+            {/* 🕒 Evaluation History Section */}
+            {hasHistory && (
+                <div className={styles.section} style={{ marginTop: '40px', borderTop: '2px dashed #e2e8f0', paddingTop: '40px' }}>
+                    <h2 className={styles.sectionTitle} style={{ color: '#64748b' }}>🕒 Previous Evaluation History</h2>
+                    <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px' }}>Chronological record of your previous attempts and AI analysis.</p>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                        {result.evaluationHistory?.map((hist: any, hIdx: number) => (
+                            <div key={hIdx} style={{ background: '#fcfcfd', padding: '24px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                    <h4 style={{ margin: 0, color: '#475569' }}>Attempt #{hIdx + 1}</h4>
+                                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                                        {hist.archivedAt ? new Date(hist.archivedAt).toLocaleDateString() : 'Previous Attempt'}
+                                    </span>
+                                </div>
+                                
+                                <div className={styles.scoreGrid} style={{ marginBottom: '20px' }}>
+                                    <div className={styles.scoreCard} style={{ padding: '12px' }}>
+                                        <h5 style={{ fontSize: '12px' }}>Overall Score</h5>
+                                        <div className={styles.scoreValue} style={{ fontSize: '20px' }}>{hist.overallVideoScore?.toFixed(1)} / 10</div>
+                                    </div>
+                                    <div className={styles.scoreCard} style={{ padding: '12px' }}>
+                                        <h5 style={{ fontSize: '12px' }}>AI Verdict</h5>
+                                        <div className={styles.scoreValue} style={{ fontSize: '16px', color: '#6366f1' }}>{hist.eligibilitySignal}</div>
+                                    </div>
+                                </div>
+
+                                <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                                    <h5 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Executive Summary</h5>
+                                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>{hist.executiveSummary}</p>
+                                </div>
+
+                                <div style={{ marginTop: '16px' }}>
+                                    <h5 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Identified Skill Gaps</h5>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                        {hist.skillGap && hist.skillGap.length > 0 ? (
+                                            hist.skillGap.map((sg: string, si: number) => (
+                                                <span key={si} style={{ background: '#fee2e2', color: '#991b1b', padding: '4px 10px', borderRadius: '4px', fontSize: '12px' }}>
+                                                    {sg}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span style={{ color: '#10b981', fontSize: '12px' }}>No gaps identified.</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
         </div>
     );

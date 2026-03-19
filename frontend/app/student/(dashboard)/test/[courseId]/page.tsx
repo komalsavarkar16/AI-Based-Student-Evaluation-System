@@ -29,6 +29,7 @@ interface MCQData {
     courseId: string;
     courseTitle: string;
     mcqs: Question[];
+    isRetest?: boolean;
 }
 
 export default function MCQTestPage() {
@@ -62,7 +63,8 @@ export default function MCQTestPage() {
 
     const fetchMCQs = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`);
+            const studentId = localStorage.getItem("student_id");
+            const res = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}${studentId ? `?student_id=${studentId}` : ""}`);
             if (res.ok) {
                 const data = await res.json();
                 setTestData(data);
@@ -195,7 +197,20 @@ export default function MCQTestPage() {
                     <BrainCircuit size={24} color="#5664f5" />
                     <div>
                         <h1>{testData.courseTitle}</h1>
-                        <p>MCQ Assessment</p>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <p>MCQ Assessment</p>
+                            {testData.isRetest && (
+                                <span style={{ 
+                                    padding: '2px 8px', 
+                                    background: '#ecfdf5', 
+                                    color: '#059669', 
+                                    fontSize: '11px', 
+                                    fontWeight: 'bold', 
+                                    borderRadius: '12px',
+                                    border: '1px solid #10b981'
+                                }}>Dynamic Assessment</span>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <div className={`${styles.timer} ${timeLeft < 60 ? styles.timerUrgent : ""}`}>

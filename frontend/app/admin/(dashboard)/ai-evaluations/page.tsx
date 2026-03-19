@@ -60,6 +60,19 @@ const AIEvaluationsPage = () => {
                                     }}>
                                         {item.score} / 10
                                     </span>
+                                    {item.historyCount > 0 && (
+                                        <span style={{
+                                            marginLeft: '8px',
+                                            padding: '2px 6px',
+                                            borderRadius: '4px',
+                                            fontSize: '10px',
+                                            background: '#f1f5f9',
+                                            color: '#64748b',
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            {item.historyCount} Old Reports
+                                        </span>
+                                    )}
                                 </td>
                                 <td>
                                     {item.skillGap && item.skillGap.length > 0 ? (

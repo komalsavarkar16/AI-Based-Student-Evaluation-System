@@ -108,6 +108,58 @@ const EvaluationDetailPage = () => {
                     </div>
                 </section>
             </div>
+
+            {/* 🕒 Evaluation History Section */}
+            {report.evaluationHistory && report.evaluationHistory.length > 0 && (
+                <div className={styles.historySection} style={{ marginTop: '40px', borderTop: '2px dashed #e2e8f0', paddingTop: '40px' }}>
+                    <h2 className={styles.sectionTitle} style={{ color: '#64748b' }}>🕒 Previous Evaluation History</h2>
+                    <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px' }}>Chronological record of student's previous attempts.</p>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                        {report.evaluationHistory.map((hist: any, hIdx: number) => (
+                            <div key={hIdx} style={{ background: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                    <h4 style={{ margin: 0, color: '#475569' }}>Attempt #{hIdx + 1}</h4>
+                                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                                        {hist.archivedAt ? new Date(hist.archivedAt).toLocaleDateString() : 'Previous Attempt'}
+                                    </span>
+                                </div>
+                                
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                                    <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                                        <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Overall Score</div>
+                                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>{hist.overallVideoScore?.toFixed(1)} / 10</div>
+                                    </div>
+                                    <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                                        <div style={{ fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Verdict</div>
+                                        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#6366f1' }}>{hist.eligibilitySignal}</div>
+                                    </div>
+                                </div>
+
+                                <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #f1f5f9', marginBottom: '16px' }}>
+                                    <h5 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#475569' }}>Executive Summary</h5>
+                                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b', lineHeight: 1.5 }}>{hist.executiveSummary}</p>
+                                </div>
+
+                                <div>
+                                    <h5 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#475569' }}>Skill Gaps Flagged</h5>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                        {hist.skillGap && hist.skillGap.length > 0 ? (
+                                            hist.skillGap.map((sg: string, si: number) => (
+                                                <span key={si} style={{ background: '#fee2e2', color: '#991b1b', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 500 }}>
+                                                    {sg}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span style={{ color: '#10b981', fontSize: '12px' }}>Clean report - no gaps.</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

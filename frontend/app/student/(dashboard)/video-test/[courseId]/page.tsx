@@ -6,7 +6,7 @@ import {
     Video, Camera, Mic, Play, ArrowLeft, Clock, Info,
     Sparkles, HelpCircle, Wifi, Headphones, Zap,
     MessageSquare, Activity, Layout, Timer,
-    ChevronLeft, Bookmark, ArrowRight, StopCircle, RotateCcw
+    ChevronLeft, Bookmark, ArrowRight, StopCircle, RotateCcw, Brain
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "@/app/utils/api";
@@ -19,6 +19,7 @@ interface Question {
 interface VideoQuestionsData {
     videoQuestions: Question[];
     courseTitle: string;
+    isRetest?: boolean;
 }
 
 export default function VideoTestPage() {
@@ -29,6 +30,7 @@ export default function VideoTestPage() {
     // State
     const [questions, setQuestions] = useState<Question[]>([]);
     const [courseTitle, setCourseTitle] = useState("");
+    const [isRetest, setIsRetest] = useState(false);
     const [currentIdx, setCurrentIdx] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
@@ -47,12 +49,14 @@ export default function VideoTestPage() {
     const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
     const testTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+    const [isBridgeCourse, setIsBridgeCourse] = useState(false);
+    const [bridgeChecklist, setBridgeChecklist] = useState<any>(null);
+
     useEffect(() => {
         const info = localStorage.getItem("student_info");
         if (info) setStudentInfo(JSON.parse(info));
 
-        fetchQuestions();
-        startTestTimer();
+        checkTestStatusAndInit();
 
         return () => {
             stopStream();
@@ -61,13 +65,39 @@ export default function VideoTestPage() {
         };
     }, []);
 
+    const checkTestStatusAndInit = async () => {
+        try {
+            const studentId = localStorage.getItem("student_id");
+            if (studentId) {
+                const statusRes = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`);
+                if (statusRes.ok) {
+                    const statusData = await statusRes.json();
+                    if (statusData.status === "Bridge Course In Progress") {
+                        setIsBridgeCourse(true);
+                        setBridgeChecklist(statusData.bridgeChecklistData);
+                        setLoading(false);
+                        return;
+                    }
+                }
+            }
+            fetchQuestions();
+            startTestTimer();
+        } catch(e) {
+            console.error(e);
+            toast.error("Error loading assessment");
+            setLoading(false);
+        }
+    };
+
     const fetchQuestions = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}`);
+            const studentId = localStorage.getItem("student_id");
+            const res = await fetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}${studentId ? `?student_id=${studentId}` : ""}`);
             if (res.ok) {
                 const data: VideoQuestionsData = await res.json();
                 setQuestions(data.videoQuestions);
                 setCourseTitle(data.courseTitle);
+                setIsRetest(data.isRetest || false);
                 // Pre-warm the camera
                 initCamera();
             } else {
@@ -228,6 +258,52 @@ export default function VideoTestPage() {
         return `${m}:${s.toString().padStart(2, "0")}`;
     };
 
+    const handleChecklistChange = async (idx: number, checked: boolean) => {
+        if (!bridgeChecklist || !bridgeChecklist.checklist) return;
+        
+        const newChecklist = { ...bridgeChecklist };
+        newChecklist.checklist[idx].checked = checked;
+        setBridgeChecklist(newChecklist);
+
+        const studentId = localStorage.getItem("student_id");
+        if (studentId) {
+            try {
+                await fetch(`${API_BASE_URL}/student/update-bridge-checklist/${studentId}/${courseId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ checklistData: newChecklist })
+                });
+            } catch (error) {
+                console.error("Error syncing checklist", error);
+            }
+        }
+    };
+
+    const handleBridgeSubmit = async () => {
+        const studentId = localStorage.getItem("student_id");
+        if (!studentId) return;
+
+        if (window.confirm("By clicking this, you confirm you have mastered these concepts and are ready for the retest.")) {
+            setSubmitting(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/student/finish-bridge-course/${studentId}/${courseId}`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    toast.success("Skill gaps cleared! You can now access the video test.");
+                    router.push("/student/tests");
+                } else {
+                    toast.error("Failed to finish bridge course.");
+                }
+            } catch (error) {
+                console.error(error);
+                toast.error("Error updating status.");
+            } finally {
+                setSubmitting(false);
+            }
+        }
+    };
+
     if (loading || submitting) {
         return (
             <div className={styles.loadingOverlay}>
@@ -241,12 +317,119 @@ export default function VideoTestPage() {
     const currentQuestion = questions[currentIdx];
     const progressPercent = Math.round(((currentIdx + 1) / questions.length) * 100);
 
+    if (isBridgeCourse && bridgeChecklist) {
+        const totalItems = bridgeChecklist.checklist?.length || 0;
+        const checkedItems = bridgeChecklist.checklist?.filter((c: any) => c.checked).length || 0;
+        const allChecked = totalItems > 0 && checkedItems === totalItems;
+        const checklistProgress = Math.round((checkedItems / (totalItems || 1)) * 100);
+
+        return (
+            <div className={styles.pageWrapper}>
+                <header className={styles.header} style={{ justifyContent: 'center', background: '#eef2ff' }}>
+                    <div className={styles.brand} style={{ color: '#4338ca', fontWeight: 'bold' }}>
+                        <Brain size={24} color="#4338ca"/> <span>Bridge Path Checklist Active</span>
+                    </div>
+                </header>
+
+                <main className={styles.mainContent}>
+                    <div className={styles.videoSection} style={{ maxWidth: '800px', margin: '0 auto', background: 'transparent', boxShadow: 'none' }}>
+                       
+                        <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+                            <h2 style={{ fontSize: '24px', color: '#1e293b', marginTop: 0, marginBottom: '8px' }}>Your Concept Roadmap</h2>
+                            <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '24px' }}>
+                                Master these concepts to unlock your video assessment. Check the box once you finish learning a topic.
+                            </p>
+
+                            <div style={{ marginBottom: '24px', background: '#f1f5f9', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${checklistProgress}%`, background: '#4f46e5', transition: 'width 0.4s ease' }} />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {bridgeChecklist.checklist?.map((item: any, idx: number) => (
+                                    <div key={idx} style={{ padding: '16px', background: item.checked ? '#f8fafc' : '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', gap: '16px', alignItems: 'flex-start', transition: 'all 0.2s', opacity: item.checked ? 0.7 : 1 }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={item.checked} 
+                                            onChange={(e) => handleChecklistChange(idx, e.target.checked)}
+                                            style={{ width: '20px', height: '20px', marginTop: '4px', cursor: 'pointer' }}
+                                        />
+                                        <div>
+                                            <div style={{ fontWeight: 'bold', fontSize: '16px', color: item.checked ? '#64748b' : '#0f172a' }}>
+                                                {item.concept} <span style={{ fontSize: '11px', padding: '2px 6px', background: '#e2e8f0', borderRadius: '4px', marginLeft: '6px', verticalAlign: 'middle', fontWeight: 'normal' }}>{item.difficulty}</span>
+                                            </div>
+                                            <div style={{ fontSize: '14px', color: '#475569', marginTop: '6px', lineHeight: 1.5 }}>
+                                                <em>{item.description}</em>
+                                            </div>
+                                            {item.subtopics && item.subtopics.length > 0 && (
+                                                <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '14px', color: '#334155' }}>
+                                                    {item.subtopics.map((sub: string, sIdx: number) => (
+                                                        <li key={sIdx} style={{ marginBottom: '4px' }}>{sub}</li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            {bridgeChecklist.references && bridgeChecklist.references.length > 0 && (
+                                <div style={{ marginTop: '30px', padding: '20px', background: '#f8fafc', borderRadius: '8px' }}>
+                                    <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#1e293b' }}>Recommended Web Resources:</h3>
+                                    <ul style={{ paddingLeft: '20px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        {bridgeChecklist.references.map((ref: any, idx: number) => (
+                                            <li key={idx}><a href={ref.url} target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'none' }}>{ref.title}</a></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                                <button 
+                                    onClick={handleBridgeSubmit}
+                                    disabled={!allChecked}
+                                    style={{ 
+                                        padding: '16px 32px', 
+                                        borderRadius: '8px', 
+                                        fontSize: '16px', 
+                                        fontWeight: 'bold', 
+                                        border: 'none', 
+                                        cursor: allChecked ? 'pointer' : 'not-allowed', 
+                                        background: allChecked ? '#4f46e5' : '#cbd5e1', 
+                                        color: allChecked ? '#fff' : '#64748b',
+                                        transition: 'all 0.2s',
+                                        width: '100%'
+                                    }}
+                                >
+                                    I am Ready
+                                </button>
+                                {!allChecked && <p style={{ color: '#64748b', fontSize: '13px', marginTop: '12px' }}>Complete all items to unlock the formal test.</p>}
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.pageWrapper}>
             {/* Header */}
             <header className={styles.header}>
                 <div className={styles.brand}>
-                    <span className={styles.subTitle}>Video Assessment • {courseTitle}</span>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span className={styles.subTitle}>Video Assessment • {courseTitle}</span>
+                        {isRetest && (
+                            <span style={{ 
+                                padding: '2px 8px', 
+                                background: '#ecfdf5', 
+                                color: '#059669', 
+                                fontSize: '11px', 
+                                fontWeight: 'bold', 
+                                borderRadius: '12px',
+                                border: '1px solid #10b981'
+                            }}>Dynamic Assessment</span>
+                        )}
+                    </div>
                 </div>
                 <div className={styles.headerRight}>
                     <div className={styles.timer}>

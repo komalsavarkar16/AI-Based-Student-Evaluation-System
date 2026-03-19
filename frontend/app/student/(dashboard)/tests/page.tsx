@@ -134,13 +134,17 @@ export default function TestsPage() {
                                                     <p>Communication & soft skills evalutaion</p>
                                                 </div>
                                             </div>
-                                            {(status.videoTestEvaluationStatus === "not_started" || !status.videoTestEvaluationStatus) ? (
+                                            {(status.videoTestEvaluationStatus === "not_started" || !status.videoTestEvaluationStatus || (status as any).status === "READY_FOR_RETEST") ? (
                                                 <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn}>
                                                     <PlayCircle size={18} /> Take Test
                                                 </Link>
+                                            ) : (status as any).status === "Bridge Course In Progress" ? (
+                                                <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn} style={{ background: '#4f46e5' }}>
+                                                    <Brain size={18} /> Resume Bridge Course
+                                                </Link>
                                             ) : (
                                                 <span className={`${styles.statusBadge} ${styles.pending}`}>
-                                                    {status.videoTestEvaluationStatus.charAt(0).toUpperCase() + status.videoTestEvaluationStatus.slice(1)}
+                                                    {status.videoTestEvaluationStatus ? status.videoTestEvaluationStatus.charAt(0).toUpperCase() + status.videoTestEvaluationStatus.slice(1) : ''}
                                                 </span>
                                             )}
                                         </div>

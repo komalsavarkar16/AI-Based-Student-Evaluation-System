@@ -23,6 +23,30 @@
     gap: 2.5rem;
 }
 
+.macroStat {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.macroStat strong {
+    color: #0f172a;
+    font-size: 1rem;
+    margin-left: 0.25rem;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    color: #64748b;
+    font-weight: 500;
+}
+
 .chartWrapper {
     display: flex;
     flex-direction: column;

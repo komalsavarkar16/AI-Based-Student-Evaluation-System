@@ -248,3 +248,82 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Enrollment Letter Styles */
+.enrollmentSection {
+    background: white;
+    border-radius: 12px;
+    padding: 3.5rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    background-image: linear-gradient(to bottom right, #ffffff, #fcfcfc);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.letterDecoration {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, #4f46e5 0%, transparent 70%);
+    opacity: 0.1;
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.letterHeader {
+    text-align: center;
+    margin-bottom: 3rem;
+    border-bottom: 2px double #e2e8f0;
+    padding-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.letterHeader h2 {
+    font-size: 30px;
+    color: #1e293b;
+    margin: 15px 0 5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.letterContent {
+    font-family: 'Georgia', 'Times New Roman', Times, serif;
+    font-size: 18px;
+    line-height: 1.9;
+    color: #334155;
+    white-space: pre-wrap;
+    max-width: 850px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.letterFooter {
+    margin-top: 4rem;
+    text-align: right;
+    font-family: 'Georgia', serif;
+    color: #475569;
+    position: relative;
+    z-index: 1;
+}
+
+.letterStamp {
+    display: inline-block;
+    border: 4px solid #166534;
+    color: #166534;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    transform: rotate(-8deg);
+    margin-top: 25px;
+    opacity: 0.9;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

@@ -13,6 +13,7 @@ import os
 from datetime import datetime, timedelta
 from bson import ObjectId
 from typing import List
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/student", tags=["Student"])
 
@@ -117,6 +118,7 @@ async def submit_test(result: TestResult):
                 "correctAnswers": result.correctAnswers,
                 "answers": result.answers,
                 "courseTitle": result.courseTitle,
+                "status": "Pending",
                 "timestamp": datetime.utcnow()
             }}
         )
@@ -161,7 +163,10 @@ async def check_test_status(student_id: str, course_id: str):
             "overallReasoning": result.get("overallReasoning", ""),
             "status": result.get("status", "Pending"),
             "decisionNotes": result.get("decisionNotes", ""),
-            "analysis": result.get("analysis", {})
+            "analysis": result.get("analysis", {}),
+            "bridgeChecklistData": result.get("bridgeChecklistData", None),
+            "enrollmentLetter": result.get("enrollmentLetter", None),
+            "evaluationHistory": result.get("evaluationHistory", [])
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -223,7 +228,8 @@ async def submit_video_test(
             "videoUrls": video_urls, # Storing all individual video URLs
             "videoUrl": folder_url, # Now storing the folder link as requested
             "videoTestSubmittedAt": datetime.utcnow().strftime("%Y-%m-%d"),
-            "videoTestEvaluationStatus": "pending"
+            "videoTestEvaluationStatus": "pending",
+            "status": "Pending"
         }
 
         # Try to find the latest existing document
@@ -276,15 +282,18 @@ def process_video_test_analysis(student_id: str, course_id: str):
             print("No video answers found for analysis")
             return
 
-        # 2. Fetch course details and video questions
+        # 2. Fetch course details and identify which questions were used
         course = courses_collection.find_one({"_id": ObjectId(course_id)})
-        video_questions_data = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
         
-        if not course or not video_questions_data:
-            print("Course or video questions not found")
+        # Check if we used dynamic retest questions or standard ones
+        video_questions = result.get("retestQuestions")
+        if not video_questions:
+            video_questions_data = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
+            video_questions = video_questions_data.get("videoQuestions", []) if video_questions_data else []
+        
+        if not course:
+            print("Course not found")
             return
-
-        video_questions = video_questions_data.get("videoQuestions", [])
         
         # 3. Analyze each answer
         total_score = 0
@@ -441,21 +450,6 @@ async def mark_notification_read(notification_id: str):
 class BridgePathRequest(BaseModel):
     skillGap: list[str]
 
-@router.post("/bridge-path-a")
-async def get_bridge_path_a(request: BridgePathRequest):
-    # Simulated guided learning from internal system
-    modules = []
-    for skill in request.skillGap:
-        modules.append({
-            "title": f"Fundamentals of {skill}",
-            "type": "Video Course",
-            "duration": "45 mins"
-        })
-    if not modules:
-        modules = [{"title": "General System Review", "type": "Interactive PDF", "duration": "30 mins"}]
-    
-    return {"modules": modules}
-
 @router.post("/bridge-path-b")
 async def get_bridge_path_b(request: BridgePathRequest):
     try:
@@ -464,3 +458,98 @@ async def get_bridge_path_b(request: BridgePathRequest):
         return content
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/start-bridge-course/{student_id}/{course_id}")
+async def start_bridge_course(student_id: str, course_id: str):
+    from app.services.ai_service import generate_bridge_path_b_content
+    result = results_collection.find_one({
+        "studentId": ObjectId(student_id),
+        "courseId": ObjectId(course_id)
+    }, sort=[("timestamp", -1)])
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Test not found")
+        
+    checklist_data = generate_bridge_path_b_content(result.get("skillGap", []))
+    
+    # Add a checked property to each item natively
+    for item in checklist_data.get("checklist", []):
+        item["checked"] = False
+        
+    results_collection.update_one(
+        {"_id": result["_id"]},
+        {"$set": {
+            "status": "Bridge Course In Progress",
+            "bridgeChecklistData": checklist_data
+        }}
+    )
+    return {"message": "Bridge course started", "data": checklist_data}
+
+class CheckListUpdateRequest(BaseModel):
+    checklistData: dict
+
+@router.post("/update-bridge-checklist/{student_id}/{course_id}")
+async def update_bridge_checklist(student_id: str, course_id: str, request: CheckListUpdateRequest):
+    results_collection.update_one(
+        {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+        {"$set": {"bridgeChecklistData": request.checklistData}}
+    )
+    return {"message": "Updated"}
+
+@router.post("/finish-bridge-course/{student_id}/{course_id}")
+async def finish_bridge_course(student_id: str, course_id: str):
+    # Fetch existing to archive it
+    existing = results_collection.find_one({"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)}, sort=[("timestamp", -1)])
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Test results not found")
+
+    # Prepare historical entry
+    history_entry = {
+        "overallVideoScore": existing.get("overallVideoScore"),
+        "detailedSkillGap": existing.get("detailedSkillGap"),
+        "skillGap": existing.get("skillGap"),
+        "eligibilitySignal": existing.get("eligibilitySignal"),
+        "executiveSummary": existing.get("executiveSummary"),
+        "overallReasoning": existing.get("overallReasoning"),
+        "evaluatedAt": existing.get("evaluatedAt"),
+        "videoAnswers": existing.get("videoAnswers"),
+        "competencyGapReport": existing.get("competencyGapReport"),
+        "vibeCheck": existing.get("vibeCheck"),
+        "aiVerdict": existing.get("aiVerdict"),
+        "bridgeChecklistData": existing.get("bridgeChecklistData"),
+        "archivedAt": datetime.utcnow()
+    }
+
+    # Remove None values
+    history_entry = {k: v for k, v in history_entry.items() if v is not None}
+
+    results_collection.update_many(
+        {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+        {
+            "$set": {
+                "status": "READY_FOR_RETEST",
+                "videoTestEvaluationStatus": "not_started",
+                "previousSkillGap": existing.get("skillGap", []),
+                # Clean up current fields but KEEP them for new retest
+                "overallVideoScore": 0,
+                "detailedSkillGap": [],
+                "skillGap": [],
+                "eligibilitySignal": "-",
+                "executiveSummary": "",
+                "overallReasoning": "",
+                "evaluatedAt": None,
+                "videoAnswers": [],
+                "competencyGapReport": "",
+                "vibeCheck": "",
+                "aiVerdict": "",
+                "bridgeChecklistData": None,
+                "retestMcqs": None,
+                "retestQuestions": None
+            },
+            "$push": {
+                "evaluationHistory": history_entry
+            }
+        }
+    )
+    return {"message": "Pass data archived. Ready to retest."}

@@ -1,8 +1,7 @@
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Legend
 } from 'recharts';
 import { API_BASE_URL } from '@/app/utils/api';
 import styles from './SkillGapAnalytics.module.css';
@@ -10,18 +9,24 @@ import styles from './SkillGapAnalytics.module.css';
 const SkillGapAnalytics = () => {
     const [weakSkillsData, setWeakSkillsData] = useState([]);
     const [coursePerformanceData, setCoursePerformanceData] = useState([]);
+    const [overallStatus, setOverallStatus] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchAnalytics = async () => {
+            const token = localStorage.getItem("auth_token");
+            const headers: Record<string, string> = token ? { "Authorization": `Bearer ${token}` } : {};
+            
             try {
-                const [skillsRes, courseRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/admin/analytics/skill-gaps`),
-                    fetch(`${API_BASE_URL}/admin/analytics/course-performance`)
+                const [skillsRes, courseRes, statusRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/admin/analytics/skill-gaps`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/analytics/course-performance`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/analytics/overall-status`, { headers })
                 ]);
 
                 if (skillsRes.ok) setWeakSkillsData(await skillsRes.json());
                 if (courseRes.ok) setCoursePerformanceData(await courseRes.json());
+                if (statusRes.ok) setOverallStatus(await statusRes.json());
             } catch (error) {
                 console.error("Error fetching analytics:", error);
             } finally {
@@ -31,20 +36,54 @@ const SkillGapAnalytics = () => {
         fetchAnalytics();
     }, []);
 
-    if (loading) return <div className={styles.loading}>Loading Skill Analytics...</div>;
+    if (loading) return <div className={styles.loading}>Loading Analytics...</div>;
+
+    const passFailData = overallStatus ? [
+        { name: 'Passing (Approved)', value: overallStatus.approved, color: '#57cc99' },
+        { name: 'Failing (Retry Required)', value: overallStatus.retry, color: '#ff6b6b' },
+        { name: 'Bridge Course', value: overallStatus.bridge, color: '#38a3a5' },
+        { name: 'Pending', value: overallStatus.pending, color: '#64748b' }
+    ] : [];
 
     return (
         <div className={styles.container}>
-            <h2 className={styles.sectionTitle}>Real-time Skill Gap Analytics</h2>
+            <h2 className={styles.sectionTitle}>Macro View: Student Performance & Skill Analytics</h2>
 
             <div className={styles.chartsGrid}>
+                <div className={styles.chartWrapper}>
+                    <h3 className={styles.chartTitle}>Pass vs Fail Ratio (%)</h3>
+                    <ResponsiveContainer width="100%" height={260}>
+                        <PieChart>
+                            <Pie
+                                data={passFailData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                            >
+                                {passFailData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend verticalAlign="bottom" height={36} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    <div className={styles.macroStat}>
+                        <span>Pass Rate: <strong>{overallStatus?.passPercent}%</strong></span>
+                        <span>Stuck in Bridge: <strong>{overallStatus?.bridge} Students</strong></span>
+                    </div>
+                </div>
+
                 <div className={styles.chartWrapper}>
                     <h3 className={styles.chartTitle}>Most Common Weak Skills (AI Detected)</h3>
                     <ResponsiveContainer width="100%" height={260}>
                         <BarChart data={weakSkillsData} layout="vertical">
                             <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
                             <XAxis type="number" hide />
-                            <YAxis dataKey="skill" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} width={120} />
+                            <YAxis dataKey="skill" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} width={120} />
                             <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                             <Bar dataKey="value" fill="#38a3a5" radius={[0, 4, 4, 0]} barSize={20} />
                         </BarChart>
@@ -56,7 +95,7 @@ const SkillGapAnalytics = () => {
                     <ResponsiveContainer width="100%" height={260}>
                         <BarChart data={coursePerformanceData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
                             <YAxis domain={[0, 10]} />
                             <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                             <Bar dataKey="score" fill="#57cc99" radius={[4, 4, 0, 0]} barSize={35} />

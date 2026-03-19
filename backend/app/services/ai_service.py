@@ -60,6 +60,48 @@ def generate_mcqs(course):
         print(f"Error in generate_mcqs: {str(e)}")
         raise e
 
+def generate_retest_mcqs(course, previous_gaps):
+    """
+    Generates 10 custom MCQs specifically targeting previous skill gaps for a retest.
+    """
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    
+    prompt = f"""
+    You are an expert educator. A student is retaking a simplified theoretical assessment for the course: "{course.get('title')}".
+    The student previously struggled with these areas: {', '.join(previous_gaps)}.
+    
+    Generate 10 VERY SIMPLE, entry-level Multiple Choice Questions (MCQs) that specifically test the absolute basics of these weak areas.
+    
+    Difficulty Rules:
+    - Questions must be at an absolute beginner level.
+    - Focus strictly on the most fundamental definitions and simple "Hello World" level concepts of the struggling topics.
+    - Avoid ANY advanced theory, logic, or complex scenarios.
+    - Each question should be extremely clear and easy to understand.
+    - The goal is to verify if they have learned the bare minimum fundamentals during their bridge course.
+
+    Requirements:
+    1. Exactly 10 questions.
+    2. Each question must have exactly 4 simple options.
+    3. One correct answer.
+    4. The output MUST be a valid JSON array.
+    5. Each object must contain:
+    - "question"
+    - "options" (array of 4 strings)
+    - "answer" (must match one option exactly)
+    
+    Return ONLY the JSON array.
+    """
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+            config={"response_mime_type": "application/json"}
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Error in generate_retest_mcqs: {str(e)}")
+        return generate_mcqs(course)
+
 def generate_video_questions(course):
     """
     Generate 6 basic domain specific questions for the course course using the new Google GenAI SDK.
@@ -114,6 +156,45 @@ def generate_video_questions(course):
     except Exception as e:
         print(f"Error in generate_video_questions: {str(e)}")
         raise e
+
+def generate_retest_video_questions(course, previous_gaps):
+    """
+    Generate 6 custom domain specific questions focused on previous skill gaps for a retest.
+    """
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+    prompt = f"""
+    You are an expert educator conducting a simplified retest interview for the course: "{course.get('title')}".
+
+    The student previously struggled with these specific skills: {', '.join(previous_gaps)}.
+
+    Your task is to generate 6 VERY BASIC, entry-level video-interview questions that test the student's mastery of the absolute fundamentals of these specific skill gaps.
+
+    Requirements:
+    1. The questions MUST focus on the simplest possible aspects of these skills: {', '.join(previous_gaps)}.
+    2. Frame questions as basic recall or "how-to" at a beginner level (e.g., "What is a variable?" instead of "Discuss scope and memory allocation").
+    3. Ensure they are extremely straightforward and suitable for short, spoken answers.
+    4. The questions should be significantly simpler than the standard eligibility questions to verify basic foundational learning.
+    5. Each question must target a specific gap from the provided list.
+    6. Output should be in JSON format as an array of objects.
+    7. Each object must have:
+    - "question"
+    - "relatedSkill" (one from the gaps provided)
+
+    Return ONLY the JSON array.
+    """
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+            config={"response_mime_type": "application/json"}
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Error in generate_retest_video_questions: {str(e)}")
+        # Fallback to standard questions if AI fails
+        return generate_video_questions(course)
 
 def analyze_test_results(answers, course_title):
     """
@@ -362,16 +443,21 @@ def generate_bridge_path_b_content(skill_gaps):
     client = genai.Client(api_key=GEMINI_API_KEY)
 
     prompt = f"""
-    You are an expert tutor. A student needs a Bridge Path to learn the following missing skills before enrolling in a course:
-    {json.dumps(skill_gaps, indent=2)}
+    The student has failed the following skills for the course: {json.dumps(skill_gaps, indent=2)}.
+    Generate a Step-by-Step Concept Roadmap for these skills.
 
-    Create a "Concept Checklist". Requirements:
-    1. Break down the missing skills into ideas they need to understand, organized from easiest to hardest.
-    2. Provide at least 4 high-quality reference links from the internet (e.g., official docs, reputable tutorials) where they can learn.
-    3. The output MUST be a valid JSON object matching this exact schema:
+    Requirements:
+    1. ONLY suggest basic, fundamental concepts to clear. DO NOT suggest in-depth or advanced topics.
+    2. List the topics in a logical learning order.
+    3. For each topic, provide a 1-sentence explanation of why it is important.
+    4. Provide 3-4 sub-topics per main skill.
+    5. Provide at least 4 high-quality reference links from the internet (e.g., official docs, reputable tutorials) where they can learn.
+    6. Format the output as a clean, actionable checklist for a student.
+
+    The output MUST be a valid JSON object matching this exact schema:
     {{
       "checklist": [
-        {{ "concept": "string", "difficulty": "EASY|MEDIUM|HARD", "description": "string" }}
+        {{ "concept": "string", "difficulty": "EASY|MEDIUM|HARD", "description": "string (1-sentence explanation of why it is important)", "subtopics": ["string", "string", "string"] }}
       ],
       "references": [
         {{ "title": "string", "url": "string" }}
@@ -399,3 +485,43 @@ def generate_bridge_path_b_content(skill_gaps):
                 { "title": "GeeksforGeeks", "url": "https://www.geeksforgeeks.org" }
             ]
         }
+
+def generate_welcome_letter(student_name, course_title, overall_score):
+    """
+    Generates a personalized, professional welcome & enrollment letter for an approved student.
+    """
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+    prompt = f"""
+    You are the Admissions Dean at a prestigious AI Training Institute. 
+    A student has just passed a rigorous evaluation gauntlet (MCQ + AI Video Interviews) and has been officially APPROVED for enrollment.
+
+    Student Name: {student_name}
+    Course: {course_title}
+    Overall Performance Score: {overall_score}/100
+
+    Generate a personalized, professional, and highly encouraging "Welcome & Enrollment" letter.
+    
+    Requirements:
+    1. Tone: Professional, warm, and inspiring.
+    2. Content:
+       - Formal congratulations on passing the evaluation.
+       - Briefly mention the impressive performance (referencing their score).
+       - Welcome them to the program.
+       - Mention that they have shown the necessary technical foundation and potential.
+       - A closing statement about the journey ahead.
+    3. Formatting: Use clear paragraphs. Include a formal header and sign-off.
+    4. Keep it concise but meaningful (around 200-250 words).
+
+    Return the letter as plain text.
+    """
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt
+        )
+        return response.text.strip()
+    except Exception as e:
+        print(f"Error in generate_welcome_letter: {str(e)}")
+        return f"Dear {student_name},\n\nCongratulations! We are pleased to inform you that you have been approved for enrollment in the {course_title} program. Your performance during the evaluation process was impressive, and we are excited to have you join us.\n\nBest regards,\nThe Admissions Team"

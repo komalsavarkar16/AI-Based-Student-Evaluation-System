@@ -18,6 +18,8 @@ interface CompletedResult {
     eligibilitySignal: string;
     status: string;
     decisionNotes: string;
+    hasHistory: boolean;
+    historyCount: number;
 }
 
 export default function ResultsList() {
@@ -50,14 +52,17 @@ export default function ResultsList() {
                 if (statusRes.ok) {
                     const statusData = await statusRes.json();
 
-                    if (statusData.videoTestEvaluationStatus === "completed") {
+                    const hasHistory = (statusData.evaluationHistory?.length ?? 0) > 0;
+                    if (statusData.videoTestEvaluationStatus === "completed" || hasHistory) {
                         completedTests.push({
                             course: course,
                             score: statusData.score,
                             overallVideoScore: statusData.overallVideoScore || 0,
                             eligibilitySignal: statusData.eligibilitySignal || "-",
                             status: statusData.status || "Pending",
-                            decisionNotes: statusData.decisionNotes || ""
+                            decisionNotes: statusData.decisionNotes || "",
+                            hasHistory: hasHistory,
+                            historyCount: statusData.evaluationHistory?.length ?? 0
                         });
                     }
                 }
@@ -110,8 +115,12 @@ export default function ResultsList() {
                                                 item.status === 'Retry Required' ? '#ef4444' : '#f59e0b',
                                         fontWeight: 700
                                     }}>
-                                        {item.status}
                                     </span>
+                                    {item.hasHistory && (
+                                        <div style={{ fontSize: '12px', color: '#64748b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', marginTop: '8px', display: 'inline-block' }}>
+                                            📜 Old Evaluations Available
+                                        </div>
+                                    )}
                                 </div>
                                 {item.decisionNotes && (
                                     <div className={styles.noteBox}>

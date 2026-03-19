@@ -7,6 +7,7 @@ from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
 import secrets
 from datetime import datetime, timedelta
+from app.services.ai_service import generate_welcome_letter
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -173,14 +174,7 @@ async def get_skill_gap_analytics():
 
 @router.get("/analytics/course-performance")
 async def get_course_performance():
-    pipeline = [
-        {"$group": {
-            "_id": "$courseTitle",
-            "avgScore": {"$sum": {"$ifNull": ["$overallVideoScore", 0]}}, # This is a simplification
-            "count": {"$sum": 1}
-        }}
-    ]
-    # More accurate average
+    from app.database.connection import results_collection
     pipeline = [
         {"$group": {
             "_id": "$courseTitle",
@@ -189,8 +183,48 @@ async def get_course_performance():
         }},
         {"$sort": {"avgScore": -1}}
     ]
-    results = list(db.test_results.aggregate(pipeline))
-    return [{"name": r["_id"], "score": round(r["avgScore"], 2) if r["avgScore"] else 0} for r in results]
+    results = list(results_collection.aggregate(pipeline))
+    return [{"name": r["_id"], "score": round(r["avgScore"], 2) if r["avgScore"] else 0, "students": r["count"]} for r in results]
+
+@router.get("/analytics/overall-status")
+async def get_overall_status():
+    from app.database.connection import results_collection
+    pipeline = [
+        {"$group": {"_id": "$status", "count": {"$sum": 1}}}
+    ]
+    results = list(results_collection.aggregate(pipeline))
+    
+    # Format the data for the frontend
+    status_counts = {r["_id"] if r["_id"] else "Pending": r["count"] for r in results}
+    
+    # Calculate passing (Approved)
+    approved = status_counts.get("Approved", 0)
+    
+    # Calculate failing (Retry Required)
+    retry = status_counts.get("Retry Required", 0)
+    
+    # Stuck in Bridge (Recommended or In Progress)
+    bridge_rec = status_counts.get("Bridge Course Recommended", 0)
+    bridge_prog = status_counts.get("Bridge Course In Progress", 0)
+    # Treat READY_FOR_RETEST as a pending/ready state but count bridge students specifically
+    bridge_total = bridge_rec + bridge_prog
+    
+    # Pending / Others
+    pending = status_counts.get("Pending", 0)
+    ready = status_counts.get("READY_FOR_RETEST", 0)
+    others = pending + ready
+    
+    total = sum(status_counts.values())
+    
+    return {
+        "approved": approved,
+        "retry": retry,
+        "bridge": bridge_total,
+        "pending": others,
+        "total": total,
+        "passPercent": round((approved / total * 100), 1) if total > 0 else 0,
+        "failPercent": round((retry / total * 100), 1) if total > 0 else 0
+    }
 
 @router.get("/all-evaluations")
 async def get_all_evaluations():
@@ -210,7 +244,8 @@ async def get_all_evaluations():
             "videoScore": round(eval.get("overallVideoScore", 0), 2) if "overallVideoScore" in eval else "Pending",
             "eligibilitySignal": eval.get("eligibilitySignal", "-"),
             "status": eval.get("status", "Pending"),
-            "timestamp": eval.get("evaluatedAt") or eval.get("timestamp")
+            "timestamp": eval.get("evaluatedAt") or eval.get("timestamp"),
+            "historyCount": len(eval.get("evaluationHistory", []))
         })
     return results
 
@@ -245,7 +280,8 @@ async def get_evaluation_report(result_id: str):
         "videoAnswers": result.get("videoAnswers", []),
         "status": result.get("status", "Pending"),
         "decisionNotes": result.get("decisionNotes", ""),
-        "timestamp": result.get("evaluatedAt") or result.get("timestamp")
+        "timestamp": result.get("evaluatedAt") or result.get("timestamp"),
+        "evaluationHistory": result.get("evaluationHistory", [])
     }
     return report
 
@@ -272,6 +308,25 @@ async def submit_decision(result_id: str, decision_data: dict):
     
     if not result:
         raise HTTPException(status_code=404, detail="Test result not found")
+
+    # --- Generate Welcome Letter if Approved ---
+    if status == "Approved":
+        student = db.students.find_one({"_id": result.get("studentId")})
+        student_name = f"{student.get('firstName')} {student.get('lastName')}" if student else "Student"
+        course_title = result.get("courseTitle", "Assessment")
+        # Calculate a simple average of MCQ and Video score for the letter
+        mcq_score = result.get("score", 0)
+        video_score = result.get("overallVideoScore", 0) * 10 # Scale to 100
+        overall_avg = (mcq_score + video_score) / 2
+        
+        try:
+            welcome_letter = generate_welcome_letter(student_name, course_title, round(overall_avg, 1))
+            db.test_results.update_one(
+                {"_id": ObjectId(result_id)},
+                {"$set": {"enrollmentLetter": welcome_letter}}
+            )
+        except Exception as e:
+            print(f"Failed to generate welcome letter: {e}")
         
     # --- Create a notification for the student ---
     student_id = result.get("studentId")
@@ -304,18 +359,19 @@ async def submit_decision(result_id: str, decision_data: dict):
 
 @router.get("/students")
 async def get_students():
-    students = list(db.students.find().sort("firstName", 1))
+    from app.database.connection import students_collection, results_collection
+    students = list(students_collection.find().sort("firstName", 1))
     
     results = []
     for student in students:
         # Get latest MCQ result
-        latest_mcq = db.test_results.find_one(
+        latest_mcq = results_collection.find_one(
             {"studentId": student["_id"], "score": {"$exists": True}},
             sort=[("timestamp", -1)]
         )
         
         # Get latest Video result
-        latest_video = db.test_results.find_one(
+        latest_video = results_collection.find_one(
             {"studentId": student["_id"], "overallVideoScore": {"$exists": True}},
             sort=[("timestamp", -1)]
         )

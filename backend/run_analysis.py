@@ -47,7 +47,7 @@ def main():
         # Try to get videoUrls first (new schema)
         video_urls_to_process = record.get("videoUrls", [])
         
-        # Fallback to reconstructing from videoAnswers (old schema)
+        # Fallback to reconstructing from current videoAnswers (if they exist)
         if not video_urls_to_process:
             video_answers = record.get("videoAnswers", [])
             for answer in video_answers:
@@ -57,8 +57,23 @@ def main():
                         "url": answer["videoUrl"]
                     })
         
+        # FINAL FALLBACK: Check evaluationHistory for "Old Videos" (if they were cleared)
         if not video_urls_to_process:
-            print("Could not find any video URLs in the record (checked videoUrls and videoAnswers).")
+            history = record.get("evaluationHistory", [])
+            if history:
+                print("No current videos found, using video from previous attempt (evaluationHistory)...")
+                # Get the latest history entry
+                latest_history = history[-1]
+                old_video_answers = latest_history.get("videoAnswers", [])
+                for answer in old_video_answers:
+                    if "videoUrl" in answer and "questionId" in answer:
+                        video_urls_to_process.append({
+                            "question": answer["questionId"],
+                            "url": answer["videoUrl"]
+                        })
+
+        if not video_urls_to_process:
+            print("Could not find any video URLs in current record or evaluationHistory.")
             sys.exit(1)
             
         print(f"Found {len(video_urls_to_process)} videos to process.")

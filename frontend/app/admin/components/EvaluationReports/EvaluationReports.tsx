@@ -11,8 +11,11 @@ const EvaluationReports = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            const token = localStorage.getItem("auth_token");
+            const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+            
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/analytics/course-performance`);
+                const res = await fetch(`${API_BASE_URL}/admin/analytics/course-performance`, { headers });
                 if (res.ok) {
                     const result = await res.json();
                     setData(result);

@@ -1,18 +1,35 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { API_BASE_URL } from '@/app/utils/api';
 import styles from './EnrollmentChart.module.css';
 
-const data = [
-    { name: 'Python Basics', students: 450 },
-    { name: 'Web Dev', students: 380 },
-    { name: 'Data Science', students: 290 },
-    { name: 'AI/ML', students: 510 },
-    { name: 'Cybersecurity', students: 160 },
-];
-
 const EnrollmentChart = () => {
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEnrollments = async () => {
+            const token = localStorage.getItem("auth_token");
+            const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+            
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/analytics/course-performance`, { headers });
+                if (res.ok) {
+                    setData(await res.json());
+                }
+            } catch (error) {
+                console.error("Error fetching enrollments:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEnrollments();
+    }, []);
+
+    if (loading) return <div>Loading...</div>;
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -28,7 +45,7 @@ const EnrollmentChart = () => {
                             type="category"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#64748b', fontSize: 12, width: 100 }}
+                            tick={{ fill: '#64748b', fontSize: 10, width: 100 }}
                             width={100}
                         />
                         <Tooltip
