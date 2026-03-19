@@ -42,6 +42,7 @@ const AIEvaluationsPage = () => {
                             <th>Course</th>
                             <th>AI Score</th>
                             <th>Skill Gaps</th>
+                            <th>Status</th>
                             <th>Date</th>
                             <th>Actions</th>
                         </tr>
@@ -55,10 +56,10 @@ const AIEvaluationsPage = () => {
                                 </td>
                                 <td>
                                     <span className={styles.scoreBadge} style={{
-                                        backgroundColor: item.score >= 7 ? '#dcfce7' : item.score >= 5 ? '#fef9c3' : '#fee2e2',
-                                        color: item.score >= 7 ? '#166534' : item.score >= 5 ? '#854d0e' : '#991b1b',
+                                        backgroundColor: typeof item.videoScore === 'number' ? (item.videoScore >= 7 ? '#dcfce7' : item.videoScore >= 5 ? '#fef9c3' : '#fee2e2') : '#f1f5f9',
+                                        color: typeof item.videoScore === 'number' ? (item.videoScore >= 7 ? '#166534' : item.videoScore >= 5 ? '#854d0e' : '#991b1b') : '#64748b',
                                     }}>
-                                        {item.score} / 10
+                                        {item.videoScore} {typeof item.videoScore === 'number' ? '/ 10' : ''}
                                     </span>
                                     {item.historyCount > 0 && (
                                         <span style={{
@@ -82,6 +83,18 @@ const AIEvaluationsPage = () => {
                                     ) : (
                                         <span style={{ color: '#94a3b8', fontSize: '12px' }}>None detected</span>
                                     )}
+                                </td>
+                                <td>
+                                    <span className={styles.statusBadge} style={{
+                                        backgroundColor: item.status === 'Approved' ? '#dcfce7' : 
+                                                        item.status === 'READY_FOR_RETEST' ? '#e0f2fe' : 
+                                                        item.status === 'Bridge Course Recommended' ? '#fff7ed' : '#f1f5f9',
+                                        color: item.status === 'Approved' ? '#166534' : 
+                                               item.status === 'READY_FOR_RETEST' ? '#0369a1' : 
+                                               item.status === 'Bridge Course Recommended' ? '#9a3412' : '#64748b',
+                                    }}>
+                                        {item.status.replace(/_/g, ' ')}
+                                    </span>
                                 </td>
                                 <td>{new Date(item.timestamp).toLocaleDateString()}</td>
                                 <td>

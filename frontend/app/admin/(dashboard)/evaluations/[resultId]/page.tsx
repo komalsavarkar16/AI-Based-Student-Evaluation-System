@@ -279,8 +279,8 @@ const EvaluationDetailPage = () => {
 
                     <div className={styles.radioGroup}>
                         <div
-                            className={`${styles.radioItem} ${decision === 'Approved' ? styles.selected : ''}`}
-                            onClick={() => setDecision('Approved')}
+                            className={`${styles.radioItem} ${decision === 'Approved' ? styles.selected : ''} ${report.status !== 'Pending' ? styles.disabled : ''}`}
+                            onClick={() => report.status === 'Pending' && setDecision('Approved')}
                         >
                             <input type="radio" checked={decision === 'Approved'} readOnly />
                             <div className={styles.labelContent}>
@@ -290,8 +290,8 @@ const EvaluationDetailPage = () => {
                         </div>
 
                         <div
-                            className={`${styles.radioItem} ${decision === 'Bridge Course Recommended' ? styles.selected : ''}`}
-                            onClick={() => setDecision('Bridge Course Recommended')}
+                            className={`${styles.radioItem} ${decision === 'Bridge Course Recommended' ? styles.selected : ''} ${report.status !== 'Pending' ? styles.disabled : ''}`}
+                            onClick={() => report.status === 'Pending' && setDecision('Bridge Course Recommended')}
                         >
                             <input type="radio" checked={decision === 'Bridge Course Recommended'} readOnly />
                             <div className={styles.labelContent}>
@@ -301,8 +301,8 @@ const EvaluationDetailPage = () => {
                         </div>
 
                         <div
-                            className={`${styles.radioItem} ${decision === 'Retry Required' ? styles.selected : ''}`}
-                            onClick={() => setDecision('Retry Required')}
+                            className={`${styles.radioItem} ${decision === 'Retry Required' ? styles.selected : ''} ${report.status !== 'Pending' ? styles.disabled : ''}`}
+                            onClick={() => report.status === 'Pending' && setDecision('Retry Required')}
                         >
                             <input type="radio" checked={decision === 'Retry Required'} readOnly />
                             <div className={styles.labelContent}>
@@ -318,14 +318,16 @@ const EvaluationDetailPage = () => {
                         placeholder="Example: Student has good communication but weak DB knowledge. Recommend SQL bridge module..."
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
+                        disabled={report.status !== 'Pending'}
                     />
 
                     <button
                         className={styles.submitBtn}
                         onClick={handleSubmitDecision}
-                        disabled={submitting}
+                        disabled={submitting || report.status !== 'Pending'}
                     >
-                        {submitting ? 'Submitting Decision...' : 'Submit Decision'}
+                        {submitting ? 'Submitting Decision...' : 
+                         report.status !== 'Pending' ? 'Decision Finalized' : 'Submit Decision'}
                     </button>
 
                     {report.decidedAt && (

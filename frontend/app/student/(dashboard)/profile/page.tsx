@@ -15,6 +15,7 @@ import {
     Edit as EditIcon
 } from "@mui/icons-material";
 import { API_BASE_URL } from "@/app/utils/api";
+import { toast } from "react-toastify";
 
 interface StudentInfo {
     firstName: string;
@@ -36,6 +37,19 @@ export default function StudentProfile() {
     const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [progress, setProgress] = useState(0);
+    const [stats, setStats] = useState<any>({
+        enrolledCourses: [],
+        avgScore: 0,
+        testsTaken: 0,
+        certificates: 0,
+        recommendations: []
+    });
+    const [passwords, setPasswords] = useState({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+    });
+    const [updating, setUpdating] = useState(false);
 
     const calculateProgress = (profile: StudentInfo) => {
         const fields = [
@@ -70,14 +84,22 @@ export default function StudentProfile() {
             }
 
             try {
-                const res = await fetch(`${API_BASE_URL}/student/profile/${studentId}`);
-                if (res.ok) {
-                    const data = await res.json();
+                const [profileRes, statsRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/student/profile/${studentId}`),
+                    fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`)
+                ]);
+
+                if (profileRes.ok) {
+                    const data = await profileRes.json();
                     setStudentInfo(data);
                     setProgress(calculateProgress(data));
                 }
+                
+                if (statsRes.ok) {
+                    setStats(await statsRes.json());
+                }
             } catch (err) {
-                console.error("Error fetching profile:", err);
+                console.error("Error fetching profile data:", err);
             } finally {
                 setLoading(false);
             }
@@ -86,6 +108,45 @@ export default function StudentProfile() {
         fetchProfile();
     }, []);
 
+    const handlePasswordChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const studentId = localStorage.getItem("student_id");
+
+        if (!passwords.oldPassword || !passwords.newPassword || !passwords.confirmPassword) {
+            toast.error("All fields are required");
+            return;
+        }
+
+        if (passwords.newPassword !== passwords.confirmPassword) {
+            toast.error("Passwords do not match");
+            return;
+        }
+
+        setUpdating(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/student/change-password/${studentId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    oldPassword: passwords.oldPassword,
+                    newPassword: passwords.newPassword
+                })
+            });
+
+            if (res.ok) {
+                toast.success("Password updated successfully!");
+                setPasswords({ oldPassword: "", newPassword: "", confirmPassword: "" });
+            } else {
+                const err = await res.json();
+                toast.error(`Error: ${err.detail || "Update failed"}`);
+            }
+        } catch (err) {
+            console.error("Update error:", err);
+            toast.error("Connection error");
+        } finally {
+            setUpdating(false);
+        }
+    };
 
     if (loading) return <div className={styles.loading}>Loading...</div>;
     if (!studentInfo) return <div className={styles.error}>Profile not found. Please log in again.</div>;
@@ -204,15 +265,15 @@ export default function StudentProfile() {
                             </div>
                             <div className={styles.perfStats}>
                                 <div className={styles.statItem}>
-                                    <span className={styles.statValue}>12</span>
+                                    <span className={styles.statValue}>{stats.testsTaken}</span>
                                     <span className={styles.statLabel}>Tests Taken</span>
                                 </div>
                                 <div className={styles.statItem}>
-                                    <span className={styles.statValue}>88%</span>
+                                    <span className={styles.statValue}>{stats.avgScore}%</span>
                                     <span className={styles.statLabel}>Avg. Score</span>
                                 </div>
                                 <div className={styles.statItem}>
-                                    <span className={styles.statValue}>4</span>
+                                    <span className={styles.statValue}>{stats.certificates}</span>
                                     <span className={styles.statLabel}>Certificates</span>
                                 </div>
                             </div>
@@ -228,21 +289,21 @@ export default function StudentProfile() {
                                 <h3><CourseIcon /> Enrolled Courses</h3>
                             </div>
                             <div className={styles.courseList}>
-                                {[
-                                    { name: "Python for Data Science", progress: 95 },
-                                    { name: "Advanced React Patterns", progress: 60 },
-                                    { name: "Database Management Systems", progress: 100 }
-                                ].map((course, idx) => (
-                                    <div key={idx} className={styles.courseItem}>
-                                        <div className={styles.courseInfo}>
-                                            <h4>{course.name}</h4>
-                                            <span>{course.progress === 100 ? 'Completed' : 'In Progress'}</span>
+                                {stats.enrolledCourses.length > 0 ? (
+                                    stats.enrolledCourses.map((course: any, idx: number) => (
+                                        <div key={idx} className={styles.courseItem}>
+                                            <div className={styles.courseInfo}>
+                                                <h4>{course.name}</h4>
+                                                <span>{course.status}</span>
+                                            </div>
+                                            <div className={styles.courseProgress}>
+                                                <strong>{course.progress}%</strong>
+                                            </div>
                                         </div>
-                                        <div className={styles.courseProgress}>
-                                            <strong>{course.progress}%</strong>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className={styles.emptyText}>No courses started yet.</p>
+                                )}
                             </div>
                         </section>
 
@@ -252,20 +313,25 @@ export default function StudentProfile() {
                                 <h3><AIPathsIcon /> AI Recommendations</h3>
                             </div>
                             <div className={styles.recommendationList}>
-                                <div className={styles.recommendationItem}>
-                                    <AIPathsIcon className={styles.recIcon} />
-                                    <div className={styles.recText}>
-                                        <h4>Focus on Data Structures</h4>
-                                        <p>Based on your last test, improving Binary Trees will boost your score by 15%.</p>
+                                {stats.recommendations && stats.recommendations.length > 0 ? (
+                                    stats.recommendations.map((rec: any, idx: number) => (
+                                        <div key={idx} className={styles.recommendationItem}>
+                                            <AIPathsIcon className={styles.recIcon} />
+                                            <div className={styles.recText}>
+                                                <h4>{rec.title}</h4>
+                                                <p>{rec.description}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className={styles.recommendationItem}>
+                                        <AIPathsIcon className={styles.recIcon} />
+                                        <div className={styles.recText}>
+                                            <h4>Start Learning</h4>
+                                            <p>Take your first test to get personalized AI recommendations.</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className={styles.recommendationItem}>
-                                    <AIPathsIcon className={styles.recIcon} />
-                                    <div className={styles.recText}>
-                                        <h4>Next Course: Docker Basics</h4>
-                                        <p>Matches your interest in Cloud Computing and complements your Node.js skill.</p>
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </section>
 
@@ -274,16 +340,41 @@ export default function StudentProfile() {
                             <div className={styles.cardHeader}>
                                 <h3><SettingsIcon /> Account Settings</h3>
                             </div>
-                            <form className={styles.settingsForm} onSubmit={(e) => e.preventDefault()}>
+                            <form className={styles.settingsForm} onSubmit={handlePasswordChange}>
                                 <div className={styles.formGroup}>
-                                    <label>Change Password</label>
-                                    <input type="password" placeholder="New Password" />
+                                    <label>Current Password</label>
+                                    <input
+                                        type="password"
+                                        placeholder="Current Password"
+                                        value={passwords.oldPassword}
+                                        onChange={(e) => setPasswords({ ...passwords, oldPassword: e.target.value })}
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label>New Password</label>
+                                    <input
+                                        type="password"
+                                        placeholder="New Password"
+                                        value={passwords.newPassword}
+                                        onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                                    />
                                 </div>
                                 <div className={styles.formGroup}>
                                     <label>Confirm Password</label>
-                                    <input type="password" placeholder="Confirm New Password" />
+                                    <input
+                                        type="password"
+                                        placeholder="Confirm New Password"
+                                        value={passwords.confirmPassword}
+                                        onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+                                    />
                                 </div>
-                                <button type="submit" className={styles.saveBtn}>Update Account</button>
+                                <button
+                                    type="submit"
+                                    className={styles.saveBtn}
+                                    disabled={updating}
+                                >
+                                    {updating ? "Updating..." : "Update Account"}
+                                </button>
                             </form>
                         </section>
                     </div>

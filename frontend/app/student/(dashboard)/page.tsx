@@ -31,101 +31,38 @@ export default function StudentDashboard() {
     }
 
     try {
-      // 1. Fetch Profile
-      const profileRes = await fetch(`${API_BASE_URL}/student/profile/${studentId}`);
-      let profileData: any = {};
+      // Parallel fetch profile and consolidated dashboard-stats
+      const [profileRes, statsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/student/profile/${studentId}`),
+        fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`)
+      ]);
+
+      let profileData = {};
       if (profileRes.ok) {
         profileData = await profileRes.json();
         setStudentInfo(profileData);
       }
-
-      // 2. Fetch Courses
-      const coursesRes = await fetch(`${API_BASE_URL}/courses/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const coursesData = await coursesRes.json();
-
-      // 3. Fetch History (Real Data Integration)
-      const historyList = [];
-      const userSkillScores: { [key: string]: number } = {};
-      const generatedGaps = [];
-      const generatedRecs = [];
-
-      for (const course of coursesData) {
-        const statusRes = await fetch(
-          `${API_BASE_URL}/student/check-test-status/${studentId}/${course._id}`
-        );
-
-        if (statusRes.ok) {
-          const statusData = await statusRes.json();
-          const score = statusData.score || 0;
-
-          if (statusData.completed) {
-            historyList.push({
-              id: course._id,
-              name: course.title,
-              date: "Completed recently", // Replace with real date if API supports
-              score: `${score}%`,
-              status: statusData.passed ? "completed" : "failed",
-            });
-
-            // If score is less than 70, register as a gap
-            if (score < 70) {
-              generatedGaps.push({
-                id: course._id,
-                title: `${course.title} Fundamentals`,
-                description: `Score below 70% in recent assessment (${score}%)`,
-              });
-              generatedRecs.push({
-                id: course._id,
-                title: `Review ${course.category} Basics`,
-                description: `Review the syllabus for ${course.title} to improve your domain knowledge.`,
-              });
-            }
-
-            // Map course score to skills
-            if (course.skills_required && Array.isArray(course.skills_required)) {
-              course.skills_required.forEach((skill: string) => {
-                if (!userSkillScores[skill] || score > userSkillScores[skill]) {
-                  userSkillScores[skill] = score; // Store highest score for the skill
-                }
-              });
-            }
-          } else {
-            historyList.push({
-              id: course._id,
-              name: course.title,
-              date: "-",
-              score: "-",
-              status: "pending",
-            });
-          }
-        }
+      
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        
+        // Map History from enrolledCourses
+        const historyList = statsData.enrolledCourses.map((c: any, idx: number) => ({
+          id: idx,
+          name: c.name,
+          date: c.status === "Approved" ? "Completed" : "In Progress",
+          score: c.status === "Approved" ? "Passed" : (c.status === "Pending" ? "Pending AI Eval" : "-"),
+          status: c.status.toLowerCase().includes("approve") ? "completed" : "pending"
+        }));
+        
+        setHistory(historyList);
+        setGaps(statsData.skillGaps || []);
+        setRecommendations(statsData.recommendations || []);
+        
+        // Use profileData directly instead of studentInfo state
+        const profileSkills = (profileData as any).skills || [];
+        setSkills(profileSkills.map((s: string) => ({ name: s, percentage: statsData.avgScore || 0 })));
       }
-      setHistory(historyList);
-      setGaps(generatedGaps.slice(0, 3)); // Show top 3 gaps
-      setRecommendations(generatedRecs.slice(0, 3)); // Show top 3 recs
-
-      // 4. Transform Skills for UI (fallback to dummy percentage if no tests taken)
-      const profileSkills = profileData.skills || [];
-      const formattedSkills = profileSkills.map((skill: string) => ({
-        name: skill,
-        percentage: userSkillScores[skill] || 0 // Default to 0% if no test mapped
-      }));
-
-      // Add mapped skills from tests if they aren't in profile
-      Object.keys(userSkillScores).forEach(skill => {
-        if (!formattedSkills.find((s: any) => s.name === skill)) {
-          formattedSkills.push({
-            name: skill,
-            percentage: userSkillScores[skill]
-          });
-        }
-      });
-
-      // Show top 5 skills
-      setSkills(formattedSkills.sort((a: any, b: any) => b.percentage - a.percentage).slice(0, 5));
-
     } catch (e) {
       console.error("Dashboard fetch error:", e);
     } finally {

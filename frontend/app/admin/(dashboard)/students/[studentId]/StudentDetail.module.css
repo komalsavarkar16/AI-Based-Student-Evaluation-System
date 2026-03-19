@@ -1,0 +1,293 @@
+.container {
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+    color: #0f172a;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #57cc99;
+    text-decoration: none;
+    font-weight: 700;
+    margin-bottom: 24px;
+    transition: transform 0.2s;
+}
+
+.backLink:hover {
+    transform: translateX(-4px);
+}
+
+.profileHeader {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: white;
+    padding: 32px;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 32px;
+}
+
+.avatarLarge {
+    width: 96px;
+    height: 96px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 800;
+}
+
+.name {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.metaRow {
+    display: flex;
+    gap: 24px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.metaRow span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mainGrid {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 32px;
+}
+
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+}
+
+.cardTitle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+}
+
+.infoGrid {
+    display: grid;
+    gap: 16px;
+}
+
+.infoItem label {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.infoItem p {
+    font-weight: 600;
+    color: #334155;
+}
+
+.skillsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skillTag {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 24px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: #e2e8f0;
+}
+
+.timelineItem {
+    position: relative;
+    margin-bottom: 32px;
+}
+
+.timelineDot {
+    position: absolute;
+    left: -24px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    background: #57cc99;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #57cc99;
+    z-index: 1;
+}
+
+.timelineContent {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.resHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.resHeader h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.resDate {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.scoreRow {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.scoreInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.scoreLabel {
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.scoreValue {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.statusRow {
+    margin-bottom: 16px;
+}
+
+.statusBadge {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.Approved { background: #dcfce7; color: #166534; }
+.READY_FOR_RETEST { background: #e0f2fe; color: #0369a1; }
+.BridgeCourseRecommended { background: #fff7ed; color: #9a3412; }
+.BridgeCourseInProgress { background: #fef9c3; color: #854d0e; }
+.RetryRequired { background: #fee2e2; color: #991b1b; }
+.Pending { background: #f1f5f9; color: #64748b; }
+
+.gapList label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.gapTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.gapTag {
+    background: #fff1f2;
+    color: #e11d48;
+    border: 1px solid #ffe4e6;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.viewLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #57cc99;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    margin-top: 16px;
+}
+
+.viewLink:hover {
+    text-decoration: underline;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 24px;
+    color: #57cc99;
+    font-weight: 700;
+}
+
+.error {
+    color: #ef4444;
+    text-align: center;
+    padding: 40px;
+}
+
+.noData {
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 14px;
+}
+
+@media (max-width: 1024px) {
+    .mainGrid {
+        grid-template-columns: 1fr;
+    }
+}

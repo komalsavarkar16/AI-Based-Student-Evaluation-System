@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { API_BASE_URL } from '@/app/utils/api';
 import styles from './students.module.css';
 
@@ -84,7 +85,9 @@ const StudentsPage = () => {
                                     <span className={styles.statusBadge}>{student.status}</span>
                                 </td>
                                 <td>
-                                    <button className={styles.viewBtn}>View Profile</button>
+                                    <Link href={`/admin/students/${student.id}`}>
+                                        <button className={styles.viewBtn}>View Profile</button>
+                                    </Link>
                                 </td>
                             </tr>
                         ))}

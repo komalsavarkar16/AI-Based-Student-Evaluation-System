@@ -65,7 +65,6 @@ export default function TestsPage() {
     if (loading) {
         return (
             <div className={styles.loadingContainer}>
-                <StudentNavbar />
                 <div className={styles.spinnerWrapper}>
                     <div className={styles.spinner}></div>
                     <p>Loading your assessments...</p>

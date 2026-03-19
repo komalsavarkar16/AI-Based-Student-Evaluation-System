@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from app.schemas.admin import AdminCreate, AdminLogin, AdminUpdate
 from bson import ObjectId
-from app.database.connection import db, admins_collection
-from app.core.security import hash_password, verify_password
+from app.database.connection import db, admins_collection, results_collection, students_collection
+from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
 import secrets
@@ -46,7 +46,6 @@ async def login_admin(data: AdminLogin):
             detail="Invalid email or password"
         )
 
-    from app.core.security import create_access_token
     access_token = create_access_token(data={"sub": str(admin["_id"]), "role": admin["role"]})
 
     return {
@@ -169,12 +168,11 @@ async def get_skill_gap_analytics():
         {"$sort": {"count": -1}},
         {"$limit": 5}
     ]
-    results = list(db.test_results.aggregate(pipeline))
+    results = list(results_collection.aggregate(pipeline))
     return [{"skill": r["_id"], "value": r["count"]} for r in results]
 
 @router.get("/analytics/course-performance")
 async def get_course_performance():
-    from app.database.connection import results_collection
     pipeline = [
         {"$group": {
             "_id": "$courseTitle",
@@ -188,7 +186,6 @@ async def get_course_performance():
 
 @router.get("/analytics/overall-status")
 async def get_overall_status():
-    from app.database.connection import results_collection
     pipeline = [
         {"$group": {"_id": "$status", "count": {"$sum": 1}}}
     ]
@@ -212,7 +209,6 @@ async def get_overall_status():
     # Pending / Others
     pending = status_counts.get("Pending", 0)
     ready = status_counts.get("READY_FOR_RETEST", 0)
-    others = pending + ready
     
     total = sum(status_counts.values())
     
@@ -220,7 +216,8 @@ async def get_overall_status():
         "approved": approved,
         "retry": retry,
         "bridge": bridge_total,
-        "pending": others,
+        "readyForRetest": ready,
+        "pending": pending,
         "total": total,
         "passPercent": round((approved / total * 100), 1) if total > 0 else 0,
         "failPercent": round((retry / total * 100), 1) if total > 0 else 0
@@ -244,6 +241,7 @@ async def get_all_evaluations():
             "videoScore": round(eval.get("overallVideoScore", 0), 2) if "overallVideoScore" in eval else "Pending",
             "eligibilitySignal": eval.get("eligibilitySignal", "-"),
             "status": eval.get("status", "Pending"),
+            "skillGap": eval.get("skillGap", []),
             "timestamp": eval.get("evaluatedAt") or eval.get("timestamp"),
             "historyCount": len(eval.get("evaluationHistory", []))
         })
@@ -359,7 +357,6 @@ async def submit_decision(result_id: str, decision_data: dict):
 
 @router.get("/students")
 async def get_students():
-    from app.database.connection import students_collection, results_collection
     students = list(students_collection.find().sort("firstName", 1))
     
     results = []
@@ -382,7 +379,31 @@ async def get_students():
             "email": student.get("email"),
             "mcqScore": latest_mcq.get("score") if latest_mcq else "N/A",
             "videoScore": round(latest_video.get("overallVideoScore"), 2) if latest_video else "N/A",
-            "status": "Active" # Or any logic for status
+            "status": latest_video.get("status") if latest_video else (latest_mcq.get("status") if latest_mcq else "Pending")
         })
         
     return results
+
+@router.get("/students/{student_id}")
+async def get_student_detail(student_id: str):
+    student = students_collection.find_one({"_id": ObjectId(student_id)})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+        
+    student["id"] = str(student.pop("_id"))
+    
+    # Get all test results for this student
+    test_results = list(results_collection.find({"studentId": ObjectId(student_id)}).sort("timestamp", -1))
+    for r in test_results:
+        r["id"] = str(r.pop("_id"))
+        r["studentId"] = str(r["studentId"])
+        r["courseId"] = str(r["courseId"])
+        if "evaluatedAt" in r and r["evaluatedAt"]:
+             r["evaluatedAt"] = r["evaluatedAt"].isoformat()
+        if "timestamp" in r and r["timestamp"]:
+             r["timestamp"] = r["timestamp"].isoformat()
+
+    return {
+        "profile": student,
+        "results": test_results
+    }

@@ -42,6 +42,7 @@ const SkillGapAnalytics = () => {
         { name: 'Passing (Approved)', value: overallStatus.approved, color: '#57cc99' },
         { name: 'Failing (Retry Required)', value: overallStatus.retry, color: '#ff6b6b' },
         { name: 'Bridge Course', value: overallStatus.bridge, color: '#38a3a5' },
+        { name: 'Ready for Retest', value: overallStatus.readyForRetest, color: '#4cc9f0' },
         { name: 'Pending', value: overallStatus.pending, color: '#64748b' }
     ] : [];
 

@@ -9,8 +9,10 @@ import PendingDecisions from '../components/PendingDecisions/PendingDecisions';
 import SkillGapAnalytics from '../components/SkillGapAnalytics/SkillGapAnalytics';
 import { API_BASE_URL } from '@/app/utils/api';
 import styles from './dashboard.module.css';
+import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
+    const router = useRouter();
     const [stats, setStats] = useState<any>({
         totalStudents: 0,
         availableCourses: 0,
@@ -22,7 +24,7 @@ export default function AdminDashboard() {
         const fetchDashboardData = async () => {
             const token = localStorage.getItem("auth_token");
             const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
-            
+
             try {
                 const [studentsRes, coursesRes, statusRes] = await Promise.all([
                     fetch(`${API_BASE_URL}/admin/students`, { headers }),
@@ -55,10 +57,7 @@ export default function AdminDashboard() {
                     <p>The system is running smoothly. All student assessments are being processed in real-time with EduBridge AI.</p>
                 </div>
                 <div className={styles.quickActions}>
-                    <button className={styles.actionBtn}>
-                        <BrainCircuit size={18} /> System Check
-                    </button>
-                    <button className={styles.actionBtn}>
+                    <button className={styles.actionBtn} onClick={() => router.push('/admin/students')}>
                         <Users size={18} /> Manage Students
                     </button>
                 </div>

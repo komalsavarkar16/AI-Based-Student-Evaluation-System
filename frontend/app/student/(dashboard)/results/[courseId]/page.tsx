@@ -63,7 +63,7 @@ export default function ResultDetail() {
             if (res.ok) {
                 const data = await res.json();
                 setResult(data);
-                
+
                 if (data.status === 'Bridge Course Recommended') {
                     fetchAllPaths(data.skillGap || []);
                 }
@@ -188,7 +188,7 @@ export default function ResultDetail() {
             {/* Admission Decision Section */}
             {result.status && result.status !== 'Pending' && (
                 <div className={styles.section} style={{ background: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                    <h2 className={styles.sectionTitle} style={{ color: '#0f172a' }}>🏛 Admission Decision</h2>
+                    <h2 className={styles.sectionTitle} style={{ color: '#0f172a' }}>Admission Decision</h2>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                         <span style={{
                             padding: '6px 16px',
@@ -213,14 +213,14 @@ export default function ResultDetail() {
 
                     {result.status === 'Bridge Course Recommended' && (
                         <div style={{ marginTop: '24px', background: '#eef2ff', padding: '24px', borderRadius: '12px', border: '1px solid #c7d2fe' }}>
-                            <h3 style={{ color: '#4338ca', marginTop: 0, marginBottom: '8px', fontSize: '20px' }}>🌉 Bridge Path Assigned: AI Concept Checklist</h3>
+                            <h3 style={{ color: '#4338ca', marginTop: 0, marginBottom: '8px', fontSize: '20px' }}>Bridge Path Assigned: AI Concept Checklist</h3>
                             <p style={{ color: '#4f46e5', marginBottom: '20px', fontSize: '15px' }}>
                                 You have great potential, but need to fill some technical gaps before full enrollment. Follow this personalized study plan to bridge your gaps using the AI-generated Concept Checklist organized from easiest to hardest.
                             </p>
-                            
+
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', border: '2px solid transparent', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                                    
+
                                     {loadingPath && !pathBData ? (
                                         <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>AI is analyzing your skill gaps and generating study concepts...</div>
                                     ) : pathBData && (
@@ -253,24 +253,24 @@ export default function ResultDetail() {
                                             </div>
 
                                             <button style={{ background: '#4f46e5', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'background 0.2s ease' }}
-                                                    onMouseEnter={(e) => { e.currentTarget.style.background = '#4338ca'; }}
-                                                    onMouseLeave={(e) => { e.currentTarget.style.background = '#4f46e5'; }}
-                                                    onClick={async () => {
-                                                        try {
-                                                            const studentId = localStorage.getItem("student_id");
-                                                            if (!studentId) return;
-                                                            const res = await fetch(`${API_BASE_URL}/student/start-bridge-course/${studentId}/${courseId}`, {
-                                                                method: 'POST'
-                                                            });
-                                                            if (res.ok) {
-                                                                window.alert("You are now enrolled in the Bridge Course! Follow the study plan to bridge your gaps.");
-                                                                // Redirect them directly to the active checklist (runs inside the video-test wrapper)
-                                                                window.location.href = `/student/video-test/${courseId}`;
-                                                            }
-                                                        } catch (err) {
-                                                            console.error("Failed to start bridge path:", err);
+                                                onMouseEnter={(e) => { e.currentTarget.style.background = '#4338ca'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.background = '#4f46e5'; }}
+                                                onClick={async () => {
+                                                    try {
+                                                        const studentId = localStorage.getItem("student_id");
+                                                        if (!studentId) return;
+                                                        const res = await fetch(`${API_BASE_URL}/student/start-bridge-course/${studentId}/${courseId}`, {
+                                                            method: 'POST'
+                                                        });
+                                                        if (res.ok) {
+                                                            window.alert("You are now enrolled in the Bridge Course! Follow the study plan to bridge your gaps.");
+                                                            // Redirect them directly to the active checklist (runs inside the video-test wrapper)
+                                                            window.location.href = `/student/video-test/${courseId}`;
                                                         }
-                                                    }}
+                                                    } catch (err) {
+                                                        console.error("Failed to start bridge path:", err);
+                                                    }
+                                                }}
                                             >Accept & Start Bridge Course</button>
                                         </>
                                     )}
@@ -286,12 +286,12 @@ export default function ResultDetail() {
                 <div className={styles.enrollmentSection}>
                     <div className={styles.letterDecoration}></div>
                     <div className={styles.letterHeader}>
-                        <img src="/logo.png" alt="Institute Logo" style={{ width: '80px', marginBottom: '10px' }} 
-                             onError={(e) => { (e.currentTarget as any).src = "https://cdn-icons-png.flaticon.com/512/2641/2641333.png"; }} />
+                        <img src="/logo.png" alt="Institute Logo" style={{ width: '80px', marginBottom: '10px' }}
+                            onError={(e) => { (e.currentTarget as any).src = "https://cdn-icons-png.flaticon.com/512/2641/2641333.png"; }} />
                         <h2>Certificate of Enrollment</h2>
                         <p style={{ color: '#64748b', fontSize: '14px' }}>Official Clearance Certificate & Welcome Letter</p>
                     </div>
-                    
+
                     <pre className={styles.letterContent}>
                         {result.enrollmentLetter}
                     </pre>
@@ -302,8 +302,8 @@ export default function ResultDetail() {
                         <p style={{ fontSize: '14px', color: '#64748b' }}>AI Training Institute</p>
                         <div className={styles.letterStamp}>OFFICIALLY CLEARED</div>
                     </div>
-                    
-                    <button 
+
+                    <button
                         onClick={() => window.print()}
                         style={{
                             marginTop: '40px',
@@ -327,23 +327,23 @@ export default function ResultDetail() {
             {/* 2. Overall Score Breakdown */}
             <div className={styles.scoreGrid}>
                 <div className={styles.scoreCard}>
-                    <h3>📊 Technical Score (Average)</h3>
+                    <h3>Technical Score (Average)</h3>
                     <div className={styles.scoreValue}>{avgTechScore} / 10</div>
                 </div>
                 <div className={styles.scoreCard}>
-                    <h3>🗣 Clarity Score (Average)</h3>
+                    <h3>Clarity Score (Average)</h3>
                     <div className={styles.scoreValue}>{avgClarityScore} / 10</div>
                 </div>
                 <div className={styles.scoreCard}>
-                    <h3>🎯 Overall Score</h3>
+                    <h3>Overall Score</h3>
                     <div className={styles.scoreValue}>{overallScoreFormatted} / 10</div>
                 </div>
             </div>
-            
+
             {/* Gap Discovery Section */}
             {result.detailedSkillGap && result.detailedSkillGap.length > 0 && (
                 <div className={styles.section}>
-                    <h2 className={styles.sectionTitle}>🧠 Gap Discovery Analysis</h2>
+                    <h2 className={styles.sectionTitle}>Gap Discovery Analysis</h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
                         {result.detailedSkillGap.map((cat: any, i: number) => (
                             <div key={i} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc' }}>
@@ -418,7 +418,7 @@ export default function ResultDetail() {
                 <h2 className={styles.sectionTitle}>Detailed Feedback</h2>
                 <div className={styles.listGrid}>
                     <div className={`${styles.listColumn} ${styles.strengths}`}>
-                        <h4>🌟 Key Strengths</h4>
+                        <h4>Key Strengths</h4>
                         <ul className={styles.list}>
                             {Array.from(allStrengths).length > 0 ? (
                                 Array.from(allStrengths).map((s, idx) => <li key={idx}>{s}</li>)
@@ -429,7 +429,7 @@ export default function ResultDetail() {
                     </div>
 
                     <div className={`${styles.listColumn} ${styles.weaknesses}`}>
-                        <h4>💡 Areas to Improve</h4>
+                        <h4>Areas to Improve</h4>
                         <ul className={styles.list}>
                             {Array.from(allWeaknesses).length > 0 ? (
                                 Array.from(allWeaknesses).map((w, idx) => <li key={idx}>{w}</li>)
@@ -440,13 +440,13 @@ export default function ResultDetail() {
                     </div>
                 </div>
             </div>
-            
+
             {/* 🕒 Evaluation History Section */}
             {hasHistory && (
                 <div className={styles.section} style={{ marginTop: '40px', borderTop: '2px dashed #e2e8f0', paddingTop: '40px' }}>
                     <h2 className={styles.sectionTitle} style={{ color: '#64748b' }}>🕒 Previous Evaluation History</h2>
                     <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px' }}>Chronological record of your previous attempts and AI analysis.</p>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                         {result.evaluationHistory?.map((hist: any, hIdx: number) => (
                             <div key={hIdx} style={{ background: '#fcfcfd', padding: '24px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
@@ -456,7 +456,7 @@ export default function ResultDetail() {
                                         {hist.archivedAt ? new Date(hist.archivedAt).toLocaleDateString() : 'Previous Attempt'}
                                     </span>
                                 </div>
-                                
+
                                 <div className={styles.scoreGrid} style={{ marginBottom: '20px' }}>
                                     <div className={styles.scoreCard} style={{ padding: '12px' }}>
                                         <h5 style={{ fontSize: '12px' }}>Overall Score</h5>

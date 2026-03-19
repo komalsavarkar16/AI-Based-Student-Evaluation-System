@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form, BackgroundTasks
 from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult
 from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection
-from app.core.security import hash_password, verify_password
+from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
-from app.services.ai_service import analyze_test_results
+from app.services.ai_service import analyze_test_results, evaluate_video_answer, discover_skill_gaps, generate_overall_video_evaluation, generate_bridge_path_b_content
 from app.services.cloudinary_service import upload_video
 from app.services.transcription_service import transcribe_videos
 import secrets
@@ -33,7 +33,6 @@ async def login_student(data: StudentLogin):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
     if not verify_password(data.password, student["password"]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    from app.core.security import create_access_token
     access_token = create_access_token(data={"sub": str(student["_id"]), "role": student["role"]})
     return {
         "message": "Login successful",
@@ -92,6 +91,25 @@ async def reset_password(data: ResetPasswordRequest):
     students_collection.update_one({"_id": student["_id"]}, {"$set": {"password": hashed_password}, "$unset": {"reset_token": "", "reset_token_expiry": ""}})
     return {"message": "Password reset successfully"}
 
+@router.post("/change-password/{student_id}")
+async def change_password(student_id: str, data: dict):
+    old_password = data.get("oldPassword")
+    new_password = data.get("newPassword")
+    
+    if not old_password or not new_password:
+        raise HTTPException(status_code=400, detail="Missing passwords")
+
+    student = students_collection.find_one({"_id": ObjectId(student_id)})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+        
+    if not verify_password(old_password, student["password"]):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+        
+    hashed_password = hash_password(new_password)
+    students_collection.update_one({"_id": student["_id"]}, {"$set": {"password": hashed_password}})
+    return {"message": "Password updated successfully"}
+
 @router.post("/submit-test")
 async def submit_test(result: TestResult):
     result_dict = result.model_dump()
@@ -137,6 +155,7 @@ async def submit_test(result: TestResult):
         "pass_status": result.score >= 70,
         "analysis": analysis
     }
+
 @router.get("/check-test-status/{student_id}/{course_id}")
 async def check_test_status(student_id: str, course_id: str):
     try:
@@ -170,6 +189,7 @@ async def check_test_status(student_id: str, course_id: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+        
 @router.post("/submit-video-test")
 async def submit_video_test(
     background_tasks: BackgroundTasks,
@@ -327,7 +347,6 @@ def process_video_test_analysis(student_id: str, course_id: str):
                 related_skill = "General"
 
             # Call AI Evaluation
-            from app.services.ai_service import evaluate_video_answer
             analysis = evaluate_video_answer(question_data, transcript, course)
             
             q_answer["analysis"] = analysis
@@ -342,7 +361,6 @@ def process_video_test_analysis(student_id: str, course_id: str):
         # 4. Final results logic
         avg_score = total_score / count if count > 0 else 0
         
-        from app.services.ai_service import discover_skill_gaps
         mcq_answers = result.get("answers", [])
         detailed_skill_gaps = discover_skill_gaps(mcq_answers, updated_answers, course, threshold=7.0)
         
@@ -356,7 +374,6 @@ def process_video_test_analysis(student_id: str, course_id: str):
 
         
         # 4.1 Overall Performance Signal (AI-based)
-        from app.services.ai_service import generate_overall_video_evaluation
         overall_eval = generate_overall_video_evaluation(updated_answers, course)
 
         # 5. Update DB
@@ -453,7 +470,6 @@ class BridgePathRequest(BaseModel):
 @router.post("/bridge-path-b")
 async def get_bridge_path_b(request: BridgePathRequest):
     try:
-        from app.services.ai_service import generate_bridge_path_b_content
         content = generate_bridge_path_b_content(request.skillGap)
         return content
     except Exception as e:
@@ -461,7 +477,6 @@ async def get_bridge_path_b(request: BridgePathRequest):
 
 @router.post("/start-bridge-course/{student_id}/{course_id}")
 async def start_bridge_course(student_id: str, course_id: str):
-    from app.services.ai_service import generate_bridge_path_b_content
     result = results_collection.find_one({
         "studentId": ObjectId(student_id),
         "courseId": ObjectId(course_id)
@@ -553,3 +568,79 @@ async def finish_bridge_course(student_id: str, course_id: str):
         }
     )
     return {"message": "Pass data archived. Ready to retest."}
+
+@router.get("/dashboard-stats/{student_id}")
+async def get_dashboard_stats(student_id: str):
+    # Enrolled courses based on test results
+    results = list(results_collection.find({"studentId": ObjectId(student_id)}).sort("timestamp", -1))
+    
+    enrolled_courses = []
+    total_score = 0
+    test_count = 0
+    certificates = 0
+    
+    seen_courses = set()
+    for r in results:
+        course_id = str(r.get("courseId"))
+        if course_id in seen_courses: continue
+        seen_courses.add(course_id)
+        
+        # Simple progress logic
+        status = r.get("status", "Pending")
+        progress = 100 if status == "Approved" else (30 if status == "Pending" else (70 if "Bridge" in status else 50))
+        
+        enrolled_courses.append({
+            "name": r.get("courseTitle", "Unknown Course"),
+            "progress": progress,
+            "status": status
+        })
+        
+    # Stats across ALL attempts
+    for r in results:
+        if r.get("score"):
+            total_score += r.get("score")
+            test_count += 1
+        if r.get("status") == "Approved":
+            certificates += 1
+            
+    avg_score = round(total_score / test_count) if test_count > 0 else 0
+    
+    # Get latest recommendations and GAPS from results
+    latest_result = None
+    all_gaps = []
+    recommendations = []
+    
+    # Sort results by timestamp (already done in query results = list(...))
+    if results:
+        latest_result = results[0]
+        # Collect all unique gaps
+        seen_gaps = set()
+        for r in results:
+            if r.get("skillGap"):
+                for g in r.get("skillGap"):
+                    if g not in seen_gaps:
+                        all_gaps.append({
+                           "id": str(r["_id"]),
+                           "title": g,
+                           "description": f"Identified in {r.get('courseTitle')} assessment"
+                        })
+                        seen_gaps.add(g)
+
+        recommendations.append({
+            "title": f"Focus on {latest_result.get('courseTitle')}",
+            "description": latest_result.get("executiveSummary", "Take more assessments to get detailed recommendations.")
+        })
+        if latest_result.get("skillGap"):
+            recommendations.append({
+                "title": "Skill Improvement Needed",
+                "description": f"Focusing on {', '.join(latest_result.get('skillGap')[:2])} will help you clear the assessment."
+            })
+
+    return {
+        "enrolledCourses": enrolled_courses,
+        "avgScore": avg_score,
+        "testsTaken": test_count,
+        "certificates": certificates,
+        "recommendations": recommendations,
+        "skillGaps": all_gaps[:3] # Show top 3
+    }

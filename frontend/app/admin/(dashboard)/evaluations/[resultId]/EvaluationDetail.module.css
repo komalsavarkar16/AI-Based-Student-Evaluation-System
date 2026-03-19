@@ -244,6 +244,16 @@
     background: #f0fff4;
 }
 
+.radioItem.disabled {
+    cursor: not-allowed !important;
+    opacity: 0.7;
+    background: #f8fafc !important;
+}
+
+.radioItem.disabled:hover {
+    border-color: #e2e8f0 !important;
+}
+
 .radioItem input {
     width: 18px;
     height: 18px;
