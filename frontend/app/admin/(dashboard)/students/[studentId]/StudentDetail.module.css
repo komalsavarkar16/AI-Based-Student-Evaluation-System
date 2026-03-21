@@ -224,6 +224,19 @@
 .BridgeCourseInProgress { background: #fef9c3; color: #854d0e; }
 .RetryRequired { background: #fee2e2; color: #991b1b; }
 .Pending { background: #f1f5f9; color: #64748b; }
+.Archived { background: #e2e8f0; color: #475569; }
+
+.historyBadge {
+    margin-left: 12px;
+    padding: 2px 10px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
 
 .gapList label {
     font-size: 12px;

@@ -146,9 +146,12 @@ const StudentDetailPage = () => {
                                                 </div>
                                             </div>
                                             <div className={styles.statusRow}>
-                                                <span className={`${styles.statusBadge} ${styles[res.status?.replace(/\s+/g, '') || 'Pending']}`}>
-                                                    {res.status || 'Pending'}
+                                                <span className={`${styles.statusBadge} ${styles[res.status?.replace(/\s+/g, '') || (res.isHistory ? 'Archived' : 'Pending')]}`}>
+                                                    {res.status || (res.isHistory ? 'Archived' : 'Pending')}
                                                 </span>
+                                                {res.isHistory && (
+                                                    <span className={styles.historyBadge}>Archived Attempt</span>
+                                                )}
                                             </div>
                                             {res.skillGap && res.skillGap.length > 0 && (
                                                 <div className={styles.gapList}>
@@ -160,11 +163,13 @@ const StudentDetailPage = () => {
                                                     </div>
                                                 </div>
                                             )}
-                                            <div className={styles.actions}>
-                                                <Link href={`/admin/evaluations/${res.id}`} className={styles.viewLink}>
-                                                    View Detailed Analysis <ExternalLink size={14} />
-                                                </Link>
-                                            </div>
+                                            {!res.isHistory && (
+                                                <div className={styles.actions}>
+                                                    <Link href={`/admin/evaluations/${res.id}`} className={styles.viewLink}>
+                                                        View Detailed Analysis <ExternalLink size={14} />
+                                                    </Link>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))

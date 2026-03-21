@@ -30,3 +30,4 @@ class AdminUpdate(BaseModel):
 class AdminLogin(BaseModel):
     email: EmailStr
     password: str
+    remember_me: Optional[bool] = False

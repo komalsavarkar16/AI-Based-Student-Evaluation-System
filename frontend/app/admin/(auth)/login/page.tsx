@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./login.module.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,10 +12,20 @@ import { API_BASE_URL } from "@/app/utils/api";
 
 export default function AdminLogin() {
   const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      router.push("/admin");
+    }
+  }, [router]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<any>({});
+
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +50,8 @@ export default function AdminLogin() {
       const res = await fetch(`${API_BASE_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email, password: password }),
+        body: JSON.stringify({ email: email, password: password, remember_me: rememberMe }),
+        credentials: "include", // Important for cookies
       });
 
       const data = await res.json();
@@ -139,7 +150,7 @@ export default function AdminLogin() {
 
           <div className={styles.optionsRow}>
             <label className={styles.checkboxContainer}>
-              <input type="checkbox" /> Remember me
+              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} /> Remember me
             </label>
             <Link href="/admin/forgot-password" className={styles.forgotPass}>Forgot Password?</Link>
           </div>

@@ -8,6 +8,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { BrainCircuit } from 'lucide-react';
+import { API_BASE_URL } from "@/app/utils/api";
 
 const menuItems = [
     { label: "Students", path: "/admin/students" },
@@ -24,7 +25,15 @@ export default function Navbar() {
     const router = useRouter();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await fetch(`${API_BASE_URL}/admin/logout`, {
+                method: "POST",
+                credentials: "include"
+            });
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
         localStorage.removeItem("auth_token");
         localStorage.removeItem("role");
         localStorage.removeItem("admin_info");

@@ -11,6 +11,7 @@ class StudentCreate(BaseModel):
 class StudentLogin(BaseModel):
     email: EmailStr
     password: str
+    remember_me: Optional[bool] = False
 
 class StudentProfile(BaseModel):
     id: str

@@ -178,11 +178,21 @@ export default function VideoTestPage() {
     };
 
     const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
-            mediaRecorderRef.current.stop();
-            setIsRecording(false);
-            if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-        }
+        return new Promise<void>((resolve) => {
+            if (mediaRecorderRef.current && isRecording) {
+                // Set up a one-time handler for the stop event
+                const onStopHandler = () => {
+                    mediaRecorderRef.current?.removeEventListener('stop', onStopHandler);
+                    setIsRecording(false);
+                    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+                    resolve();
+                };
+                mediaRecorderRef.current.addEventListener('stop', onStopHandler);
+                mediaRecorderRef.current.stop();
+            } else {
+                resolve();
+            }
+        });
     };
 
     const handleRetake = () => {
@@ -196,12 +206,18 @@ export default function VideoTestPage() {
         toast.info("Recording cleared. You can start again.");
     };
 
-    const handleNext = () => {
-        if (isRecording) stopRecording();
+    const handleNext = async () => {
+        if (isRecording) {
+            await stopRecording();
+        }
+        
         if (currentIdx < questions.length - 1) {
             setCurrentIdx(prev => prev + 1);
         } else {
-            handleFinalSubmit();
+            // Need a slight delay for state to catch up for answersCompleted
+            setTimeout(() => {
+                handleFinalSubmit();
+            }, 300);
         }
     };
 

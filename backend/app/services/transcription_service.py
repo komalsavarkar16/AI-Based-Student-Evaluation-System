@@ -62,7 +62,7 @@ def transcribe_videos(student_id: str, course_id: str, video_urls: list):
             - "confidenceScore": A number out of 10 representing the student's confidence."""
             
             gemini_response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-1.5-flash',
                 contents=[
                     uploaded_file,
                     prompt

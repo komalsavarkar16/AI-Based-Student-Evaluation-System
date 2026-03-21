@@ -46,11 +46,27 @@ async def login_admin(data: AdminLogin):
             detail="Invalid email or password"
         )
 
-    access_token = create_access_token(data={"sub": str(admin["_id"]), "role": admin["role"]})
+    # Determine expiration based on Remember Me
+    remember_me = data.remember_me
+    if remember_me:
+        # 30 days
+        expiry_time = timedelta(days=30)
+        max_age = 2592000  # seconds (30 days)
+    else:
+        # 1 hour
+        expiry_time = timedelta(hours=1)
+        max_age = 3600  # seconds (1 hour)
 
-    return {
+    # Create the token
+    access_token = create_access_token(
+        data={"sub": str(admin["_id"]), "role": admin["role"]},
+        expires_delta=expiry_time
+    )
+
+    # Prepare response data
+    content = {
         "message": "Login successful",
-        "access_token": access_token,
+        "access_token": access_token, # Keep it for localStorage
         "token_type": "bearer",
         "admin": {
             "id": str(admin["_id"]),
@@ -60,6 +76,29 @@ async def login_admin(data: AdminLogin):
         },
         "role": admin["role"]
     }
+
+    # Create JSONResponse to set the cookie
+    from fastapi.responses import JSONResponse
+    response = JSONResponse(content=content)
+    
+    # Set the cookie (for future unification or if frontend starts using it)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,  # Prevent JS access
+        max_age=max_age,
+        samesite="lax",
+        secure=False,    # Set to True in Production
+    )
+
+    return response
+
+@router.post("/logout")
+async def logout_admin():
+    from fastapi.responses import JSONResponse
+    response = JSONResponse(content={"message": "Logged out successfully"})
+    response.delete_cookie("access_token")
+    return response
 
 @router.post("/forgot-password")
 async def forgot_password(data: ForgotPasswordRequest):
@@ -392,18 +431,34 @@ async def get_student_detail(student_id: str):
         
     student["id"] = str(student.pop("_id"))
     
-    # Get all test results for this student
-    test_results = list(results_collection.find({"studentId": ObjectId(student_id)}).sort("timestamp", -1))
-    for r in test_results:
-        r["id"] = str(r.pop("_id"))
-        r["studentId"] = str(r["studentId"])
-        r["courseId"] = str(r["courseId"])
-        if "evaluatedAt" in r and r["evaluatedAt"]:
-             r["evaluatedAt"] = r["evaluatedAt"].isoformat()
-        if "timestamp" in r and r["timestamp"]:
-             r["timestamp"] = r["timestamp"].isoformat()
+    # Get all active results for this student
+    active_results = list(results_collection.find({"studentId": ObjectId(student_id)}).sort("timestamp", -1))
+    
+    all_evaluations = []
+    for r in active_results:
+        # Add the active result first
+        r_id = str(r.pop("_id"))
+        current_res = {**r, "id": r_id, "isHistory": False}
+        if "evaluatedAt" in current_res and current_res["evaluatedAt"]:
+             current_res["evaluatedAt"] = current_res["evaluatedAt"].isoformat()
+        if "timestamp" in current_res and current_res["timestamp"]:
+             current_res["timestamp"] = current_res["timestamp"].isoformat()
+        all_evaluations.append(current_res)
+        
+        # Add history entries from this result
+        if "evaluationHistory" in r:
+            for hist in r["evaluationHistory"]:
+                hist_entry = {**hist, "id": f"{r_id}_hist_{hist.get('archivedAt')}", "isHistory": True, "courseTitle": r.get("courseTitle")}
+                if "evaluatedAt" in hist_entry and hist_entry["evaluatedAt"]:
+                    hist_entry["evaluatedAt"] = hist_entry["evaluatedAt"].isoformat()
+                if "archivedAt" in hist_entry and hist_entry["archivedAt"]:
+                    hist_entry["timestamp"] = hist_entry["archivedAt"].isoformat() # Use archival date as timestamp for history
+                all_evaluations.append(hist_entry)
+
+    # Sort everything by timestamp/evaluatedAt
+    all_evaluations.sort(key=lambda x: x.get("timestamp") or x.get("evaluatedAt") or "", reverse=True)
 
     return {
         "profile": student,
-        "results": test_results
+        "results": all_evaluations
     }

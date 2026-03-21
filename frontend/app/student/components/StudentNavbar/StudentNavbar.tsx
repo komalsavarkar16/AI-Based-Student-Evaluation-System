@@ -12,6 +12,7 @@ import {
     Close as CloseIcon,
     School as SchoolIcon
 } from "@mui/icons-material";
+import { API_BASE_URL } from "@/app/utils/api";
 
 export default function StudentNavbar() {
     const pathname = usePathname();
@@ -33,9 +34,18 @@ export default function StudentNavbar() {
         }
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await fetch(`${API_BASE_URL}/student/logout`, {
+                method: "POST",
+                credentials: "include"
+            });
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
         localStorage.removeItem("student_info");
         localStorage.removeItem("student_id");
+        localStorage.removeItem("auth_token");
         router.push("/student/login");
     };
 

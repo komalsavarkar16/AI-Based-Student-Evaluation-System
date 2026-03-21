@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form, BackgroundTasks
+from fastapi.responses import JSONResponse
 from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult
 from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection
 from app.core.security import hash_password, verify_password, create_access_token
@@ -29,15 +30,33 @@ def register_student(student: StudentCreate):
 @router.post("/login")
 async def login_student(data: StudentLogin):
     student = students_collection.find_one({"email": data.email})
+    
     if not student:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
     if not verify_password(data.password, student["password"]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    access_token = create_access_token(data={"sub": str(student["_id"]), "role": student["role"]})
-    return {
+
+    # Determine expiration based on Remember Me
+    remember_me = data.remember_me
+    if remember_me:
+        # 30 days
+        expiry_time = timedelta(days=30)
+        max_age = 2592000  # seconds (30 days)
+    else:
+        # 1 hour
+        expiry_time = timedelta(hours=1)
+        max_age = 3600  # seconds (1 hour)
+
+    # Create the token
+    access_token = create_access_token(
+        data={"sub": str(student["_id"]), "role": student["role"]},
+        expires_delta=expiry_time
+    )
+
+    # Prepare response data
+    content = {
         "message": "Login successful",
-        "access_token": access_token,
-        "token_type": "bearer",
+        "access_token": access_token, # Add this to support localStorage
         "role": student["role"],
         "student": {
             "id": str(student["_id"]),
@@ -46,6 +65,28 @@ async def login_student(data: StudentLogin):
             "lastName": student["lastName"],
         }
     }
+
+    # Create JSONResponse to set the cookie
+    response = JSONResponse(content=content)
+    
+    # Set the cookie
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,  # Prevent JS access (Secure)
+        max_age=max_age,
+        samesite="lax", # Recommended for local dev
+        secure=False,    # Set to True in Production with HTTPS
+    )
+
+    return response
+
+@router.post("/logout")
+async def logout_student():
+    response = JSONResponse(content={"message": "Logged out successfully"})
+    response.delete_cookie("access_token")
+    return response
+
 
 @router.get("/profile/{student_id}", response_model=StudentProfile)
 async def get_student_profile(student_id: str):
@@ -206,31 +247,46 @@ async def submit_video_test(
         video_urls = []
         
         errors = []
+        # Read and prepare all file contents beforehand to release UploadFile resources quickly
+        file_data = []
         for file in files:
-            # Clean public_id
-            filename = file.filename or "unknown_file.mp4"
-            public_id = re.sub(r'[^a-zA-Z0-9_-]', '_', filename.split('.')[0])
-            
-            # Read file content
             content = await file.read()
-            if len(content) == 0:
-                print(f"Warning: File {filename} is empty")
-                errors.append(f"File {filename} is empty")
-                continue
+            if len(content) > 0:
+                filename = file.filename or "unknown_file.mp4"
+                public_id = re.sub(r'[^a-zA-Z0-9_-]', '_', filename.split('.')[0])
+                file_data.append((content, public_id, filename))
+            else:
+                print(f"Warning: File {file.filename} is empty")
 
-            # Upload to Cloudinary
-            try:
-                response = upload_video(content, folder_path, public_id)
-                if response:
-                    video_urls.append({
-                        "question": public_id,
-                        "url": response.get("secure_url")
-                    })
-            except Exception as upload_err:
-                error_msg = str(upload_err)
-                print(f"Upload failed for {filename}: {error_msg}")
-                errors.append(f"{filename}: {error_msg}")
+        if not file_data:
+            raise HTTPException(status_code=400, detail="No valid video files uploaded.")
+
+        import asyncio
+        from concurrent.futures import ThreadPoolExecutor
         
+        # Parallelize Cloudinary uploads using a thread pool
+        def upload_worker(data):
+            content, pid, fname = data
+            try:
+                cloudinary_res = upload_video(content, folder_path, pid)
+                if cloudinary_res:
+                    return {"question": pid, "url": cloudinary_res.get("secure_url")}
+            except Exception as e:
+                return {"error": str(e), "filename": fname}
+            return None
+
+        loop = asyncio.get_event_loop()
+        with ThreadPoolExecutor() as executor:
+            upload_results = await asyncio.gather(*[
+                loop.run_in_executor(executor, upload_worker, data) for data in file_data
+            ])
+
+        for res in upload_results:
+            if res and "url" in res:
+                video_urls.append(res)
+            elif res and "error" in res:
+                errors.append(f"{res['filename']}: {res['error']}")
+
         if not video_urls:
             error_detail = "Failed to upload videos."
             if errors:
@@ -249,7 +305,8 @@ async def submit_video_test(
             "videoUrl": folder_url, # Now storing the folder link as requested
             "videoTestSubmittedAt": datetime.utcnow().strftime("%Y-%m-%d"),
             "videoTestEvaluationStatus": "pending",
-            "status": "Pending"
+            "status": "Pending",
+            "timestamp": datetime.utcnow() # Update timestamp so it shows at the top for admins
         }
 
         # Try to find the latest existing document
@@ -302,14 +359,16 @@ def process_video_test_analysis(student_id: str, course_id: str):
             print("No video answers found for analysis")
             return
 
-        # 2. Fetch course details and identify which questions were used
+        # 2. Identify which questions were used (Retest vs Standard)
         course = courses_collection.find_one({"_id": ObjectId(course_id)})
+        retest_questions = result.get("retestQuestions")
         
-        # Check if we used dynamic retest questions or standard ones
-        video_questions = result.get("retestQuestions")
-        if not video_questions:
-            video_questions_data = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
-            video_questions = video_questions_data.get("videoQuestions", []) if video_questions_data else []
+        if retest_questions:
+            active_questions = retest_questions
+        else:
+            # Fallback to standard video questions for the course
+            video_questions_doc = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
+            active_questions = video_questions_doc.get("videoQuestions", []) if video_questions_doc else []
         
         if not course:
             print("Course not found")
@@ -318,25 +377,26 @@ def process_video_test_analysis(student_id: str, course_id: str):
         # 3. Analyze each answer
         total_score = 0
         count = 0
-        
         updated_answers = []
+        
         for q_answer in result["videoAnswers"]:
-            question_id = q_answer.get("questionId") # e.g. "Q1"
+            question_id = q_answer.get("questionId")
             transcript = q_answer.get("transcript")
             
-            # Map Q1 -> index 0
+            # Map transcript to the actual question data
             try:
-                # Extract number from Q1, Q2 etc.
-                num_str = re.search(r'\d+', question_id).group()
-                idx = int(num_str) - 1
+                # Find the numeric index from IDs like "Q1", "Video_1", "question_1"
+                import re
+                match = re.search(r'\d+', question_id)
+                idx = int(match.group()) - 1 if match else -1
                 
-                if idx < len(video_questions):
-                    question_obj = video_questions[idx]
-                else:
-                    question_obj = question_id # Fallback
-                
-                if isinstance(question_obj, dict):
-                    question_data = question_obj
+                if 0 <= idx < len(active_questions):
+                    question_obj = active_questions[idx]
+                    question_data = {
+                        "question": question_obj.get("question"), 
+                        "relatedSkill": question_obj.get("relatedSkill", "General"),
+                        "expectedConcepts": question_obj.get("expectedConcepts", [])
+                    }
                     related_skill = question_obj.get("relatedSkill", "General")
                 else:
                     question_data = {"question": question_id, "relatedSkill": "General"}
