@@ -15,7 +15,13 @@ const StudentManagementTable = () => {
                 const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`);
                 if (res.ok) {
                     const data = await res.json();
-                    setEvaluations(data.slice(0, 5)); // Show only recent 5
+                    // Show only completed AI evaluations (where videoScore is not "Pending")
+                    const completed = data.filter((item: any) => item.videoScore !== "Pending");
+                    // Sort by timestamp descending
+                    const sorted = completed.sort((a: any, b: any) => 
+                        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+                    );
+                    setEvaluations(sorted.slice(0, 5)); 
                 }
             } catch (error) {
                 console.error("Error fetching evaluations:", error);
@@ -63,11 +69,11 @@ const StudentManagementTable = () => {
                                         </div>
                                     </td>
                                     <td>
-                                        <span className={`${styles.badge} ${styles.completed}`}>
-                                            Evaluated
+                                        <span className={`${styles.badge} ${evalItem.status === 'Approved' ? styles.completed : styles.pending}`}>
+                                            {evalItem.status || 'Evaluated'}
                                         </span>
                                     </td>
-                                    <td>{evalItem.score} / 10</td>
+                                    <td>{evalItem.videoScore} / 10</td>
                                     <td>
                                         <Link href={`/admin/ai-evaluations/${evalItem.id}`}>
                                             <button className={styles.actionButton}>View Report</button>

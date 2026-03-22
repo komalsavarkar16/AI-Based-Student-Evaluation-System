@@ -15,23 +15,33 @@
 }
 
 .logo {
-    font-size: 1.25rem;
-    font-weight: 700;
-    background: linear-gradient(to right, #8c52ff, #a855f7);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
 }
 
-.logoEmoji {
-    color: #8c52ff;
-    font-size: 40px;
+.logoIcon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #8c52ff, #a855f7);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(140, 82, 255, 0.3);
+}
+
+.logoText {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.025em;
 }
 
 .navLinks {

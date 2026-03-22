@@ -6,6 +6,7 @@ import { Course } from "../../../types/course";
 import { API_BASE_URL } from "@/app/utils/api";
 
 import Link from "next/link";
+import { BookOpen, Layers, Activity, Plus, Layout } from "lucide-react";
 
 export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -32,33 +33,58 @@ export default function Courses() {
     }
   };
 
-  if (loading) return <p>Loading courses...</p>;
+  if (loading) return (
+    <div className={styles.loadingContainer}>
+      <p>Loading premium courses...</p>
+    </div>
+  );
 
   return (
     <div className={styles.mainContainer}>
       <div className={styles.headerContainer}>
         <h1 className={styles.courseHeading}>Courses Management</h1>
         <Link href="/admin/courses/add">
-          <button className={styles.addCourseButton}>Add Course</button>
+          <button className={styles.addCourseButton}>
+            <Plus size={18} style={{ marginRight: '8px' }} />
+            Add New Course
+          </button>
         </Link>
       </div>
       {courses.length === 0 ? (
-        <p>No course available</p>
+        <div className={styles.emptyState}>
+          <Layout size={48} color="#94a3b8" />
+          <p>No courses available at the moment.</p>
+        </div>
       ) : (
         <div className={styles.coursesContainer}>
           {courses.map((course) => (
             <div key={course._id} className={styles.courseCard}>
               <h2 className={styles.courseTitle}>{course.title}</h2>
-              <p className={styles.category}>
-                Category: <span>{course.category}</span>
-              </p>
-              <p className={styles.level}>
-                Level: <span>{course.level}</span>
-              </p>
-              <p className={styles.status}>
-                Status: <span>{course.status}</span>
-              </p>
-              <Link className={styles.editButton} href={`/admin/courses/${course._id}`}>View Course</Link>
+              
+              <div className={styles.detailsList}>
+                <p className={styles.category}>
+                  <span><BookOpen size={16} /> Category</span>
+                  <span>{course.category}</span>
+                </p>
+                <p className={styles.level}>
+                  <span><Layers size={16} /> Level</span>
+                  <span>{course.level}</span>
+                </p>
+                <p className={styles.status}>
+                  <span><Activity size={16} /> Status</span>
+                  <span style={{ 
+                    backgroundColor: course.status === 'published' ? '#ecfdf5' : '#fff7ed',
+                    color: course.status === 'published' ? '#059669' : '#d97706',
+                    textTransform: 'capitalize'
+                  }}>
+                    {course.status}
+                  </span>
+                </p>
+              </div>
+
+              <Link className={styles.editButton} href={`/admin/courses/${course._id}`}>
+                View Course Details
+              </Link>
             </div>
           ))}
         </div>

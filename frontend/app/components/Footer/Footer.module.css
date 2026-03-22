@@ -1,0 +1,215 @@
+.footer {
+    background-color: #ffffff;
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    padding: 2rem 0 1.5rem 0;
+    margin-top: auto;
+    width: 100%;
+    color: #475569;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+.logoContainer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.logoIcon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #57cc99, #38a3a5);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(87, 204, 153, 0.3);
+}
+
+.logoText {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+}
+
+.description {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: #64748b;
+    margin-bottom: 1.5rem;
+    max-width: 320px;
+}
+
+.socials {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.socialLink {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.socialLink:hover {
+    background: #ffffff;
+    color: #57cc99;
+    border-color: #57cc99;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(87, 204, 153, 0.1);
+}
+
+.linkGroup h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+}
+
+.linkGroup ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.linkGroup li {
+    margin-bottom: 0.75rem;
+}
+
+.linkGroup a {
+    text-decoration: none;
+    color: #64748b;
+    font-size: 0.9375rem;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.linkGroup a:hover {
+    color: #57cc99;
+}
+
+.newsletter h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+}
+
+.newsletter p {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 1.25rem;
+}
+
+.inputGroup {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.inputGroup input {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+    background: #f8fafc;
+}
+
+.inputGroup input:focus {
+    border-color: #57cc99;
+    background: #ffffff;
+}
+
+.subscribeBtn {
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    background: #0f172a;
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.subscribeBtn:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+}
+
+.bottomBar {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: #94a3b8;
+}
+
+@media (max-width: 640px) {
+    .bottomBar {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+    }
+}
+
+.builtWith {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.heartIcon {
+    color: #ef4444;
+}
+
+.author {
+    color: #0f172a;
+    font-weight: 600;
+}

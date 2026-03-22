@@ -43,7 +43,7 @@ def generate_mcqs(course):
     try:
         # Using the model confirmed working in test.py
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt
         )
         
@@ -93,7 +93,7 @@ def generate_retest_mcqs(course, previous_gaps):
     """
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -140,7 +140,7 @@ def generate_video_questions(course):
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt
         )
         
@@ -186,7 +186,7 @@ def generate_retest_video_questions(course, previous_gaps):
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -221,7 +221,7 @@ def analyze_test_results(answers, course_title):
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt
         )
         
@@ -309,7 +309,7 @@ Return ONLY a valid JSON object in this format:
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -467,7 +467,7 @@ def generate_bridge_path_b_content(skill_gaps):
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -518,7 +518,7 @@ def generate_welcome_letter(student_name, course_title, overall_score):
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt
         )
         return response.text.strip()

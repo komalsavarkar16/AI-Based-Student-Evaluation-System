@@ -96,7 +96,7 @@ export default function LandingPage() {
           ))}
         </div>
       </div>
-      <div className={styles.processSection}>
+      <div id="how-it-works" className={styles.processSection}>
         <h1 className={styles.heading}>How It Works</h1>
         <p className={styles.subHeading}>Simple, efficient, and AI-powered evaluation process</p>
 

@@ -157,11 +157,12 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                 toast.success(`Course status updated to ${newStatus}`);
                 setCourse(prev => prev ? { ...prev, status: newStatus } : null);
             } else {
-                throw new Error("Failed to update status");
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Failed to update status");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            toast.error("Error updating course status");
+            toast.error(error.message || "Error updating course status");
         } finally {
             setUpdatingStatus(false);
         }

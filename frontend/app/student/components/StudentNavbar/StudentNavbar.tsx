@@ -64,7 +64,7 @@ export default function StudentNavbar() {
         <nav className={styles.navbar}>
             <div className={styles.navBrand}>
                 <Link href="/student" className={styles.logo}>
-                    <SchoolIcon className={styles.logoEmoji} sx={{ fontSize: 40 }} />
+                    <div className={styles.logoIcon}>AI</div>
                 </Link>
                 <button className={styles.hamburger} onClick={toggleMenu}>
                     {isMenuOpen ? <CloseIcon /> : <MenuIcon />}

@@ -31,6 +31,11 @@ def create_course(course: CourseCreate, current_user: dict = Depends(get_current
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Only admins can create courses")
         
+    # Check if a course with the same title already exists (case-insensitive)
+    existing_course = courses_collection.find_one({"title": {"$regex": f"^{course.title}$", "$options": "i"}})
+    if existing_course:
+        raise HTTPException(status_code=400, detail=f"Course with title '{course.title}' already exists")
+
     course_data = course.dict()
     
     # Inject backend defaults
@@ -86,7 +91,40 @@ def update_course(course_id: str, course_update: CourseUpdate, current_user: dic
     #     raise HTTPException(status_code=403, detail="You can only edit your own courses")
 
     update_data = {k: v for k, v in course_update.dict().items() if v is not None}
+
+    # Check if title is being updated and if the new title already exists (case-insensitive)
+    if "title" in update_data:
+        existing_course = courses_collection.find_one({
+            "title": {"$regex": f"^{update_data['title']}$", "$options": "i"},
+            "_id": {"$ne": ObjectId(course_id)}
+        })
+        if existing_course:
+            raise HTTPException(status_code=400, detail=f"Course with title '{update_data['title']}' already exists")
+
+    print(f"Update data received for {course_id}: {update_data}")
+
+    # Check for questions before publishing
+    # Only trigger if specifically changing status TO "published"
+    new_status = update_data.get("status")
+    current_status = course.get("status")
     
+    if new_status and str(new_status).lower() == "published" and str(current_status).lower() != "published":
+        from app.database.connection import mcq_collection, video_questions_collection
+        
+        # We need to find the single document that contains the array of questions
+        mcq_doc = mcq_collection.find_one({"courseId": ObjectId(course_id)})
+        mcq_count = len(mcq_doc.get("mcqs", [])) if mcq_doc else 0
+        
+        video_doc = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
+        video_count = len(video_doc.get("videoQuestions", [])) if video_doc else 0
+        
+        print(f"Publish check for {course_id} results: MCQs={mcq_count}, Videos={video_count}")
+        
+        if mcq_count < 5:
+            raise HTTPException(status_code=400, detail=f"Cannot publish course without at least 5 MCQs. We only found {mcq_count}.")
+        if video_count < 3:
+            raise HTTPException(status_code=400, detail=f"Cannot publish course without at least 3 Video Questions. We only found {video_count}.")
+
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
 

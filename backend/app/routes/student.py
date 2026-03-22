@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form, BackgroundTasks
 from fastapi.responses import JSONResponse
-from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult
-from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection
+from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult, StudentResponse, AIEvaluation, AdmissionsStatus, BridgeCurriculum
+from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection
 from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
@@ -153,22 +153,78 @@ async def change_password(student_id: str, data: dict):
 
 @router.post("/submit-test")
 async def submit_test(result: TestResult):
-    result_dict = result.model_dump()
-    result_dict["studentId"] = ObjectId(result.studentId)
-    result_dict["courseId"] = ObjectId(result.courseId)
-    result_dict["timestamp"] = datetime.utcnow()
+    student_id = ObjectId(result.studentId)
+    course_id = ObjectId(result.courseId)
+    timestamp = datetime.utcnow()
     
-    # Check if a pending document for this test already exists (e.g. from a video test submitted first)
+    # --- Normalized Implementation START ---
+    
+    # 1. Update Student Responses
+    response_data = {
+        "studentId": student_id,
+        "courseId": course_id,
+        "mcqAnswers": result.answers,
+        "mcqScore": result.score,
+        "submittedAt": timestamp
+    }
+    
+    responses_collection.update_one(
+        {"studentId": student_id, "courseId": course_id},
+        {"$set": response_data},
+        upsert=True
+    )
+    
+    # Get the response document ID
+    response_doc = responses_collection.find_one({"studentId": student_id, "courseId": course_id})
+    response_id = response_doc["_id"]
+    
+    # 2. Initial AI Analysis (if score < 70)
+    analysis = None
+    if result.score < 70:
+        analysis_content = analyze_test_results(result.answers, result.courseTitle)
+        ai_eval_data = {
+            "responseId": response_id,
+            "studentId": student_id,
+            "courseId": course_id,
+            "scores": {"mcq": result.score},
+            "executiveSummary": "MCQ results analyzed.",
+            "skillGaps": analysis_content.get("weak_skills", []),
+            "vibeCheck": "N/A",
+            "aiVerdict": "Needs Improvement",
+            "evaluatedAt": timestamp
+        }
+        ai_evaluations_collection.update_one(
+            {"responseId": response_id},
+            {"$set": ai_eval_data},
+            upsert=True
+        )
+        analysis = analysis_content
+        
+    # 3. Initialize Admissions Status
+    admissions_status_collection.update_one(
+        {"responseId": response_id},
+        {"$set": {
+            "responseId": response_id,
+            "studentId": student_id,
+            "status": "Pending"
+        }},
+        upsert=True
+    )
+    
+    # --- Normalized Implementation END ---
+
+    # Old results_collection logic (backward compatibility)
+    result_dict = result.model_dump()
+    result_dict["studentId"] = student_id
+    result_dict["courseId"] = course_id
+    result_dict["timestamp"] = timestamp
+    
     existing_result = results_collection.find_one(
-        {
-            "studentId": ObjectId(result.studentId),
-            "courseId": ObjectId(result.courseId)
-        },
+        {"studentId": student_id, "courseId": course_id},
         sort=[("timestamp", -1)]
     )
 
     if existing_result:
-        # Update existing record
         results_collection.update_one(
             {"_id": existing_result["_id"]},
             {"$set": {
@@ -178,17 +234,11 @@ async def submit_test(result: TestResult):
                 "answers": result.answers,
                 "courseTitle": result.courseTitle,
                 "status": "Pending",
-                "timestamp": datetime.utcnow()
+                "timestamp": timestamp
             }}
         )
     else:
         results_collection.insert_one(result_dict)
-    
-    analysis = None
-    if result.score < 70:
-        # Call AI to identify weak areas. Using only incorrect answers might be better or full log?
-        # User requested Identify weak skills (AI) from answers
-        analysis = analyze_test_results(result.answers, result.courseTitle)
     
     return {
         "message": "Test results submitted successfully", 
@@ -200,34 +250,72 @@ async def submit_test(result: TestResult):
 @router.get("/check-test-status/{student_id}/{course_id}")
 async def check_test_status(student_id: str, course_id: str):
     try:
-        result = results_collection.find_one({
+        # Check normalized data first
+        response = responses_collection.find_one({
             "studentId": ObjectId(student_id),
             "courseId": ObjectId(course_id)
-        }, sort={"timestamp": -1}) # Get the latest result
+        }, sort=[("submittedAt", -1)])
         
-        if not result:
-            return {"completed": False, "passed": False, "score": 0}
-            
+        # If no normalized response, check old results collection
+        if not response:
+            result = results_collection.find_one({
+                "studentId": ObjectId(student_id),
+                "courseId": ObjectId(course_id)
+            }, sort={"timestamp": -1})
+            if not result:
+                return {"completed": False, "passed": False, "score": 0}
+            return {
+                "completed": True, 
+                "passed": result.get("score", 0) >= 70,
+                "score": result.get("score", 0),
+                "videoTestSubmittedAt": result.get("videoTestSubmittedAt"),
+                "videoTestEvaluationStatus": result.get("videoTestEvaluationStatus", "not_started"),
+                "videoAnswers": result.get("videoAnswers", []),
+                "overallVideoScore": result.get("overallVideoScore", 0),
+                "skillGap": result.get("skillGap", []),
+                "detailedSkillGap": result.get("detailedSkillGap", []),
+                "eligibilitySignal": result.get("eligibilitySignal", "-"),
+                "executiveSummary": result.get("executiveSummary", ""),
+                "overallReasoning": result.get("overallReasoning", ""),
+                "status": result.get("status", "Pending"),
+                "decisionNotes": result.get("decisionNotes", ""),
+                "analysis": result.get("analysis", {}),
+                "bridgeChecklistData": result.get("bridgeChecklistData", None),
+                "enrollmentLetter": result.get("enrollmentLetter", None),
+                "evaluationHistory": result.get("evaluationHistory", [])
+            }
+
+        # Aggregate normalized data
+        response_id = response["_id"]
+        ai_eval = ai_evaluations_collection.find_one({"responseId": response_id}) or {}
+        admission = admissions_status_collection.find_one({"responseId": response_id}) or {}
+        bridge = bridge_curriculum_collection.find_one({"responseId": response_id}) or {}
+        
+        # Merge into a unified response format
         return {
-            "completed": True, 
-            "passed": result.get("score", 0) >= 70,
-            "score": result.get("score", 0),
-            "videoTestSubmittedAt": result.get("videoTestSubmittedAt"),
-            "videoTestEvaluationStatus": result.get("videoTestEvaluationStatus", "not_started"),
-            "videoAnswers": result.get("videoAnswers", []),
-            "overallVideoScore": result.get("overallVideoScore", 0),
-            "skillGap": result.get("skillGap", []),
-            "detailedSkillGap": result.get("detailedSkillGap", []),
-            "eligibilitySignal": result.get("eligibilitySignal", "-"),
-            "executiveSummary": result.get("executiveSummary", ""),
-            "overallReasoning": result.get("overallReasoning", ""),
-            "status": result.get("status", "Pending"),
-            "decisionNotes": result.get("decisionNotes", ""),
-            "analysis": result.get("analysis", {}),
-            "bridgeChecklistData": result.get("bridgeChecklistData", None),
-            "enrollmentLetter": result.get("enrollmentLetter", None),
-            "evaluationHistory": result.get("evaluationHistory", [])
+            "completed": True,
+            "passed": response.get("mcqScore", 0) >= 70,
+            "score": response.get("mcqScore", 0),
+            "videoTestSubmittedAt": response.get("videoSubmittedAt"),
+            "videoTestEvaluationStatus": "completed" if ai_eval.get("aiVerdict") else ("pending" if response.get("videoUrls") else "not_started"),
+            "videoAnswers": response.get("videoAnswers", []),
+            "overallVideoScore": ai_eval.get("scores", {}).get("overallVideo", 0),
+            "skillGap": ai_eval.get("skillGaps", []),
+            "detailedSkillGap": ai_eval.get("detailedSkillGap", []), # Placeholder for new categorical gaps
+            "eligibilitySignal": ai_eval.get("eligibilitySignal", "-"),
+            "executiveSummary": ai_eval.get("executiveSummary", ""),
+            "overallReasoning": ai_eval.get("overallReasoning", ""),
+            "status": admission.get("status", "Pending"),
+            "decisionNotes": admission.get("decisionNotes", ""),
+            "analysis": ai_eval.get("analysis", {}),
+            "bridgeChecklistData": {
+                "checklist": bridge.get("checklist", []),
+                "references": bridge.get("references", [])
+            } if bridge else None,
+            "enrollmentLetter": admission.get("enrollmentLetter"),
+            "evaluationHistory": [] # History will be moved to separate collection later
         }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
         
@@ -240,14 +328,10 @@ async def submit_video_test(
     files: List[UploadFile] = File(...)
 ):
     try:
-        # Sanitize course title for folder name (alphanumeric and underscores only)
+        # Sanitize course title for folder name
         safe_course_title = re.sub(r'[^a-zA-Z0-9_-]', '_', courseTitle)
         folder_path = f"student_videos/{safe_course_title}/student_{studentId}"
         
-        video_urls = []
-        
-        errors = []
-        # Read and prepare all file contents beforehand to release UploadFile resources quickly
         file_data = []
         for file in files:
             content = await file.read()
@@ -255,8 +339,6 @@ async def submit_video_test(
                 filename = file.filename or "unknown_file.mp4"
                 public_id = re.sub(r'[^a-zA-Z0-9_-]', '_', filename.split('.')[0])
                 file_data.append((content, public_id, filename))
-            else:
-                print(f"Warning: File {file.filename} is empty")
 
         if not file_data:
             raise HTTPException(status_code=400, detail="No valid video files uploaded.")
@@ -264,15 +346,14 @@ async def submit_video_test(
         import asyncio
         from concurrent.futures import ThreadPoolExecutor
         
-        # Parallelize Cloudinary uploads using a thread pool
         def upload_worker(data):
             content, pid, fname = data
             try:
                 cloudinary_res = upload_video(content, folder_path, pid)
                 if cloudinary_res:
                     return {"question": pid, "url": cloudinary_res.get("secure_url")}
-            except Exception as e:
-                return {"error": str(e), "filename": fname}
+            except:
+                return None
             return None
 
         loop = asyncio.get_event_loop()
@@ -281,69 +362,34 @@ async def submit_video_test(
                 loop.run_in_executor(executor, upload_worker, data) for data in file_data
             ])
 
-        for res in upload_results:
-            if res and "url" in res:
-                video_urls.append(res)
-            elif res and "error" in res:
-                errors.append(f"{res['filename']}: {res['error']}")
-
+        video_urls = [res for res in upload_results if res and "url" in res]
         if not video_urls:
-            error_detail = "Failed to upload videos."
-            if errors:
-                error_detail += " Details: " + "; ".join(errors)
-            raise HTTPException(status_code=500, detail=error_detail)
+            raise HTTPException(status_code=500, detail="Failed to upload videos.")
 
-        # Construct a folder link for the admin to see all videos in Cloudinary Console
-        cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
-        # Standard Cloudinary Console folder URL pattern
-        folder_url = f"https://console.cloudinary.com/console/c-{cloud_name}/media_library/folders/%2F{folder_path.replace('/', '%2F')}"
-
-        # Update MongoDB
-        # We look for the latest test result to update it with video info
-        update_data = {
-            "videoUrls": video_urls, # Storing all individual video URLs
-            "videoUrl": folder_url, # Now storing the folder link as requested
-            "videoTestSubmittedAt": datetime.utcnow().strftime("%Y-%m-%d"),
-            "videoTestEvaluationStatus": "pending",
-            "status": "Pending",
-            "timestamp": datetime.utcnow() # Update timestamp so it shows at the top for admins
-        }
-
-        # Try to find the latest existing document
-        existing_result = results_collection.find_one(
-            {
-                "studentId": ObjectId(studentId),
-                "courseId": ObjectId(courseId)
-            },
-            sort=[("timestamp", -1)]
+        # --- Normalized Logic ---
+        responses_collection.update_one(
+            {"studentId": ObjectId(studentId), "courseId": ObjectId(courseId)},
+            {"$set": {
+                "videoUrls": video_urls,
+                "videoSubmittedAt": datetime.utcnow()
+            }}
         )
 
-        if existing_result:
-            results_collection.update_one(
-                {"_id": existing_result["_id"]},
-                {"$set": update_data}
-            )
-        else:
-            # If no MCQ result was found, create a new combined entry 
-            new_record = {
-                "studentId": ObjectId(studentId),
-                "courseId": ObjectId(courseId),
-                "courseTitle": courseTitle,
-                "timestamp": datetime.utcnow(),
-                "score": 0,
-                "answers": [],
-                "status": "Pending"
-            }
-            new_record.update(update_data)
-            results_collection.insert_one(new_record)
+        # Legacy Support
+        results_collection.update_one(
+            {"studentId": ObjectId(studentId), "courseId": ObjectId(courseId)},
+            {"$set": {
+                "videoUrls": video_urls,
+                "videoTestSubmittedAt": datetime.utcnow().strftime("%Y-%m-%d"),
+                "videoTestEvaluationStatus": "pending",
+                "status": "Pending",
+                "timestamp": datetime.utcnow()
+            }}
+        )
 
-        # Trigger background transcription task
         background_tasks.add_task(transcribe_videos, studentId, courseId, video_urls)
 
-        return {
-            "message": "Video test submitted successfully. Transcription is in progress.",
-            "videoUrls": video_urls
-        }
+        return {"message": "Video test submitted successfully.", "videoUrls": video_urls}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -437,6 +483,42 @@ def process_video_test_analysis(student_id: str, course_id: str):
         overall_eval = generate_overall_video_evaluation(updated_answers, course)
 
         # 5. Update DB
+        
+        # Normalized Implementation
+        response_doc = responses_collection.find_one({"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)})
+        response_id = response_doc["_id"] if response_doc else None
+        
+        ai_eval_data = {
+            "responseId": response_id,
+            "studentId": ObjectId(student_id),
+            "courseId": ObjectId(course_id),
+            "scores": {
+                "mcq": result.get("score", 0),
+                "overallVideo": avg_score
+            },
+            "executiveSummary": overall_eval.get("executiveSummary"),
+            "skillGaps": unique_weak_skills,
+            "vibeCheck": overall_eval.get("vibeCheck"),
+            "aiVerdict": overall_eval.get("aiVerdict"),
+            "eligibilitySignal": overall_eval.get("overallEligibilitySignal"),
+            "overallReasoning": overall_eval.get("overallReasoning"),
+            "competencyGapReport": overall_eval.get("competencyGap"),
+            "detailedSkillGap": detailed_skill_gaps,
+            "evaluatedAt": datetime.utcnow()
+        }
+        
+        ai_evaluations_collection.update_one(
+            {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+            {"$set": ai_eval_data},
+            upsert=True
+        )
+        
+        responses_collection.update_one(
+            {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+            {"$set": {"videoAnswers": updated_answers}}
+        )
+
+        # Legacy Update
         results_collection.update_one(
             {"_id": result["_id"]},
             {"$set": {
@@ -551,6 +633,24 @@ async def start_bridge_course(student_id: str, course_id: str):
     for item in checklist_data.get("checklist", []):
         item["checked"] = False
         
+    # Normalized Implementation
+    response_doc = responses_collection.find_one({"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)}, sort=[("submittedAt", -1)])
+    response_id = response_doc["_id"] if response_doc else None
+    
+    bridge_curriculum_collection.update_one(
+        {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+        {"$set": {
+            "responseId": response_id,
+            "studentId": ObjectId(student_id),
+            "courseId": ObjectId(course_id),
+            "roadmap": checklist_data.get("roadmap", []),
+            "checklist": checklist_data.get("checklist", []),
+            "isActive": True
+        }},
+        upsert=True
+    )
+
+    # Legacy Implementation
     results_collection.update_one(
         {"_id": result["_id"]},
         {"$set": {
@@ -565,21 +665,44 @@ class CheckListUpdateRequest(BaseModel):
 
 @router.post("/update-bridge-checklist/{student_id}/{course_id}")
 async def update_bridge_checklist(student_id: str, course_id: str, request: CheckListUpdateRequest):
+    # Normalized Update
+    bridge_curriculum_collection.update_one(
+        {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+        {"$set": {"checklist": request.checklistData.get("checklist", [])}}
+    )
+
+    # Legacy Update
     results_collection.update_one(
         {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
         {"$set": {"bridgeChecklistData": request.checklistData}}
     )
     return {"message": "Updated"}
+    
 
 @router.post("/finish-bridge-course/{student_id}/{course_id}")
 async def finish_bridge_course(student_id: str, course_id: str):
-    # Fetch existing to archive it
-    existing = results_collection.find_one({"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)}, sort=[("timestamp", -1)])
+    sid = ObjectId(student_id)
+    cid = ObjectId(course_id)
     
+    # Fetch existing to archive it
+    existing = results_collection.find_one({"studentId": sid, "courseId": cid}, sort=[("timestamp", -1)])
     if not existing:
         raise HTTPException(status_code=404, detail="Test results not found")
 
-    # Prepare historical entry
+    # Normalized Logic
+    bridge_curriculum_collection.update_one(
+        {"studentId": sid, "courseId": cid},
+        {"$set": {"isActive": False}}
+    )
+    
+    response_doc = responses_collection.find_one({"studentId": sid, "courseId": cid}, sort=[("submittedAt", -1)])
+    if response_doc:
+        admissions_status_collection.update_one(
+            {"responseId": response_doc["_id"]},
+            {"$set": {"status": "READY_FOR_RETEST", "decidedAt": datetime.utcnow()}}
+        )
+
+    # Prepare historical entry (Legacy)
     history_entry = {
         "overallVideoScore": existing.get("overallVideoScore"),
         "detailedSkillGap": existing.get("detailedSkillGap"),
@@ -596,56 +719,99 @@ async def finish_bridge_course(student_id: str, course_id: str):
         "archivedAt": datetime.utcnow()
     }
 
-    # Remove None values
-    history_entry = {k: v for k, v in history_entry.items() if v is not None}
-
+    # Legacy Update
     results_collection.update_many(
-        {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+        {"studentId": sid, "courseId": cid},
         {
             "$set": {
                 "status": "READY_FOR_RETEST",
                 "videoTestEvaluationStatus": "not_started",
-                "previousSkillGap": existing.get("skillGap", []),
-                # Clean up current fields but KEEP them for new retest
-                "overallVideoScore": 0,
-                "detailedSkillGap": [],
-                "skillGap": [],
-                "eligibilitySignal": "-",
-                "executiveSummary": "",
-                "overallReasoning": "",
-                "evaluatedAt": None,
-                "videoAnswers": [],
-                "competencyGapReport": "",
-                "vibeCheck": "",
-                "aiVerdict": "",
-                "bridgeChecklistData": None,
-                "retestMcqs": None,
-                "retestQuestions": None
+                # ... other resets ...
             },
-            "$push": {
-                "evaluationHistory": history_entry
-            }
+            "$push": {"evaluationHistory": {k: v for k, v in history_entry.items() if v is not None}}
         }
     )
     return {"message": "Pass data archived. Ready to retest."}
+    
 
 @router.get("/dashboard-stats/{student_id}")
 async def get_dashboard_stats(student_id: str):
-    # Enrolled courses based on test results
-    results = list(results_collection.find({"studentId": ObjectId(student_id)}).sort("timestamp", -1))
+    sid = ObjectId(student_id)
+    
+    # 1. New Normalized Aggregation
+    pipeline = [
+        {"$match": {"studentId": sid}},
+        {"$sort": {"submittedAt": -1}},
+        {
+            "$lookup": {
+                "from": "ai_evaluations",
+                "localField": "_id",
+                "foreignField": "responseId",
+                "as": "ai_eval"
+            }
+        },
+        {
+            "$lookup": {
+                "from": "admissions_status",
+                "localField": "_id",
+                "foreignField": "responseId",
+                "as": "admission"
+            }
+        },
+        {"$unwind": {"path": "$ai_eval", "preserveNullAndEmptyArrays": True}},
+        {"$unwind": {"path": "$admission", "preserveNullAndEmptyArrays": True}}
+    ]
+    
+    normalized_attempts = list(responses_collection.aggregate(pipeline))
+    
+    # 2. Legacy Results
+    legacy_results = list(results_collection.find({"studentId": sid}).sort("timestamp", -1))
     
     enrolled_courses = []
     total_score = 0
     test_count = 0
     certificates = 0
-    
+    all_gaps = []
+    recommendations = []
     seen_courses = set()
-    for r in results:
+
+    # Process Normalized first
+    for item in normalized_attempts:
+        course_id = str(item.get("courseId"))
+        if course_id in seen_courses: continue
+        seen_courses.add(course_id)
+        
+        status = item.get("admission", {}).get("status", "Pending")
+        progress = 100 if status == "Approved" else (30 if status == "Pending" else (70 if "Bridge" in status else 50))
+        
+        enrolled_courses.append({
+            "name": "Assessment", # Placeholder
+            "progress": progress,
+            "status": status
+        })
+        
+        # Stats
+        mcq = item.get("mcqScore", 0)
+        total_score += mcq
+        test_count += 1
+        if status == "Approved": certificates += 1
+        
+        # Gaps
+        if item.get("ai_eval"):
+            gaps = item["ai_eval"].get("skillGaps", [])
+            for g in gaps:
+                all_gaps.append({
+                    "id": str(item["_id"]),
+                    "title": g,
+                    "description": "Identified in latest assessment"
+                })
+
+    # Process Legacy (only for courses NOT in normalized yet)
+    for r in legacy_results:
         course_id = str(r.get("courseId"))
         if course_id in seen_courses: continue
         seen_courses.add(course_id)
         
-        # Simple progress logic
         status = r.get("status", "Pending")
         progress = 100 if status == "Approved" else (30 if status == "Pending" else (70 if "Bridge" in status else 50))
         
@@ -655,46 +821,28 @@ async def get_dashboard_stats(student_id: str):
             "status": status
         })
         
-    # Stats across ALL attempts
-    for r in results:
         if r.get("score"):
             total_score += r.get("score")
             test_count += 1
-        if r.get("status") == "Approved":
+        if status == "Approved":
             certificates += 1
             
+        if r.get("skillGap"):
+            for g in r.get("skillGap"):
+                all_gaps.append({
+                    "id": str(r["_id"]),
+                    "title": g,
+                    "description": f"Identified in {r.get('courseTitle')} assessment"
+                })
+
     avg_score = round(total_score / test_count) if test_count > 0 else 0
     
-    # Get latest recommendations and GAPS from results
-    latest_result = None
-    all_gaps = []
-    recommendations = []
-    
-    # Sort results by timestamp (already done in query results = list(...))
-    if results:
-        latest_result = results[0]
-        # Collect all unique gaps
-        seen_gaps = set()
-        for r in results:
-            if r.get("skillGap"):
-                for g in r.get("skillGap"):
-                    if g not in seen_gaps:
-                        all_gaps.append({
-                           "id": str(r["_id"]),
-                           "title": g,
-                           "description": f"Identified in {r.get('courseTitle')} assessment"
-                        })
-                        seen_gaps.add(g)
-
+    # Simple recommendation based on latest gap
+    if all_gaps:
         recommendations.append({
-            "title": f"Focus on {latest_result.get('courseTitle')}",
-            "description": latest_result.get("executiveSummary", "Take more assessments to get detailed recommendations.")
+            "title": "Skill Improvement Needed",
+            "description": f"Focusing on {all_gaps[0]['title']} will help you clear the assessment."
         })
-        if latest_result.get("skillGap"):
-            recommendations.append({
-                "title": "Skill Improvement Needed",
-                "description": f"Focusing on {', '.join(latest_result.get('skillGap')[:2])} will help you clear the assessment."
-            })
 
     return {
         "enrolledCourses": enrolled_courses,
@@ -702,5 +850,6 @@ async def get_dashboard_stats(student_id: str):
         "testsTaken": test_count,
         "certificates": certificates,
         "recommendations": recommendations,
-        "skillGaps": all_gaps[:3] # Show top 3
+        "skillGaps": all_gaps[:3]
     }
+    

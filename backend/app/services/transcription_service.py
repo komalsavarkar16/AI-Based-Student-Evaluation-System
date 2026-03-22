@@ -1,6 +1,6 @@
 import os
 import requests
-from app.database.connection import results_collection
+from app.database.connection import results_collection, responses_collection
 from bson import ObjectId
 from tempfile import NamedTemporaryFile
 from dotenv import load_dotenv
@@ -62,7 +62,7 @@ def transcribe_videos(student_id: str, course_id: str, video_urls: list):
             - "confidenceScore": A number out of 10 representing the student's confidence."""
             
             gemini_response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-3-flash-preview',
                 contents=[
                     uploaded_file,
                     prompt
@@ -125,6 +125,20 @@ def transcribe_videos(student_id: str, course_id: str, video_urls: list):
 
     # Step 5: Store transcript in DB
     try:
+        # Normalized Update
+        responses_collection.update_one(
+            {
+                "studentId": ObjectId(student_id),
+                "courseId": ObjectId(course_id)
+            },
+            {
+                "$set": {
+                    "videoAnswers": transcripts
+                }
+            }
+        )
+
+        # Legacy Update
         results_collection.update_one(
             {
                 "studentId": ObjectId(student_id),

@@ -172,10 +172,10 @@ export default function AdminProfile() {
                                 <h3>Quick Actions</h3>
                             </div>
                             <div className={styles.infoGrid}>
-                                <Link href="/admin/courses" className={styles.editBtn} style={{ color: '#1e293b', background: '#f1f5f9' }}>
+                                <Link href="/admin/courses" className={styles.editBtn} style={{ color: '#2d6a4f', background: '#c7f9cc', borderColor: '#80ed99' }}>
                                     Manage Courses
                                 </Link>
-                                <Link href="/admin/dashboard" className={styles.editBtn} style={{ color: '#1e293b', background: '#f1f5f9' }}>
+                                <Link href="/admin" className={styles.editBtn} style={{ color: '#2d6a4f', background: '#c7f9cc', borderColor: '#80ed99' }}>
                                     View Analytics
                                 </Link>
                             </div>

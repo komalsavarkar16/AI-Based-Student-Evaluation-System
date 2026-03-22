@@ -54,3 +54,38 @@ class TestResult(BaseModel):
     status: Optional[str] = "Pending"
     decisionNotes: Optional[str] = None
     timestamp: datetime = None
+
+class StudentResponse(BaseModel):
+    studentId: str
+    courseId: str
+    mcqAnswers: List[dict]
+    mcqScore: float
+    videoAnswers: Optional[List[dict]] = []
+    videoUrls: Optional[List[dict]] = []
+    submittedAt: datetime = datetime.now()
+
+class AIEvaluation(BaseModel):
+    responseId: str
+    studentId: str
+    courseId: str
+    scores: dict
+    executiveSummary: str
+    skillGaps: List[str]
+    vibeCheck: str
+    aiVerdict: str
+    evaluatedAt: datetime = datetime.now()
+
+class AdmissionsStatus(BaseModel):
+    responseId: str
+    studentId: str
+    status: str = "Pending"
+    decisionNotes: Optional[str] = None
+    enrollmentLetter: Optional[str] = None
+    decidedAt: Optional[datetime] = None
+
+class BridgeCurriculum(BaseModel):
+    responseId: str
+    studentId: str
+    roadmap: List[dict]
+    checklist: List[dict]
+    isActive: bool = True

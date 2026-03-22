@@ -48,7 +48,7 @@ export default function Navbar() {
         <nav className={styles.navbar}>
             <div className={styles.navBrand}>
                 <Link href="/admin" className={styles.logo}>
-                    <BrainCircuit size={24} className={styles.logoIcon} />
+                    <div className={styles.logoIcon}>AI</div>
                 </Link>
                 <button className={styles.hamburger} onClick={toggleMenu}>
                     {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
