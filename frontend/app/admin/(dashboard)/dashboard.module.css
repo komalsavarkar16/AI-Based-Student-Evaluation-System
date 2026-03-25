@@ -140,7 +140,8 @@
 /* 1. Large screens (High-res desktops) */
 @media (min-width: 1281px) {
     .mainContent {
-        max-width: 1400px;
+        max-width: 90%;
+        margin: 0 auto;
     }
 }
 

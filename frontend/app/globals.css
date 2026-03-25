@@ -26,3 +26,7 @@ body {
   font-family: 'Inter', serif;
   overflow-x: hidden;
 }
+
+body::-webkit-scrollbar {
+  display: none;
+}

@@ -7,6 +7,10 @@
     overflow: hidden;
 }
 
+.mainContent::-webkit-scrollbar {
+    display: none;
+}
+
 .spinner {
     border: 3px solid rgba(0, 0, 0, 0.1);
     border-radius: 50%;
@@ -402,7 +406,7 @@
 /* 1. Large screens (High-res desktops) */
 @media (min-width: 1281px) {
     .dashboardContent {
-        max-width: 1400px;
+        max-width: 90%;
         margin: 0 auto;
     }
 }

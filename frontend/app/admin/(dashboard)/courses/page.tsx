@@ -4,12 +4,14 @@ import styles from "./courses.module.css";
 import { useState, useEffect } from "react";
 import { Course } from "../../../types/course";
 import { API_BASE_URL } from "@/app/utils/api";
+import SearchBar from "@/app/components/SearchBar/SearchBar";
 
 import Link from "next/link";
-import { BookOpen, Layers, Activity, Plus, Layout } from "lucide-react";
+import { BookOpen, Layers, Activity, Plus, Layout, Search } from "lucide-react";
 
 export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +35,11 @@ export default function Courses() {
     }
   };
 
+  const filteredCourses = courses.filter(course => 
+    course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) return (
     <div className={styles.loadingContainer}>
       <p>Loading premium courses...</p>
@@ -42,22 +49,43 @@ export default function Courses() {
   return (
     <div className={styles.mainContainer}>
       <div className={styles.headerContainer}>
-        <h1 className={styles.courseHeading}>Courses Management</h1>
-        <Link href="/admin/courses/add">
-          <button className={styles.addCourseButton}>
-            <Plus size={18} style={{ marginRight: '8px' }} />
-            Add New Course
-          </button>
-        </Link>
+        <div>
+          <h1 className={styles.courseHeading}>Courses Management</h1>
+          <p className={styles.courseSubheading}>Manage and organize your academic catalog</p>
+        </div>
+        <div className={styles.headerActions}>
+          <SearchBar 
+            value={searchQuery} 
+            onChange={setSearchQuery} 
+            placeholder="Search by title or category..." 
+          />
+          <Link href="/admin/courses/add">
+            <button className={styles.addCourseButton}>
+              <Plus size={18} style={{ marginRight: '8px' }} />
+              Add New Course
+            </button>
+          </Link>
+        </div>
       </div>
       {courses.length === 0 ? (
         <div className={styles.emptyState}>
           <Layout size={48} color="#94a3b8" />
           <p>No courses available at the moment.</p>
         </div>
+      ) : filteredCourses.length === 0 ? (
+        <div className={styles.emptyState}>
+          <Search size={48} color="#94a3b8" />
+          <p>No courses match your search "{searchQuery}"</p>
+          <button 
+            className={styles.resetSearch}
+            onClick={() => setSearchQuery("")}
+          >
+            Clear Search
+          </button>
+        </div>
       ) : (
         <div className={styles.coursesContainer}>
-          {courses.map((course) => (
+          {filteredCourses.map((course) => (
             <div key={course._id} className={styles.courseCard}>
               <h2 className={styles.courseTitle}>{course.title}</h2>
               

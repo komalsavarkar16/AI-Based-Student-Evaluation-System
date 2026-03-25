@@ -19,6 +19,19 @@
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.025em;
+    margin-bottom: 0.25rem;
+}
+
+.courseSubheading {
+    font-size: 1rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
 }
 
 .headerContainer .addCourseButton {
@@ -220,6 +233,23 @@
     margin-top: 1rem;
     font-size: 1.125rem;
     font-weight: 500;
+}
+
+.resetSearch {
+    margin-top: 1.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.resetSearch:hover {
+    background: #e2e8f0;
+    color: #1e293b;
 }
 
 .detailsList {

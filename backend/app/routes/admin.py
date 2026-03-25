@@ -49,9 +49,9 @@ async def login_admin(data: AdminLogin):
     # Determine expiration based on Remember Me
     remember_me = data.remember_me
     if remember_me:
-        # 30 days
-        expiry_time = timedelta(days=30)
-        max_age = 2592000  # seconds (30 days)
+        # 7 days
+        expiry_time = timedelta(days=7)
+        max_age = 604800  # seconds (7 days)
     else:
         # 1 hour
         expiry_time = timedelta(hours=1)

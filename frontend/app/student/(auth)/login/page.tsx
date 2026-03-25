@@ -1,165 +1,26 @@
 "use client";
-import { useState, useEffect } from "react";
-import styles from "./login.module.css";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { toast } from "react-toastify";
-import { API_BASE_URL } from "@/app/utils/api";
+import AuthLayout from "@/app/components/Auth/AuthLayout";
+import LoginForm from "@/app/components/Auth/LoginForm";
 
-export default function StudentLogin() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-      router.push("/student");
-    }
-  }, [router]);
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<any>({});
-  const [rememberMe, setRememberMe] = useState(false);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    let newErrors: any = {};
-
-    if (!email) {
-      newErrors.email = "Email is required";
-    } else if (!email.includes("@")) {
-      newErrors.email = "Please enter a valid email";
-    }
-
-    if (!password) {
-      newErrors.password = "Password is required";
-    }
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) return;
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/student/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email, password: password, remember_me: rememberMe }),
-        credentials: "include",
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.detail || "Login failed");
-        return;
-      }
-
-      toast.success("Login successful");
-
-      // Store student details and token
-      if (data.access_token) {
-        localStorage.setItem("auth_token", data.access_token);
-      }
-      if (data.student) {
-        localStorage.setItem("student_info", JSON.stringify(data.student));
-        localStorage.setItem("student_id", data.student.id);
-      }
-
-      if (data.role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/student");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Backend not reachable");
-    }
-  };
-
+export default function StudentLoginPage() {
   return (
-    <div className={styles.container}>
-      <div className={styles.leftPanel}>
-        <h2 className={styles.welcomeTitle}>Welcome Back!</h2>
-        <p className={styles.subHeading}>
-          To keep connected with us please login with your personal info.
-        </p>
-        <Link href="/student/register" className={styles.signUpLink}>
-          Sign Up
-        </Link>
-      </div>
-      <div className={styles.rightPanel}>
-        <h2 className={styles.title}>Sign In</h2>
-        <p className={styles.subtitle}>Log in to continue your learning journey</p>
-
-        <form className={styles.form} onSubmit={handleLogin}>
-          <div className={styles.inputWrapper}>
-            <div className={styles.inputField}>
-              <PersonOutlineIcon className={styles.icon} />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email or Username"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setErrors((prev: any) => ({
-                    ...prev,
-                    email: "",
-                  }));
-                }}
-              />
-            </div>
-            {errors.email && (
-              <span className={styles.error}>{errors.email}</span>
-            )}
-          </div>
-
-          <div className={styles.inputWrapper}>
-            <div className={styles.inputField}>
-              <LockOutlinedIcon className={styles.icon} />
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setErrors((prev: any) => ({
-                    ...prev,
-                    password: "",
-                  }));
-                }}
-              />
-              <span
-                className={styles.eyeIcon}
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-              </span>
-            </div>
-            {errors.password && (
-              <span className={styles.error}>{errors.password}</span>
-            )}
-          </div>
-
-          <div className={styles.optionsRow}>
-            <label className={styles.checkboxContainer}>
-              <input type="checkbox" onChange={(e) => setRememberMe(e.target.checked)} /> Remember me
-            </label>
-            <Link href="/student/forgot-password" className={styles.forgotPass}>Forgot Password?</Link>
-          </div>
-
-          <button type="submit" className={styles.submitBtn}>
-            Sign In
-          </button>
-        </form>
-      </div>
-    </div>
+    <AuthLayout
+      welcomeTitle="Hello Student! 👋"
+      subHeading="Start your AI-powered learning journey. Let AI identify your gaps and help you master new skills effectively!"
+      actionLabel="Don't have an account?"
+      actionText="Sign Up"
+      actionLink="/student/register"
+      role="student"
+    >
+      <LoginForm
+        role="student"
+        title="Sign In"
+        subtitle="Log in to continue your learning journey"
+        apiEndpoint="/student/login"
+        redirectPath="/student"
+        storageKey="student_info"
+        forgotPasswordLink="/student/forgot-password"
+      />
+    </AuthLayout>
   );
 }
