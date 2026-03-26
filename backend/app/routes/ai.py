@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from bson import ObjectId
 from datetime import datetime
-from app.database.connection import courses_collection, mcq_collection, video_questions_collection, results_collection
+from app.database.connection import courses_collection, mcq_collection, video_questions_collection, results_collection, settings_collection
 from app.services.ai_service import generate_mcqs, generate_video_questions, generate_retest_video_questions, generate_retest_mcqs
 
 router = APIRouter(prefix="/ai", tags=["AI"])
@@ -13,7 +13,11 @@ def generate_mcq(course_id: str):
         raise HTTPException(status_code=404, detail="Course not found")
 
     try:
-        generated_mcqs = generate_mcqs(course)
+        # Fetch settings for dynamic count
+        settings = settings_collection.find_one({"type": "global_config"})
+        mcq_count = settings.get("mcqCount", 10) if settings else 10
+        
+        generated_mcqs = generate_mcqs(course, count=mcq_count)
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -73,7 +77,11 @@ def get_mcq(course_id: str, student_id: str = Query(None)):
                     if not gaps:
                         gaps = course.get("skills_required", [])
                     
-                    dynamic_mcqs = generate_retest_mcqs(course, gaps)
+                    # Fetch settings for retest count
+                    settings = settings_collection.find_one({"type": "global_config"})
+                    mcq_count = settings.get("mcqCount", 10) if settings else 10
+                    
+                    dynamic_mcqs = generate_retest_mcqs(course, gaps, count=mcq_count)
                     
                     results_collection.update_one(
                         {"_id": result["_id"]},
@@ -112,7 +120,11 @@ def generate_video_questions_route(course_id:str):
         raise HTTPException(status_code=404, detail="Course not found")
     
     try:
-        generated_video_questions = generate_video_questions(course)
+        # Fetch settings for dynamic count
+        settings = settings_collection.find_one({"type": "global_config"})
+        video_count = settings.get("videoCount", 6) if settings else 6
+        
+        generated_video_questions = generate_video_questions(course, count=video_count)
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -174,8 +186,12 @@ def get_video_questions(course_id: str, student_id: str = Query(None)):
                     if not gaps:
                         gaps = course.get("skills_required", [])
                     
+                    # Fetch settings for retest count
+                    settings = settings_collection.find_one({"type": "global_config"})
+                    video_count = settings.get("videoCount", 6) if settings else 6
+                    
                     print(f"DEBUG: generating retest video questions for gaps={gaps}")
-                    dynamic_questions = generate_retest_video_questions(course, gaps)
+                    dynamic_questions = generate_retest_video_questions(course, gaps, count=video_count)
                     
                     # Store these questions in the result
                     results_collection.update_one(

@@ -12,6 +12,7 @@ export default function StudentDashboard() {
   const [studentInfo, setStudentInfo] = useState<any>({});
   const [history, setHistory] = useState<any[]>([]);
   const [skills, setSkills] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [gaps, setGaps] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<any[]>([]);
@@ -31,15 +32,16 @@ export default function StudentDashboard() {
     }
 
     try {
-      // Parallel fetch profile and consolidated dashboard-stats
-      const [profileRes, statsRes] = await Promise.all([
+      // Parallel fetch profile, consolidated dashboard-stats, and announcements
+      const [profileRes, statsRes, announcementsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/student/profile/${studentId}`),
-        fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`)
+        fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`),
+        fetch(`${API_BASE_URL}/student/announcements/${studentId}`)
       ]);
 
       let profileData = {};
       if (profileRes.ok) {
-        profileData = await profileRes.json();
+        profileData = await profileRes.ok ? await profileRes.json() : {};
         setStudentInfo(profileData);
       }
       
@@ -62,6 +64,11 @@ export default function StudentDashboard() {
         // Use profileData directly instead of studentInfo state
         const profileSkills = (profileData as any).skills || [];
         setSkills(profileSkills.map((s: string) => ({ name: s, percentage: statsData.avgScore || 0 })));
+      }
+
+      if (announcementsRes.ok) {
+        const announcementsData = await announcementsRes.json();
+        setAnnouncements(announcementsData);
       }
     } catch (e) {
       console.error("Dashboard fetch error:", e);
@@ -98,6 +105,33 @@ export default function StudentDashboard() {
             />
 
             <HistoryTable history={history} />
+
+            {/* Announcements Section */}
+            <div className={styles.announcementsSection}>
+              <div className={styles.sectionHeader}>
+                <h3 className={styles.sectionTitle}>Recent Announcements</h3>
+              </div>
+              
+              <div className={styles.announcementList}>
+                {announcements.length > 0 ? (
+                  announcements.map((announcement) => (
+                    <div key={announcement.id} className={styles.announcementItem}>
+                      <div className={styles.announcementHeader}>
+                        <h4 className={styles.announcementTitle}>{announcement.title}</h4>
+                        <span className={styles.announcementDate}>
+                          {new Date(announcement.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className={styles.announcementBody}>{announcement.message}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className={styles.noAnnouncements}>
+                    No recent announcements for you.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </main>

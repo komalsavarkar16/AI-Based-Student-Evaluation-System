@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form, BackgroundTasks
 from fastapi.responses import JSONResponse
 from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult, StudentResponse, AIEvaluation, AdmissionsStatus, BridgeCurriculum
-from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection
+from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, settings_collection, announcements_collection
 from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
@@ -178,9 +178,12 @@ async def submit_test(result: TestResult):
     response_doc = responses_collection.find_one({"studentId": student_id, "courseId": course_id})
     response_id = response_doc["_id"]
     
-    # 2. Initial AI Analysis (if score < 70)
+    # 2. Initial AI Analysis (if score < passing_score)
+    settings = settings_collection.find_one({"type": "global_config"})
+    passing_score = settings.get("passingScore", 70) if settings else 70
+
     analysis = None
-    if result.score < 70:
+    if result.score < passing_score:
         analysis_content = analyze_test_results(result.answers, result.courseTitle)
         ai_eval_data = {
             "responseId": response_id,
@@ -243,7 +246,7 @@ async def submit_test(result: TestResult):
     return {
         "message": "Test results submitted successfully", 
         "score": result.score,
-        "pass_status": result.score >= 70,
+        "pass_status": result.score >= passing_score,
         "analysis": analysis
     }
 
@@ -262,11 +265,15 @@ async def check_test_status(student_id: str, course_id: str):
                 "studentId": ObjectId(student_id),
                 "courseId": ObjectId(course_id)
             }, sort={"timestamp": -1})
+            # Fetch settings for passing score verification
+            settings = settings_collection.find_one({"type": "global_config"})
+            passing_score = settings.get("passingScore", 70) if settings else 70
+            
             if not result:
                 return {"completed": False, "passed": False, "score": 0}
             return {
                 "completed": True, 
-                "passed": result.get("score", 0) >= 70,
+                "passed": result.get("score", 0) >= passing_score,
                 "score": result.get("score", 0),
                 "videoTestSubmittedAt": result.get("videoTestSubmittedAt"),
                 "videoTestEvaluationStatus": result.get("videoTestEvaluationStatus", "not_started"),
@@ -291,10 +298,14 @@ async def check_test_status(student_id: str, course_id: str):
         admission = admissions_status_collection.find_one({"responseId": response_id}) or {}
         bridge = bridge_curriculum_collection.find_one({"responseId": response_id}) or {}
         
+        # Fetch settings for passing score verification
+        settings = settings_collection.find_one({"type": "global_config"})
+        passing_score = settings.get("passingScore", 70) if settings else 70
+        
         # Merge into a unified response format
         return {
             "completed": True,
-            "passed": response.get("mcqScore", 0) >= 70,
+            "passed": response.get("mcqScore", 0) >= passing_score,
             "score": response.get("mcqScore", 0),
             "videoTestSubmittedAt": response.get("videoSubmittedAt"),
             "videoTestEvaluationStatus": "completed" if ai_eval.get("aiVerdict") else ("pending" if response.get("videoUrls") else "not_started"),
@@ -464,11 +475,12 @@ def process_video_test_analysis(student_id: str, course_id: str):
             total_score += score
             count += 1
 
-        # 4. Final results logic
-        avg_score = total_score / count if count > 0 else 0
+        # Fetch settings for weightages and passing score
+        settings = settings_collection.find_one({"type": "global_config"})
+        skill_threshold = settings.get("passingScore", 70) / 10 if settings else 7.0
         
         mcq_answers = result.get("answers", [])
-        detailed_skill_gaps = discover_skill_gaps(mcq_answers, updated_answers, course, threshold=7.0)
+        detailed_skill_gaps = discover_skill_gaps(mcq_answers, updated_answers, course, threshold=skill_threshold)
         
         # Flatten the detailed categorical gaps into a simple list of skills to not break old frontend code just in case
         unique_weak_skills = []
@@ -576,18 +588,69 @@ async def get_student_notifications(student_id: str):
     if not ObjectId.is_valid(student_id):
         raise HTTPException(status_code=400, detail="Invalid student ID")
         
+    sid = ObjectId(student_id)
+    
+    # 1. Fetch individual notifications
     notifications = list(db.notifications.find({
-        "studentId": ObjectId(student_id),
+        "studentId": sid,
         "type": "admin_decision" 
-    }).sort("timestamp", -1))
+    }))
+    
+    # 2. Fetch relevant announcements (Reuse logic from get_student_announcements)
+    # Get student's enrolled/attempted courses for targeting
+    responses = list(responses_collection.find({"studentId": sid}, {"courseId": 1}))
+    legacy_results = list(results_collection.find({"studentId": sid}, {"courseId": 1}))
+    
+    enrolled_course_ids = set()
+    for r in responses:
+        if r.get("courseId"): enrolled_course_ids.add(str(r["courseId"]))
+    for r in legacy_results:
+        if r.get("courseId"): enrolled_course_ids.add(str(r["courseId"]))
+        
+    query = {
+        "$or": [
+            {"targetAudience": "all"},
+            {"courseId": {"$in": list(enrolled_course_ids)}}
+        ]
+    }
+    
+    # Filter announcements by expiry
+    announcements = list(announcements_collection.find(query))
+    now = datetime.utcnow()
     
     results = []
+    
+    # Process notifications
     for n in notifications:
         n["_id"] = str(n["_id"])
         n["studentId"] = str(n["studentId"])
         if "courseId" in n and n["courseId"]:
             n["courseId"] = str(n["courseId"])
         results.append(n)
+        
+    # Process announcements as notifications
+    for a in announcements:
+        # Check expiry
+        if a.get("expiryDate"):
+            try:
+                expiry = datetime.fromisoformat(a["expiryDate"])
+                if expiry <= now: continue
+            except:
+                pass
+        
+        results.append({
+            "_id": str(a["_id"]),
+            "type": "announcement",
+            "studentId": student_id,
+            "courseTitle": "General Announcement" if a["targetAudience"] == "all" else "Course Announcement",
+            "message": a["message"],
+            "title": a["title"],
+            "isRead": False, 
+            "timestamp": a["createdAt"]
+        })
+        
+    # 3. Sort by timestamp descending
+    results.sort(key=lambda x: x["timestamp"] if isinstance(x["timestamp"], datetime) else datetime.fromisoformat(x["timestamp"]) if isinstance(x["timestamp"], str) else datetime.min, reverse=True)
         
     return results
 
@@ -852,4 +915,54 @@ async def get_dashboard_stats(student_id: str):
         "recommendations": recommendations,
         "skillGaps": all_gaps[:3]
     }
+
+@router.get("/announcements/{student_id}")
+async def get_student_announcements(student_id: str):
+    if not ObjectId.is_valid(student_id):
+        raise HTTPException(status_code=400, detail="Invalid student ID")
+        
+    sid = ObjectId(student_id)
+    
+    # 1. Get student's enrolled/attempted courses
+    # Normalized
+    responses = list(responses_collection.find({"studentId": sid}, {"courseId": 1}))
+    # Legacy
+    legacy_results = list(results_collection.find({"studentId": sid}, {"courseId": 1}))
+    
+    enrolled_course_ids = set()
+    for r in responses:
+        if r.get("courseId"): enrolled_course_ids.add(str(r["courseId"]))
+    for r in legacy_results:
+        if r.get("courseId"): enrolled_course_ids.add(str(r["courseId"]))
+        
+    # 2. Fetch announcements
+    query = {
+        "$or": [
+            {"targetAudience": "all"},
+            {"courseId": {"$in": list(enrolled_course_ids)}}
+        ]
+    }
+    
+    announcements = list(announcements_collection.find(query).sort("createdAt", -1))
+    
+    # 3. Filter and process
+    now = datetime.utcnow()
+    results = []
+    
+    for a in announcements:
+        # Check expiry
+        if a.get("expiryDate"):
+            try:
+                expiry = datetime.fromisoformat(a["expiryDate"])
+                if expiry <= now: continue
+            except:
+                pass # Keep if parsing fails (flexible)
+        
+        a["id"] = str(a.pop("_id"))
+        if "courseId" in a and a["courseId"]:
+            a["courseId"] = str(a["courseId"])
+            
+        results.append(a)
+        
+    return results
     

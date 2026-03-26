@@ -1,7 +1,7 @@
 .pageWrapper {
     padding: 2.5rem;
-    /* max-width: 1100px; */
-    /* margin: 0 auto; */
+    max-width: 1200px;
+    margin: 0 auto;
     min-height: calc(100vh - 70px);
     background-color: #F8FAFC;
     background-size: cover;
@@ -191,6 +191,10 @@
 
 .iconGray {
     color: #94A3B8;
+}
+
+.iconPurple {
+    color: #8c52ff;
 }
 
 .courseTitle {

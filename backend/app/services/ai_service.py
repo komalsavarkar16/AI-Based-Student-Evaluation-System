@@ -8,7 +8,7 @@ load_dotenv()
 # Configure Gemini using the working method from test.py
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-def generate_mcqs(course):
+def generate_mcqs(course, count=10):
     """
     Generates MCQs for a given course using the new Google GenAI SDK.
     """
@@ -16,7 +16,7 @@ def generate_mcqs(course):
     
     prompt = f"""
     You are an expert educator.
-    Generate 10 VERY BASIC level Multiple Choice Questions (MCQs) 
+    Generate {count} VERY BASIC level Multiple Choice Questions (MCQs) 
     for absolute beginners who are just starting this course.
     Course Details:
     Title: {course.get('title')}
@@ -29,7 +29,7 @@ def generate_mcqs(course):
     - Questions should test recall and basic understanding only.
     - Assume the student has only introductory knowledge.
     Requirements:
-    1. Exactly 10 questions.
+    1. Exactly {count} questions.
     2. Each question must have exactly 4 options.
     3. Only one correct answer.
     4. Options must be short and simple.
@@ -60,9 +60,9 @@ def generate_mcqs(course):
         print(f"Error in generate_mcqs: {str(e)}")
         raise e
 
-def generate_retest_mcqs(course, previous_gaps):
+def generate_retest_mcqs(course, previous_gaps, count=10):
     """
-    Generates 10 custom MCQs specifically targeting previous skill gaps for a retest.
+    Generates {count} custom MCQs specifically targeting previous skill gaps for a retest.
     """
     client = genai.Client(api_key=GEMINI_API_KEY)
     
@@ -70,7 +70,7 @@ def generate_retest_mcqs(course, previous_gaps):
     You are an expert educator. A student is retaking a simplified theoretical assessment for the course: "{course.get('title')}".
     The student previously struggled with these areas: {', '.join(previous_gaps)}.
     
-    Generate 10 VERY SIMPLE, entry-level Multiple Choice Questions (MCQs) that specifically test the absolute basics of these weak areas.
+    Generate {count} VERY SIMPLE, entry-level Multiple Choice Questions (MCQs) that specifically test the absolute basics of these weak areas.
     
     Difficulty Rules:
     - Questions must be at an absolute beginner level.
@@ -80,7 +80,7 @@ def generate_retest_mcqs(course, previous_gaps):
     - The goal is to verify if they have learned the bare minimum fundamentals during their bridge course.
 
     Requirements:
-    1. Exactly 10 questions.
+    1. Exactly {count} questions.
     2. Each question must have exactly 4 simple options.
     3. One correct answer.
     4. The output MUST be a valid JSON array.
@@ -100,11 +100,11 @@ def generate_retest_mcqs(course, previous_gaps):
         return json.loads(response.text)
     except Exception as e:
         print(f"Error in generate_retest_mcqs: {str(e)}")
-        return generate_mcqs(course)
+        return generate_mcqs(course, count=count)
 
-def generate_video_questions(course):
+def generate_video_questions(course, count=6):
     """
-    Generate 6 basic domain specific questions for the course course using the new Google GenAI SDK.
+    Generate {count} basic domain specific questions for the course course using the new Google GenAI SDK.
     """
     client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -115,7 +115,7 @@ def generate_video_questions(course):
     The purpose of this test is to check the student's foundational domain knowledge 
     based on the required skills of the course.
 
-    Generate 6 domain-based eligibility questions.
+    Generate {count} domain-based eligibility questions.
 
     Title: {course.get('title')}
     Description: {course.get('description')}
@@ -157,9 +157,9 @@ def generate_video_questions(course):
         print(f"Error in generate_video_questions: {str(e)}")
         raise e
 
-def generate_retest_video_questions(course, previous_gaps):
+def generate_retest_video_questions(course, previous_gaps, count=6):
     """
-    Generate 6 custom domain specific questions focused on previous skill gaps for a retest.
+    Generate {count} custom domain specific questions focused on previous skill gaps for a retest.
     """
     client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -168,7 +168,7 @@ def generate_retest_video_questions(course, previous_gaps):
 
     The student previously struggled with these specific skills: {', '.join(previous_gaps)}.
 
-    Your task is to generate 6 VERY BASIC, entry-level video-interview questions that test the student's mastery of the absolute fundamentals of these specific skill gaps.
+    Your task is to generate {count} VERY BASIC, entry-level video-interview questions that test the student's mastery of the absolute fundamentals of these specific skill gaps.
 
     Requirements:
     1. The questions MUST focus on the simplest possible aspects of these skills: {', '.join(previous_gaps)}.
@@ -194,7 +194,7 @@ def generate_retest_video_questions(course, previous_gaps):
     except Exception as e:
         print(f"Error in generate_retest_video_questions: {str(e)}")
         # Fallback to standard questions if AI fails
-        return generate_video_questions(course)
+        return generate_video_questions(course, count=count)
 
 def analyze_test_results(answers, course_title):
     """

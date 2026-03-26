@@ -1,13 +1,14 @@
-from fastapi import APIRouter, HTTPException, status
-from app.schemas.admin import AdminCreate, AdminLogin, AdminUpdate
+from fastapi import APIRouter, HTTPException, status, Depends
+from app.schemas.admin import AdminCreate, AdminLogin, AdminUpdate, SystemSettings, AnnouncementCreate, AnnouncementUpdate
 from bson import ObjectId
-from app.database.connection import db, admins_collection, results_collection, students_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, courses_collection
+from app.database.connection import db, admins_collection, results_collection, students_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, courses_collection, settings_collection, announcements_collection
 from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
 import secrets
 from datetime import datetime, timedelta
 from app.services.ai_service import generate_welcome_letter
+from app.core.dependencies import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -479,11 +480,17 @@ async def submit_decision(result_id: str, decision_data: dict):
         student_name = f"{student.get('firstName')} {student.get('lastName')}" if student else "Student"
         course_title = result.get("courseTitle", "Assessment")
         
-        # Calculate a simple average: scaling overallVideoScore (0-10) to 100
+        # Fetch settings for dynamic weightages
+        settings = settings_collection.find_one({"type": "global_config"})
+        mcq_w = settings.get("mcqWeightage", 40) if settings else 40
+        video_w = settings.get("videoWeightage", 60) if settings else 60
+        
+        # Calculate weighted average: scaling overallVideoScore (0-10) to 100
         mcq_score = result.get("score", 0)
         v_score = result.get("overallVideoScore", 0)
         video_score_scaled = v_score * 10 if v_score <= 10 else v_score
-        overall_avg = (mcq_score + video_score_scaled) / 2
+        
+        overall_avg = (mcq_score * mcq_w / 100) + (video_score_scaled * video_w / 100)
         
         try:
             welcome_letter = generate_welcome_letter(student_name, course_title, round(overall_avg, 1))
@@ -693,3 +700,86 @@ async def get_student_detail(student_id: str):
         "profile": student,
         "results": all_evaluations
     }
+
+@router.get("/settings", response_model=SystemSettings)
+async def get_system_settings():
+    settings = settings_collection.find_one({"type": "global_config"})
+    if not settings:
+        # Return default settings
+        return SystemSettings()
+    
+    # Remove MongoDB internal ID
+    settings.pop("_id", None)
+    return settings
+
+@router.post("/settings")
+async def update_system_settings(settings: SystemSettings):
+    settings_dict = settings.model_dump()
+    settings_dict["type"] = "global_config"
+    settings_dict["updatedAt"] = datetime.utcnow()
+    
+    settings_collection.update_one(
+        {"type": "global_config"},
+        {"$set": settings_dict},
+        upsert=True
+    )
+    
+    return {"message": "System settings updated successfully"}
+
+# --- Announcement Routes ---
+
+@router.post("/announcements")
+async def create_announcement(announcement: AnnouncementCreate, current_user: dict = Depends(get_current_user)):
+    announcement_dict = announcement.model_dump()
+    announcement_dict["createdAt"] = datetime.utcnow()
+    
+    result = announcements_collection.insert_one(announcement_dict)
+    return {"message": "Announcement created successfully", "id": str(result.inserted_id)}
+
+@router.get("/announcements")
+async def get_announcements(current_user: dict = Depends(get_current_user)):
+    announcements = list(announcements_collection.find().sort("createdAt", -1))
+    for a in announcements:
+        a["id"] = str(a.pop("_id"))
+        
+        # Determine status
+        if a.get("expiryDate"):
+            try:
+                expiry = datetime.fromisoformat(a["expiryDate"])
+                a["status"] = "Active" if expiry > datetime.utcnow() else "Expired"
+            except:
+                a["status"] = "Active"
+        else:
+            a["status"] = "Active"
+            
+    return announcements
+
+@router.put("/announcements/{announcement_id}")
+async def update_announcement(announcement_id: str, announcement: AnnouncementUpdate, current_user: dict = Depends(get_current_user)):
+    if not ObjectId.is_valid(announcement_id):
+        raise HTTPException(status_code=400, detail="Invalid announcement ID")
+        
+    update_data = {k: v for k, v in announcement.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+        
+    result = announcements_collection.update_one(
+        {"_id": ObjectId(announcement_id)},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+        
+    return {"message": "Announcement updated successfully"}
+
+@router.delete("/announcements/{announcement_id}")
+async def delete_announcement(announcement_id: str, current_user: dict = Depends(get_current_user)):
+    if not ObjectId.is_valid(announcement_id):
+        raise HTTPException(status_code=400, detail="Invalid announcement ID")
+        
+    result = announcements_collection.delete_one({"_id": ObjectId(announcement_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+        
+    return {"message": "Announcement deleted successfully"}

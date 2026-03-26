@@ -15,6 +15,7 @@ interface Notification {
     studentId: string;
     courseId?: string;
     courseTitle: string;
+    title?: string; // For announcements
     decision?: string;
     message: string;
     notes?: string;
@@ -75,6 +76,7 @@ export default function StudentNotificationsPage() {
     };
 
     const getIconForDecision = (decision?: string, type?: string) => {
+        if (type === "announcement") return <Bell className={styles.iconPurple} size={24} />;
         if (decision === "Approved") return <CheckCircle className={styles.iconGreen} size={24} />;
         if (decision === "Bridge Course Recommended") return <BookOpen className={styles.iconBlue} size={24} />;
         if (decision === "Retry Required") return <XOctagon className={styles.iconRed} size={24} />;
@@ -139,7 +141,9 @@ export default function StudentNotificationsPage() {
                                         <div className={styles.typeIcon}>
                                             {getIconForDecision(notif.decision, notif.type)}
                                         </div>
-                                        <h4 className={styles.courseTitle}>{notif.courseTitle}</h4>
+                                        <h4 className={styles.courseTitle}>
+                                            {notif.type === "announcement" ? notif.title : notif.courseTitle}
+                                        </h4>
                                     </div>
                                     <span className={styles.timestamp}>
                                         <Clock size={14} className={styles.timeIcon} />
