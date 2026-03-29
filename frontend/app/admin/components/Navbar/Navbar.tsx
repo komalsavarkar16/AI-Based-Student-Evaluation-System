@@ -49,6 +49,7 @@ export default function Navbar() {
             <div className={styles.navBrand}>
                 <Link href="/admin" className={styles.logo}>
                     <div className={styles.logoIcon}>AI</div>
+                    <span className={styles.logoText}>SkillBridge AI</span>
                 </Link>
                 <button className={styles.hamburger} onClick={toggleMenu}>
                     {isMenuOpen ? <CloseIcon /> : <MenuIcon />}

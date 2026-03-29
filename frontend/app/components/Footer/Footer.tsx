@@ -22,7 +22,7 @@ const Footer = ({ theme = 'admin' }: { theme?: 'admin' | 'student' }) => {
                             }}>
                                 AI
                             </div>
-                            <span className={styles.logoText}>EduBridge AI</span>
+                            <span className={styles.logoText}>SkillBridge AI</span>
                         </div>
                         <p className={styles.description}>
                             Empowering the future of education with AI-driven student evaluation and personalized gap analysis.
@@ -50,7 +50,7 @@ const Footer = ({ theme = 'admin' }: { theme?: 'admin' | 'student' }) => {
 
                 <div className={styles.bottomBar}>
                     <div className={styles.copyright}>
-                        © {currentYear} EduBridge AI. All rights reserved.
+                        © {currentYear} SkillBridge AI. All rights reserved.
                     </div>
                     <div className={styles.builtWith}>
                         Built with <Heart size={14} className={styles.heartIcon} /> by <span className={styles.author}>Komal Savarkar</span>

@@ -12,8 +12,8 @@ const TermsOfService = () => {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <button 
-                    onClick={() => router.back()} 
+                <button
+                    onClick={() => router.back()}
                     className={styles.backHome}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                 >
@@ -26,7 +26,7 @@ const TermsOfService = () => {
             <article className={styles.content}>
                 <section className={styles.section}>
                     <h2><Book size={20} /> Agreement to Terms</h2>
-                    <p>By accessing or using the EduBridge AI platform, you agree to be bound by these terms. If you do not agree to any of these terms, please refrain from using our services.</p>
+                    <p>By accessing or using the SkillBridge AI platform, you agree to be bound by these terms. If you do not agree to any of these terms, please refrain from using our services.</p>
                 </section>
 
                 <section className={styles.section}>
@@ -53,18 +53,18 @@ const TermsOfService = () => {
 
                 <section className={styles.section}>
                     <h2><Gavel size={20} /> Intellectual Property</h2>
-                    <p>The software, core logic, AI models, and interface design are the exclusive property of EduBridge AI. Reproduction or modification without written consent is strictly prohibited.</p>
+                    <p>The software, core logic, AI models, and interface design are the exclusive property of SkillBridge AI. Reproduction or modification without written consent is strictly prohibited.</p>
                 </section>
 
                 <section className={styles.section}>
                     <h2><AlertCircle size={20} /> Limitation of Liability</h2>
-                    <p>EduBridge AI is not liable for any specific educational outcomes, career placement results, or technical local errors that may occur during assessment sessions on unverified student devices.</p>
+                    <p>SkillBridge AI is not liable for any specific educational outcomes, career placement results, or technical local errors that may occur during assessment sessions on unverified student devices.</p>
                 </section>
             </article>
 
             <footer>
                 <p style={{ color: '#94a3b8', fontSize: '0.8125rem', marginTop: '4rem', textAlign: 'center' }}>
-                    Questions? Contact us at legal@edubridge.ai
+                    Questions? Contact us at legal@skillbridge.ai
                 </p>
             </footer>
         </div>

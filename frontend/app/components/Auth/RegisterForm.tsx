@@ -7,28 +7,25 @@ import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import SchoolIcon from "@mui/icons-material/School";
+import ShieldIcon from "@mui/icons-material/Shield";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "@/app/utils/api";
 import styles from "./Auth.module.css";
 
 interface RegisterFormProps {
-  role: "admin" | "student";
-  title: string;
-  subtitle: string;
-  apiEndpoint: string;
-  redirectPath: string;
-  submitBtnText?: string;
+  initialRole?: "admin" | "student";
+  onRoleChange?: (role: "admin" | "student") => void;
+  showRoleSwitcher?: boolean;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({
-  role,
-  title,
-  subtitle,
-  apiEndpoint,
-  redirectPath,
-  submitBtnText = "Sign Up",
+  initialRole = "student",
+  onRoleChange,
+  showRoleSwitcher = true,
 }) => {
   const router = useRouter();
+  const [role, setRole] = useState<"admin" | "student">(initialRole);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -38,6 +35,26 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<any>({});
+
+  const config = {
+    student: {
+      title: "Student Registration",
+      subtitle: "Join our AI-powered learning community",
+      apiEndpoint: "/student/register",
+      redirectPath: "/login",
+    },
+    admin: {
+      title: "Admin Registration",
+      subtitle: "Create an administrator account",
+      apiEndpoint: "/admin/register",
+      redirectPath: "/login",
+    },
+  }[role];
+
+  const handleRoleToggle = (newRole: "admin" | "student") => {
+    setRole(newRole);
+    if (onRoleChange) onRoleChange(newRole);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -65,7 +82,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}${apiEndpoint}`, {
+      const res = await fetch(`${API_BASE_URL}${config.apiEndpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -83,7 +100,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       }
 
       toast.success(`${role.charAt(0).toUpperCase() + role.slice(1)} Registration successful`);
-      router.push(redirectPath);
+      router.push(config.redirectPath);
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -92,8 +109,28 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
   return (
     <>
-      <h2 className={styles.title}>{title}</h2>
-      <p className={styles.subtitle}>{subtitle}</p>
+      <h2 className={styles.title}>{config.title}</h2>
+      <p className={styles.subtitle}>{config.subtitle}</p>
+
+      {showRoleSwitcher && (
+        <div className={`${styles.roleSwitcher} ${role === 'admin' ? styles.adminActive : ''}`}>
+           <div className={styles.tabSlider}></div>
+           <button 
+             type="button" 
+             className={`${styles.roleTab} ${role === 'student' ? styles.activeTab : ''}`}
+             onClick={() => handleRoleToggle('student')}
+           >
+             <SchoolIcon sx={{ fontSize: 20 }} /> Student
+           </button>
+           <button 
+             type="button" 
+             className={`${styles.roleTab} ${role === 'admin' ? styles.activeTab : ''}`}
+             onClick={() => handleRoleToggle('admin')}
+           >
+             <ShieldIcon sx={{ fontSize: 20 }} /> Admin
+           </button>
+        </div>
+      )}
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.row}>
@@ -174,8 +211,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         </div>
 
         <button type="submit" className={styles.submitBtn}>
-          {submitBtnText}
+           Sign Up
         </button>
+
+        <div className={styles.formFooter}>
+          <span>Already have an account?</span>
+          <Link href="/login" className={styles.footerLink}>
+            Sign In
+          </Link>
+        </div>
       </form>
     </>
   );

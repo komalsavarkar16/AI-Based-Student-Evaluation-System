@@ -54,7 +54,7 @@ export default function AdminDashboard() {
             <section className={styles.ctaSection}>
                 <div className={styles.ctaText}>
                     <h2>Hello, Admin!</h2>
-                    <p>The system is running smoothly. All student assessments are being processed in real-time with EduBridge AI.</p>
+                    <p>The system is running smoothly. All student assessments are being processed in real-time with SkillBridge AI.</p>
                 </div>
                 <div className={styles.quickActions}>
                     <button className={styles.actionBtn} onClick={() => router.push('/admin/students')}>

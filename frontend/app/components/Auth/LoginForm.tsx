@@ -6,42 +6,62 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import SchoolIcon from "@mui/icons-material/School";
+import ShieldIcon from "@mui/icons-material/Shield";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "@/app/utils/api";
 import styles from "./Auth.module.css";
 
 interface LoginFormProps {
-  role: "admin" | "student";
-  title: string;
-  subtitle: string;
-  apiEndpoint: string;
-  redirectPath: string;
-  storageKey: string;
-  forgotPasswordLink: string;
+  initialRole?: "admin" | "student";
+  onRoleChange?: (role: "admin" | "student") => void;
+  showRoleSwitcher?: boolean;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({
-  role,
-  title,
-  subtitle,
-  apiEndpoint,
-  redirectPath,
-  storageKey,
-  forgotPasswordLink,
+  initialRole = "student",
+  onRoleChange,
+  showRoleSwitcher = true,
 }) => {
   const router = useRouter();
+  const [role, setRole] = useState<"admin" | "student">(initialRole);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<any>({});
 
+  // Dynamic values based on role
+  const config = {
+    student: {
+      title: "Student Sign In",
+      subtitle: "Log in to continue your learning journey",
+      apiEndpoint: "/student/login",
+      redirectPath: "/student",
+      storageKey: "student_info",
+      forgotPasswordLink: "/student/forgot-password",
+    },
+    admin: {
+      title: "Admin Sign In",
+      subtitle: "Log in to access the control panel",
+      apiEndpoint: "/admin/login",
+      redirectPath: "/admin",
+      storageKey: "admin_info",
+      forgotPasswordLink: "/admin/forgot-password",
+    },
+  }[role];
+
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
     if (token) {
-      router.push(redirectPath);
+      router.push(config.redirectPath);
     }
-  }, [router, redirectPath]);
+  }, [router, config.redirectPath]);
+
+  const handleRoleToggle = (newRole: "admin" | "student") => {
+    setRole(newRole);
+    if (onRoleChange) onRoleChange(newRole);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +75,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}${apiEndpoint}`, {
+      const res = await fetch(`${API_BASE_URL}${config.apiEndpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, remember_me: rememberMe }),
@@ -70,14 +90,16 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
       toast.success("Login successful");
       if (data.access_token) localStorage.setItem("auth_token", data.access_token);
+      
+      // Store user info based on role
       if (data[role]) {
-        localStorage.setItem(storageKey, JSON.stringify(data[role]));
+        localStorage.setItem(config.storageKey, JSON.stringify(data[role]));
         if (role === 'student' && data.student.id) {
            localStorage.setItem("student_id", data.student.id);
         }
       }
 
-      router.push(redirectPath);
+      router.push(config.redirectPath);
     } catch (err) {
       console.error(err);
       toast.error("Backend not reachable");
@@ -86,8 +108,28 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   return (
     <>
-      <h2 className={styles.title}>{title}</h2>
-      <p className={styles.subtitle}>{subtitle}</p>
+      <h2 className={styles.title}>{config.title}</h2>
+      <p className={styles.subtitle}>{config.subtitle}</p>
+
+      {showRoleSwitcher && (
+        <div className={`${styles.roleSwitcher} ${role === 'admin' ? styles.adminActive : ''}`}>
+           <div className={styles.tabSlider}></div>
+           <button 
+             type="button" 
+             className={`${styles.roleTab} ${role === 'student' ? styles.activeTab : ''}`}
+             onClick={() => handleRoleToggle('student')}
+           >
+             <SchoolIcon sx={{ fontSize: 20 }} /> Student
+           </button>
+           <button 
+             type="button" 
+             className={`${styles.roleTab} ${role === 'admin' ? styles.activeTab : ''}`}
+             onClick={() => handleRoleToggle('admin')}
+           >
+             <ShieldIcon sx={{ fontSize: 20 }} /> Admin
+           </button>
+        </div>
+      )}
 
       <form className={styles.form} onSubmit={handleLogin}>
         <div className={styles.inputWrapper}>
@@ -129,12 +171,19 @@ const LoginForm: React.FC<LoginFormProps> = ({
           <label className={styles.checkboxContainer}>
             <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} /> Remember me
           </label>
-          <Link href={forgotPasswordLink} className={styles.forgotPass}>Forgot Password?</Link>
+          <Link href={config.forgotPasswordLink} className={styles.forgotPass}>Forgot Password?</Link>
         </div>
 
         <button type="submit" className={styles.submitBtn}>
           Sign In
         </button>
+
+        <div className={styles.formFooter}>
+          <span>Don't have an account?</span>
+          <Link href="/register" className={styles.footerLink}>
+            Sign Up
+          </Link>
+        </div>
       </form>
     </>
   );

@@ -8,23 +8,15 @@ interface AuthLayoutProps {
   children: React.ReactNode;
   welcomeTitle: string;
   subHeading: string;
-  actionText: string;
-  actionLink: string;
-  actionLabel: string;
   role: "admin" | "student";
   copyright?: string;
   brandName?: string;
 }
 
-
-
 const AuthLayout: React.FC<AuthLayoutProps> = ({
   children,
   welcomeTitle,
   subHeading,
-  actionText,
-  actionLink,
-  actionLabel,
   role,
   copyright = "© 2025 AI-Eval. All rights reserved.",
   brandName = "SkillBridge AI",
@@ -36,20 +28,12 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
       <div className={styles.leftPanel}>
         <div className={styles.linesDecoration}></div>
         <div className={styles.logoSection}>
-          {/* <AutoAwesome size={64} className={styles.logoIcon} />/ */}
           <AutoAwesome className={styles.logoIcon} sx={{ fontSize: 64 }} />
         </div>
 
         <div className={styles.welcomeSection}>
           <h2 className={styles.welcomeTitle}>{welcomeTitle}</h2>
           <p className={styles.subHeading}>{subHeading}</p>
-
-          <div className={styles.actionSection}>
-            <span className={styles.actionLabel}>{actionLabel}</span>
-            <Link href={actionLink} className={styles.authActionLink}>
-              {actionText}
-            </Link>
-          </div>
         </div>
 
         <div className={styles.copyrightSection}>
@@ -65,12 +49,6 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
         </div>
         <div className={styles.formCard}>
           {children}
-        </div>
-        <div className={styles.mobileActionSection}>
-          <span className={styles.mobileActionLabel}>{actionLabel}</span>
-          <Link href={actionLink} className={styles.mobileActionLink}>
-            {actionText}
-          </Link>
         </div>
       </div>
     </div>

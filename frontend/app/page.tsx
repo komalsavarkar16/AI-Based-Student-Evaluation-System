@@ -54,6 +54,9 @@ export default function LandingPage() {
     <div className={styles.mainContainer}>
       <div className={styles.heroSection}>
         <div className={styles.content}>
+          <div className={styles.badge}>
+            <span className={styles.badgeText}>Powered by AI</span>
+          </div>
           <h1 className={styles.heading}>
             Smart Student <span>Evaluation</span> System & Course Recommendations
           </h1>
@@ -64,17 +67,18 @@ export default function LandingPage() {
             <Image src={AIImage} alt="AI Image" />
           </div>
           <div className={styles.buttonContainer}>
-            <Link href="/student/login" className={`${styles.actionButton} ${styles.studentBtn}`}>
-              <SchoolIcon /> Continue as Student
+            <Link href="/register" className={`${styles.actionButton} ${styles.getStartedBtn}`}>
+              Get Started
             </Link>
-            <Link href="/admin/login" className={`${styles.actionButton} ${styles.adminBtn}`}>
-              <AdminPanelSettingsIcon /> Continue as Admin
+            <Link href="/login" className={`${styles.actionButton} ${styles.loginLinkBtn}`}>
+              Sign In
             </Link>
           </div>
         </div>
         <div className={styles.imageContainer}>
           <Image src={AIImage} alt="AI Image" />
         </div>
+        <div className={styles.backgroundBlur}></div>
       </div>
       <div className={styles.featuresSection}>
         <h2 className={styles.featuresHeading}>

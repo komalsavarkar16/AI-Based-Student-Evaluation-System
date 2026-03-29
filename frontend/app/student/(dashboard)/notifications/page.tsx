@@ -3,85 +3,61 @@ import React, { useState, useEffect } from "react";
 import styles from "./notifications.module.css";
 import {
     Bell, CheckCircle, Info, AlertTriangle,
-    XOctagon, Clock, BookOpen, ChevronRight
+    XOctagon, Clock, BookOpen, ChevronRight, X
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "@/app/utils/api";
 import { useRouter } from "next/navigation";
+import { useNotifications, Notification } from "@/app/context/NotificationContext";
 
-interface Notification {
-    _id: string;
-    type: string;
-    studentId: string;
-    courseId?: string;
-    courseTitle: string;
-    title?: string; // For announcements
-    decision?: string;
-    message: string;
-    notes?: string;
-    isRead: boolean;
-    timestamp: string;
-}
 
 export default function StudentNotificationsPage() {
     const router = useRouter();
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const { notifications, markAsRead: markAsReadGlobal, refreshNotifications } = useNotifications();
     const [loading, setLoading] = useState(true);
     const [studentInfo, setStudentInfo] = useState<any>(null);
 
     useEffect(() => {
         const info = localStorage.getItem("student_info");
         if (info) {
-            const parsed = JSON.parse(info);
-            setStudentInfo(parsed);
-            fetchNotifications(parsed.id);
-        } else {
-            setLoading(false);
+            setStudentInfo(JSON.parse(info));
         }
+        // Data is now handled by NotificationContext
+        setLoading(false);
     }, []);
-
-    const fetchNotifications = async (studentId: string) => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/student/notifications/${studentId}`);
-            if (res.ok) {
-                const data = await res.json();
-                setNotifications(data);
-            } else {
-                toast.error("Failed to fetch notifications");
-            }
-        } catch (error) {
-            console.error("Error fetching notifications:", error);
-            toast.error("Network error while fetching notifications");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const markAsRead = async (notificationId: string, isRead: boolean) => {
         if (isRead) return; // Already read
-
         try {
-            const res = await fetch(`${API_BASE_URL}/student/notifications/${notificationId}/read`, {
-                method: "PUT"
-            });
-            if (res.ok) {
-                // Instantly update UI instead of waiting for refetch
-                setNotifications(prev => prev.map(n =>
-                    n._id === notificationId ? { ...n, isRead: true } : n
-                ));
-            }
+            await markAsReadGlobal(notificationId);
         } catch (error) {
             console.error("Error marking notification as read:", error);
         }
     };
 
-    const getIconForDecision = (decision?: string, type?: string) => {
-        if (type === "announcement") return <Bell className={styles.iconPurple} size={24} />;
-        if (decision === "Approved") return <CheckCircle className={styles.iconGreen} size={24} />;
-        if (decision === "Bridge Course Recommended") return <BookOpen className={styles.iconBlue} size={24} />;
-        if (decision === "Retry Required") return <XOctagon className={styles.iconRed} size={24} />;
+    const getCardClass = (decision?: string, type?: string) => {
+        if (type === "announcement") return styles.cardAnnouncement;
+        if (decision === "Approved") return styles.cardSuccess;
+        if (decision === "Bridge Course Recommended") return styles.cardInfo;
+        if (decision === "Retry Required") return styles.cardWarning;
+        return styles.notificationCard;
+    };
 
-        return <Info className={styles.iconGray} size={24} />;
+    const getIconClass = (decision?: string, type?: string) => {
+        if (type === "announcement") return styles.iconAnnouncement;
+        if (decision === "Approved") return styles.iconSuccess;
+        if (decision === "Bridge Course Recommended") return styles.iconInfo;
+        if (decision === "Retry Required") return styles.iconWarning;
+        return styles.iconInfo;
+    };
+
+    const getIconForDecision = (decision?: string, type?: string) => {
+        if (type === "announcement") return <Bell className={getIconClass(decision, type)} size={20} />;
+        if (decision === "Approved") return <CheckCircle className={getIconClass(decision, type)} size={20} />;
+        if (decision === "Bridge Course Recommended") return <BookOpen className={getIconClass(decision, type)} size={20} />;
+        if (decision === "Retry Required") return <AlertTriangle className={getIconClass(decision, type)} size={20} />;
+
+        return <Info className={styles.iconInfo} size={20} />;
     };
 
     const formatDate = (dateString: string) => {
@@ -90,6 +66,15 @@ export default function StudentNotificationsPage() {
             month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit'
         }).format(date);
+    };
+
+    const handleAction = (e: React.MouseEvent, type: string) => {
+        e.stopPropagation();
+        if (type === "view_data") {
+            router.push("/student/dashboard");
+        } else if (type === "view_changelog") {
+            router.push("/student/courses");
+        }
     };
 
     if (loading) {
@@ -132,43 +117,59 @@ export default function StudentNotificationsPage() {
                         {notifications.map((notif) => (
                             <div
                                 key={notif._id}
-                                className={`${styles.notificationCard} ${!notif.isRead ? styles.unread : ''}`}
+                                className={`${styles.notificationCard} ${getCardClass(notif.decision, notif.type)}`}
                                 onClick={() => markAsRead(notif._id, notif.isRead)}
                             >
-                                <div className={styles.cardIndicator} />
-                                <div className={styles.cardHeader}>
-                                    <div className={styles.titleArea}>
-                                        <div className={styles.typeIcon}>
-                                            {getIconForDecision(notif.decision, notif.type)}
-                                        </div>
-                                        <h4 className={styles.courseTitle}>
-                                            {notif.type === "announcement" ? notif.title : notif.courseTitle}
-                                        </h4>
-                                    </div>
-                                    <span className={styles.timestamp}>
-                                        <Clock size={14} className={styles.timeIcon} />
-                                        {formatDate(notif.timestamp)}
-                                    </span>
+                                <div className={styles.typeIcon}>
+                                    {getIconForDecision(notif.decision, notif.type)}
                                 </div>
 
-                                <div className={styles.cardBody}>
+                                <div className={styles.contentArea}>
+                                    <div className={styles.titleRow}>
+                                        <h4 className={styles.courseTitle}>
+                                            {notif.type === "announcement" ? (notif.title || "Announcement") : notif.courseTitle}
+                                        </h4>
+                                        <div className={styles.actionsRow}>
+                                            <span className={styles.timestamp}>{formatDate(notif.timestamp)}</span>
+                                            <X size={16} className={styles.closeIcon} onClick={(e: React.MouseEvent) => {
+                                                e.stopPropagation();
+                                                markAsRead(notif._id, notif.isRead);
+                                            }} />
+                                        </div>
+                                    </div>
+
                                     <p className={styles.notifMessage}>{notif.message}</p>
+
+                                    <div className={styles.actionsRow}>
+                                        {notif.type === "announcement" ? (
+                                            <button className={styles.actionBtn} onClick={(e) => handleAction(e, "view_changelog")}>
+                                                View details
+                                            </button>
+                                        ) : (
+                                            <>
+                                                <button className={styles.actionBtn} onClick={(e) => handleAction(e, "view_data")}>
+                                                    View results
+                                                </button>
+                                                <span className={styles.actionLink} onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    markAsRead(notif._id, true);
+                                                }}>
+                                                    Ok, I got it
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
 
                                     {notif.notes && (
                                         <div className={styles.notesBox}>
                                             <div className={styles.notesHeader}>
                                                 <Info size={14} />
-                                                <strong>Feedback from Evaluator:</strong>
+                                                <strong>Feedback:</strong>
                                             </div>
                                             <p className={styles.notesText}>{notif.notes}</p>
                                         </div>
                                     )}
                                 </div>
-                                {!notif.isRead && (
-                                    <div className={styles.unreadBadgeWrapper}>
-                                        <span className={styles.unreadText}>New</span>
-                                    </div>
-                                )}
                             </div>
                         ))}
                     </div>

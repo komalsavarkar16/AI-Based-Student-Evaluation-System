@@ -493,6 +493,7 @@ def process_video_test_analysis(student_id: str, course_id: str):
         
         # 4.1 Overall Performance Signal (AI-based)
         overall_eval = generate_overall_video_evaluation(updated_answers, course)
+        avg_score = total_score / count if count > 0 else 0
 
         # 5. Update DB
         
@@ -596,6 +597,10 @@ async def get_student_notifications(student_id: str):
         "type": "admin_decision" 
     }))
     
+    # 1.1 Fetch read receipts for this student
+    read_receipts = list(db.read_receipts.find({"studentId": sid}))
+    read_item_ids = {str(r["itemId"]) for r in read_receipts}
+    
     # 2. Fetch relevant announcements (Reuse logic from get_student_announcements)
     # Get student's enrolled/attempted courses for targeting
     responses = list(responses_collection.find({"studentId": sid}, {"courseId": 1}))
@@ -626,6 +631,11 @@ async def get_student_notifications(student_id: str):
         n["studentId"] = str(n["studentId"])
         if "courseId" in n and n["courseId"]:
             n["courseId"] = str(n["courseId"])
+        
+        # Override isRead if we have a receipt
+        if n["_id"] in read_item_ids:
+            n["isRead"] = True
+            
         results.append(n)
         
     # Process announcements as notifications
@@ -645,7 +655,7 @@ async def get_student_notifications(student_id: str):
             "courseTitle": "General Announcement" if a["targetAudience"] == "all" else "Course Announcement",
             "message": a["message"],
             "title": a["title"],
-            "isRead": False, 
+            "isRead": str(a["_id"]) in read_item_ids, 
             "timestamp": a["createdAt"]
         })
         
@@ -655,19 +665,103 @@ async def get_student_notifications(student_id: str):
     return results
 
 @router.put("/notifications/{notification_id}/read")
-async def mark_notification_read(notification_id: str):
+async def mark_notification_read(notification_id: str, student_id: str = None):
     if not ObjectId.is_valid(notification_id):
         raise HTTPException(status_code=400, detail="Invalid notification ID")
         
+    nid = ObjectId(notification_id)
+    sid = None
+    if student_id and ObjectId.is_valid(student_id):
+        sid = ObjectId(student_id)
+
+    # 1. Try to update in main notifications collection
     result = db.notifications.update_one(
-        {"_id": ObjectId(notification_id)},
+        {"_id": nid},
         {"$set": {"isRead": True}}
     )
     
+    # 2. If not found or if it's an announcement, we need a read receipt
     if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Notification not found")
+        # Check if it exists in announcements
+        is_announcement = announcements_collection.find_one({"_id": nid})
+        
+        if is_announcement:
+            if not sid:
+                raise HTTPException(status_code=400, detail="Student ID required for announcements")
+            
+            # Record the read receipt
+            db.read_receipts.update_one(
+                {"studentId": sid, "itemId": nid},
+                {"$set": {"readAt": datetime.utcnow()}},
+                upsert=True
+            )
+            return {"message": "Announcement marked as read"}
+        else:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+    # Also record a receipt for personal notifications to be safe/consistent
+    if sid:
+        db.read_receipts.update_one(
+            {"studentId": sid, "itemId": nid},
+            {"$set": {"readAt": datetime.utcnow()}},
+            upsert=True
+        )
         
     return {"message": "Notification marked as read"}
+
+@router.put("/notifications/{student_id}/read-all")
+async def mark_all_notifications_read(student_id: str):
+    if not ObjectId.is_valid(student_id):
+        raise HTTPException(status_code=400, detail="Invalid student ID")
+        
+    sid = ObjectId(student_id)
+    now = datetime.utcnow()
+
+    # 1. Mark all personal notifications as read
+    db.notifications.update_many(
+        {"studentId": sid, "isRead": False},
+        {"$set": {"isRead": True}}
+    )
+
+    # 2. Get all targetable announcements for this student to create receipts
+    responses = list(responses_collection.find({"studentId": sid}, {"courseId": 1}))
+    legacy_results = list(results_collection.find({"studentId": sid}, {"courseId": 1}))
+    
+    enrolled_course_ids = set()
+    for r in responses:
+        if r.get("courseId"): enrolled_course_ids.add(r["courseId"])
+    for r in legacy_results:
+        if r.get("courseId"): enrolled_course_ids.add(r["courseId"])
+        
+    query = {
+        "$or": [
+            {"targetAudience": "all"},
+            {"courseId": {"$in": list(enrolled_course_ids)}}
+        ]
+    }
+    
+    # Only active announcements
+    announcements = list(announcements_collection.find(query))
+    active_announcement_ids = []
+    for a in announcements:
+        if a.get("expiryDate"):
+            try:
+                expiry = datetime.fromisoformat(a["expiryDate"])
+                if expiry <= now: continue
+            except:
+                pass
+        active_announcement_ids.append(a["_id"])
+
+    # 3. Create/Update read receipts for all these announcements
+    if active_announcement_ids:
+        for aid in active_announcement_ids:
+            db.read_receipts.update_one(
+                {"studentId": sid, "itemId": aid},
+                {"$set": {"readAt": now}},
+                upsert=True
+            )
+
+    return {"message": "All notifications marked as read"}
 
 class BridgePathRequest(BaseModel):
     skillGap: list[str]

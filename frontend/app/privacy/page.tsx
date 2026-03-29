@@ -12,8 +12,8 @@ const PrivacyPolicy = () => {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <button 
-                    onClick={() => router.back()} 
+                <button
+                    onClick={() => router.back()}
                     className={styles.backHome}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                 >
@@ -26,12 +26,12 @@ const PrivacyPolicy = () => {
             <article className={styles.content}>
                 <section className={styles.section}>
                     <h2><ShieldCheck size={20} /> Introduction</h2>
-                    <p>At EduBridge AI, we are committed to protecting your privacy. This policy explains how we collect, use, and safeguard your personal information as part of our automated evaluation and course recommendation platform.</p>
+                    <p>At SkillBridge AI, we are committed to protecting your privacy. This policy explains how we collect, use, and safeguard your personal information as part of our automated evaluation and course recommendation platform.</p>
                 </section>
 
                 <section className={styles.section}>
                     <h2><Database size={20} /> Data We Collect</h2>
-                    <p>When you use the EduBridge platform, we may collect the following types of information:</p>
+                    <p>When you use the SkillBridge platform, we may collect the following types of information:</p>
                     <ul>
                         <li><strong>Personal Identity:</strong> Your name, email address, and student ID.</li>
                         <li><strong>Academic Output:</strong> Your responses to MCQ tests and transcribed text from your video assessments.</li>
@@ -64,7 +64,7 @@ const PrivacyPolicy = () => {
 
             <footer>
                 <p style={{ color: '#94a3b8', fontSize: '0.8125rem', marginTop: '4rem', textAlign: 'center' }}>
-                    Questions? Contact us at privacy@edubridge.ai
+                    Questions? Contact us at privacy@skillbridge.ai
                 </p>
             </footer>
         </div>
