@@ -31,6 +31,13 @@ function ResultContainer({ testData, score, router, analysis }: ResultContainerP
     const isPass = score >= 70;
 
     const handleProceedToVideo = () => {
+        if (!testData.courseId) {
+            console.error("Missing courseId in testData", testData);
+            import('react-toastify').then(({ toast }) => {
+                toast.error("Internal Error: Missing Course ID. Please contact support.");
+            });
+            return;
+        }
         router.push(`/student/video-test/${testData.courseId}`);
     };
 

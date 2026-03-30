@@ -58,6 +58,8 @@ def create_course(course: CourseCreate, current_user: dict = Depends(get_current
 
 @router.get("/{course_id}")
 def get_course(course_id: str, current_user: dict = Depends(get_current_user)):
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid ObjectId")
     course = courses_collection.find_one({"_id": ObjectId(course_id)})
     
     if not course:
@@ -80,6 +82,9 @@ def get_course(course_id: str, current_user: dict = Depends(get_current_user)):
 def update_course(course_id: str, course_update: CourseUpdate, current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Only admins can update courses")
+
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid ObjectId")
 
     # Check if course exists and belongs to admin
     course = courses_collection.find_one({"_id": ObjectId(course_id)})

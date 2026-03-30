@@ -48,6 +48,10 @@ def generate_mcq(course_id: str):
 def get_mcq(course_id: str, student_id: str = Query(None)):
     # 1. Check if this is a dynamic retest for a specific student
     print(f"DEBUG: get_mcq course_id={course_id} student_id={student_id}")
+
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid ObjectId")
+
     if student_id and ObjectId.is_valid(student_id):
         result = results_collection.find_one({
             "studentId": ObjectId(student_id),
@@ -67,6 +71,7 @@ def get_mcq(course_id: str, student_id: str = Query(None)):
                     # Check if we already generated retest MCQs
                     if "retestMcqs" in result:
                         return {
+                            "courseId": course_id,
                             "mcqs": result["retestMcqs"],
                             "courseTitle": course.get("title", "Retest Assessment"),
                             "isRetest": True
@@ -89,6 +94,7 @@ def get_mcq(course_id: str, student_id: str = Query(None)):
                     )
                     
                     return {
+                        "courseId": course_id,
                         "mcqs": dynamic_mcqs,
                         "courseTitle": course.get("title", "Retest Assessment"),
                         "isRetest": True
@@ -108,6 +114,7 @@ def get_mcq(course_id: str, student_id: str = Query(None)):
         course_title = course.get("title", "Assessment") if course else "Assessment"
 
     return {
+        "courseId": course_id,
         "mcqs": mcq.get("mcqs", []),
         "courseTitle": course_title,
         "isRetest": False
@@ -156,6 +163,10 @@ def generate_video_questions_route(course_id:str):
 def get_video_questions(course_id: str, student_id: str = Query(None)):
     # 1. Check if this is a dynamic retest for a specific student
     print(f"DEBUG: get_video_questions course_id={course_id} student_id={student_id}")
+
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid ObjectId")
+
     if student_id and ObjectId.is_valid(student_id):
         result = results_collection.find_one({
             "studentId": ObjectId(student_id),
@@ -176,6 +187,7 @@ def get_video_questions(course_id: str, student_id: str = Query(None)):
                     if "retestQuestions" in result:
                         print("DEBUG: returning cached retestQuestions")
                         return {
+                            "courseId": course_id,
                             "videoQuestions": result["retestQuestions"],
                             "courseTitle": course.get("title", "Retest Assessment"),
                             "isRetest": True
@@ -200,6 +212,7 @@ def get_video_questions(course_id: str, student_id: str = Query(None)):
                     )
                     
                     return {
+                        "courseId": course_id,
                         "videoQuestions": dynamic_questions,
                         "courseTitle": course.get("title", "Retest Assessment"),
                         "isRetest": True
@@ -219,6 +232,7 @@ def get_video_questions(course_id: str, student_id: str = Query(None)):
         course_title = course.get("title", "Assessment") if course else "Assessment"
 
     return {
+        "courseId": course_id,
         "videoQuestions": video_questions.get("videoQuestions", []),
         "courseTitle": course_title,
         "isRetest": False

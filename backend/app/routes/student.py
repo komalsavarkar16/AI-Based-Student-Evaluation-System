@@ -252,6 +252,11 @@ async def submit_test(result: TestResult):
 
 @router.get("/check-test-status/{student_id}/{course_id}")
 async def check_test_status(student_id: str, course_id: str):
+    if not ObjectId.is_valid(student_id):
+        raise HTTPException(status_code=400, detail=f"'{student_id}' is not a valid student ID")
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid course ID")
+        
     try:
         # Check normalized data first
         response = responses_collection.find_one({
@@ -338,6 +343,11 @@ async def submit_video_test(
     courseTitle: str = Form(...),
     files: List[UploadFile] = File(...)
 ):
+    if not ObjectId.is_valid(studentId):
+        raise HTTPException(status_code=400, detail=f"'{studentId}' is not a valid student ID")
+    if not ObjectId.is_valid(courseId):
+        raise HTTPException(status_code=400, detail=f"'{courseId}' is not a valid course ID")
+        
     try:
         # Sanitize course title for folder name
         safe_course_title = re.sub(r'[^a-zA-Z0-9_-]', '_', courseTitle)
@@ -776,6 +786,11 @@ async def get_bridge_path_b(request: BridgePathRequest):
 
 @router.post("/start-bridge-course/{student_id}/{course_id}")
 async def start_bridge_course(student_id: str, course_id: str):
+    if not ObjectId.is_valid(student_id):
+        raise HTTPException(status_code=400, detail=f"'{student_id}' is not a valid student ID")
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid course ID")
+        
     result = results_collection.find_one({
         "studentId": ObjectId(student_id),
         "courseId": ObjectId(course_id)
