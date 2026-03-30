@@ -3,7 +3,7 @@ function ProfileProgressBar({ progress }) {
         <div>
             <p>Profile Completion: {progress}%</p>
 
-            <div style={{ width: "50%", background: "#e0e0e0", borderRadius: "5px", transition: "width 1s ease-in-out;" }}>
+            <div style={{ width: "50%", background: "#e0e0e0", borderRadius: "5px", transition: "width 1s ease-in-out" }}>
                 <div
                     style={{
                         width: `${progress}%`,

@@ -440,14 +440,38 @@ async def submit_decision(result_id: str, decision_data: dict):
     if not ObjectId.is_valid(result_id):
         raise HTTPException(status_code=400, detail="Invalid Result ID")
     
+    oid = ObjectId(result_id)
     status = decision_data.get("status")
     notes = decision_data.get("notes", "")
     
     if status not in ["Approved", "Bridge Course Recommended", "Retry Required"]:
         raise HTTPException(status_code=400, detail="Invalid status")
     
-    result = db.test_results.find_one_and_update(
-        {"_id": ObjectId(result_id)},
+    # --- Identification Phase ---
+    # Find the evaluation based on the ID (it might be from 'responses_collection' or 'test_results')
+    source_is_normalized = False
+    
+    # Try searching in responses_collection (modern)
+    doc = responses_collection.find_one({"_id": oid})
+    if doc:
+        source_is_normalized = True
+    else:
+        # Fallback to searching in test_results (legacy)
+        doc = results_collection.find_one({"_id": oid})
+    
+    if not doc:
+        raise HTTPException(status_code=404, detail="Test result not found")
+    
+    student_id = doc.get("studentId")
+    course_id = doc.get("courseId")
+    course_title = doc.get("courseTitle", "Assessment")
+    
+    # --- Update Legacy Collection ---
+    # If the source was legacy, we update by _id. If it was normalized, we lookup by student/course.
+    legacy_filter = {"_id": oid} if not source_is_normalized else {"studentId": student_id, "courseId": course_id}
+    
+    legacy_result = results_collection.find_one_and_update(
+        legacy_filter,
         {"$set": {
             "status": status,
             "decisionNotes": notes,
@@ -455,18 +479,13 @@ async def submit_decision(result_id: str, decision_data: dict):
         }},
         return_document=True
     )
-    
-    if not result:
-        raise HTTPException(status_code=404, detail="Test result not found")
 
-    # --- Normalized Logic (Sync with admissions_status_collection) ---
-    student_id = result.get("studentId")
-    course_id = result.get("courseId")
+    # --- Update Normalized Collection (Sync with admissions_status_collection) ---
     response_id = None
-    welcome_letter = None
-
-    # 1. Find the corresponding response
-    if student_id and course_id:
+    if source_is_normalized:
+        response_id = oid
+    else:
+        # Source was legacy, find the modern equivalent
         response_doc = responses_collection.find_one(
             {"studentId": student_id, "courseId": course_id},
             sort=[("submittedAt", -1)]
@@ -474,35 +493,44 @@ async def submit_decision(result_id: str, decision_data: dict):
         if response_doc:
             response_id = response_doc["_id"]
 
-    # 2. Generate Welcome Letter if Approved
+    welcome_letter = None
+    # Generate Welcome Letter if Approved
     if status == "Approved":
-        student = db.students.find_one({"_id": student_id})
+        student = students_collection.find_one({"_id": student_id})
         student_name = f"{student.get('firstName')} {student.get('lastName')}" if student else "Student"
-        course_title = result.get("courseTitle", "Assessment")
         
         # Fetch settings for dynamic weightages
         settings = settings_collection.find_one({"type": "global_config"})
         mcq_w = settings.get("mcqWeightage", 40) if settings else 40
         video_w = settings.get("videoWeightage", 60) if settings else 60
         
-        # Calculate weighted average: scaling overallVideoScore (0-10) to 100
-        mcq_score = result.get("score", 0)
-        v_score = result.get("overallVideoScore", 0)
-        video_score_scaled = v_score * 10 if v_score <= 10 else v_score
+        # Determine MCQ and Video Score (try both legacy result and doc)
+        mcq_score = doc.get("mcqScore") or doc.get("score") or 0
+        v_score = doc.get("overallVideoScore") or 0
         
+        # If v_score was missing from the doc, try looking in the found legacy result or another collection
+        if v_score == 0 and not source_is_normalized and legacy_result:
+             v_score = legacy_result.get("overallVideoScore", 0)
+        elif v_score == 0 and source_is_normalized:
+            # Check ai_evaluations
+            ai_eval = ai_evaluations_collection.find_one({"responseId": oid})
+            if ai_eval:
+                v_score = ai_eval.get("scores", {}).get("overallVideo", 0)
+        
+        video_score_scaled = v_score * 10 if v_score <= 10 else v_score
         overall_avg = (mcq_score * mcq_w / 100) + (video_score_scaled * video_w / 100)
         
         try:
             welcome_letter = generate_welcome_letter(student_name, course_title, round(overall_avg, 1))
             # Sync to legacy collection
             results_collection.update_one(
-                {"_id": ObjectId(result_id)},
+                legacy_filter,
                 {"$set": {"enrollmentLetter": welcome_letter}}
             )
         except Exception as e:
             print(f"Failed to generate welcome letter: {e}")
 
-    # 3. Update admissions_status_collection
+    # Update admissions_status_collection
     if response_id:
         admissions_status_collection.update_one(
             {"responseId": response_id},
@@ -517,12 +545,7 @@ async def submit_decision(result_id: str, decision_data: dict):
             upsert=True
         )
     
-        
     # --- Create a notification for the student ---
-    student_id = result.get("studentId")
-    course_id = result.get("courseId")
-    course_title = result.get("courseTitle", "Assessment")
-    
     if student_id:
         notification_msg = f"Your evaluation for '{course_title}' has been reviewed."
         if status == "Approved":

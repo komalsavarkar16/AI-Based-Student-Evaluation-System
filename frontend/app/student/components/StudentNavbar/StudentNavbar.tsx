@@ -82,6 +82,7 @@ export default function StudentNavbar() {
         { label: "Courses", path: "/student/courses" },
         { label: "Tests", path: "/student/tests" },
         { label: "Results", path: "/student/results" },
+        { label: "Export", path: "/student/export" },
         { label: "My profile", path: "/student/profile" },
     ];
 

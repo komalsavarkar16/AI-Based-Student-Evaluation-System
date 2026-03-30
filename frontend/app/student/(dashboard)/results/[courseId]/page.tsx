@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import styles from "./resultDetail.module.css";
 import { API_BASE_URL } from "@/app/utils/api";
 
@@ -44,6 +44,7 @@ interface TestResult {
 
 export default function ResultDetail() {
     const { courseId } = useParams();
+    const router = useRouter();
     const [result, setResult] = useState<TestResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [pathBData, setPathBData] = useState<any>(null);
@@ -265,7 +266,7 @@ export default function ResultDetail() {
                                                         if (res.ok) {
                                                             window.alert("You are now enrolled in the Bridge Course! Follow the study plan to bridge your gaps.");
                                                             // Redirect them directly to the active checklist (runs inside the video-test wrapper)
-                                                            window.location.href = `/student/video-test/${courseId}`;
+                                                            router.push(`/student/video-test/${courseId}`);
                                                         }
                                                     } catch (err) {
                                                         console.error("Failed to start bridge path:", err);

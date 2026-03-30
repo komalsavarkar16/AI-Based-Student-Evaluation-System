@@ -822,6 +822,15 @@ async def start_bridge_course(student_id: str, course_id: str):
         upsert=True
     )
 
+    if response_id:
+        admissions_status_collection.update_one(
+            {"responseId": response_id},
+            {"$set": {
+                "status": "Bridge Course In Progress",
+                "decidedAt": datetime.utcnow()
+            }}
+        )
+
     # Legacy Implementation
     results_collection.update_one(
         {"_id": result["_id"]},
@@ -1075,3 +1084,104 @@ async def get_student_announcements(student_id: str):
         
     return results
     
+@router.get("/all-results/{student_id}")
+async def get_all_student_results(student_id: str):
+    try:
+        sid = ObjectId(student_id)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid Student ID format")
+
+    student = students_collection.find_one({"_id": sid})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+        
+    # Security: In a full implementation, check if current_user.id == sid
+    
+    student["id"] = str(student.pop("_id"))
+    
+    # --- Aggregate Evaluation History (Simplified version of Admin logic) ---
+    all_evaluations = []
+    course_titles = {}
+
+    # 1. New Normalized Data
+    pipeline = [
+        {"$match": {"studentId": sid}},
+        {"$sort": {"submittedAt": -1}},
+        {
+            "$lookup": {
+                "from": "ai_evaluations",
+                "localField": "_id",
+                "foreignField": "responseId",
+                "as": "ai_eval"
+            }
+        },
+        {
+            "$lookup": {
+                "from": "admissions_status",
+                "localField": "_id",
+                "foreignField": "responseId",
+                "as": "admission"
+            }
+        },
+        {"$unwind": {"path": "$ai_eval", "preserveNullAndEmptyArrays": True}},
+        {"$unwind": {"path": "$admission", "preserveNullAndEmptyArrays": True}}
+    ]
+    
+    normalized_attempts = list(responses_collection.aggregate(pipeline))
+    for item in normalized_attempts:
+        cid = item.get("courseId")
+        if str(cid) not in course_titles:
+            course = courses_collection.find_one({"_id": cid})
+            course_titles[str(cid)] = course.get("title") if course else "Unknown Assessment"
+            
+        all_evaluations.append({
+            "id": str(item["_id"]),
+            "courseTitle": course_titles[str(cid)], 
+            "timestamp": item.get("submittedAt").isoformat() if item.get("submittedAt") else None,
+            "score": item.get("mcqScore", 0),
+            "overallVideoScore": round(item.get("ai_eval", {}).get("scores", {}).get("overallVideo", 0), 2) if item.get("ai_eval") else 0,
+            "status": item.get("admission", {}).get("status", "Pending") if item.get("admission") else "Pending",
+            "skillGap": item.get("ai_eval", {}).get("skillGaps", []) if item.get("ai_eval") else [],
+            "enrollmentLetter": item.get("admission", {}).get("decisionNotes", "") if item.get("admission") else ""
+        })
+
+    # 2. Legacy Results
+    legacy_results = list(results_collection.find({"studentId": sid}).sort("timestamp", -1))
+    for r in legacy_results:
+        # Avoid duplicates
+        if any(e.get("score") == r.get("score") and e.get("courseTitle") == r.get("courseTitle") for e in all_evaluations):
+            continue
+
+        all_evaluations.append({
+            "id": str(r.get("_id")),
+            "courseTitle": r.get("courseTitle", "Assessment"),
+            "timestamp": r.get("timestamp").isoformat() if r.get("timestamp") else None,
+            "score": r.get("score", 0),
+            "overallVideoScore": round(r.get("overallVideoScore", 0), 2) if r.get("overallVideoScore") else 0,
+            "status": r.get("status", "Pending"),
+            "skillGap": r.get("skillGap", []),
+            "enrollmentLetter": r.get("enrollmentLetter", "") or r.get("decisionNotes", "")
+        })
+        
+        # History (Legacy)
+        if "evaluationHistory" in r:
+            for hist in r["evaluationHistory"]:
+                all_evaluations.append({
+                    "id": f"{str(r['_id'])}_h_{hist.get('archivedAt')}", 
+                    "courseTitle": r.get("courseTitle"),
+                    "score": hist.get("mcqScore", 0),
+                    "overallVideoScore": round(hist.get("overallVideoScore", 0), 2) if hist.get("overallVideoScore") else 0,
+                    "status": hist.get("status", "Archived"),
+                    "timestamp": hist.get("archivedAt").isoformat() if hist.get("archivedAt") else None
+                })
+
+    all_evaluations.sort(key=lambda x: x.get("timestamp") or "", reverse=True)
+
+    return {
+        "profile": {
+            "firstName": student.get("firstName", ""),
+            "lastName": student.get("lastName", ""),
+            "email": student.get("email", "")
+        },
+        "results": all_evaluations
+    }

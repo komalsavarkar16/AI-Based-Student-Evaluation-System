@@ -16,6 +16,7 @@ const menuItems = [
     { label: "Evaluations", path: "/admin/evaluations" },
     { label: "AI Reports", path: "/admin/ai-evaluations" },
     { label: "Announcements", path: "/admin/announcements" },
+    { label: "Export", path: "/admin/export" },
     { label: "Profile", path: "/admin/profile" },
     { label: "Settings", path: "/admin/settings" },
 ];
