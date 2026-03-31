@@ -119,7 +119,7 @@ export default function MCQTestPage() {
             };
         });
 
-        const finalScore = (correctCount / testData.mcqs.length) * 100;
+        const finalScore = Math.round(((correctCount / testData.mcqs.length) * 100) * 100) / 100;
         setScore(finalScore);
         setIsSubmitted(true);
 

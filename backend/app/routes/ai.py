@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from bson import ObjectId
 from datetime import datetime
-from app.database.connection import courses_collection, mcq_collection, video_questions_collection, results_collection, settings_collection
+from app.database.connection import courses_collection, mcq_collection, video_questions_collection, settings_collection, admissions_status_collection, responses_collection, ai_evaluations_collection
 from app.services.ai_service import generate_mcqs, generate_video_questions, generate_retest_video_questions, generate_retest_mcqs
 
 router = APIRouter(prefix="/ai", tags=["AI"])
@@ -46,61 +46,62 @@ def generate_mcq(course_id: str):
 
 @router.get("/get/mcq/{course_id}")
 def get_mcq(course_id: str, student_id: str = Query(None)):
-    # 1. Check if this is a dynamic retest for a specific student
     print(f"DEBUG: get_mcq course_id={course_id} student_id={student_id}")
 
     if not ObjectId.is_valid(course_id):
         raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid ObjectId")
 
     if student_id and ObjectId.is_valid(student_id):
-        result = results_collection.find_one({
-            "studentId": ObjectId(student_id),
-            "courseId": ObjectId(course_id)
-        }, sort=[("timestamp", -1)])
+        sid = ObjectId(student_id)
+        cid = ObjectId(course_id)
         
-        if result:
-            print(f"DEBUG: result found status={result.get('status')} prevGaps={result.get('previousSkillGap')}")
-        else:
-            print(f"DEBUG: result NOT found")
-
-        # If student is in READY_FOR_RETEST, generate dynamic questions
-        if result and result.get("status") == "READY_FOR_RETEST":
-            course = courses_collection.find_one({"_id": ObjectId(course_id)})
-            if course:
-                try:
-                    # Check if we already generated retest MCQs
-                    if "retestMcqs" in result:
+        # 1. Fetch Latest Response and Its Status
+        response = responses_collection.find_one({"studentId": sid, "courseId": cid}, sort=[("submittedAt", -1)])
+        if response:
+            rid = response["_id"]
+            admission = admissions_status_collection.find_one({"responseId": rid})
+            
+            # If student is in READY_FOR_RETEST, generate dynamic questions
+            if admission and admission.get("status") == "READY_FOR_RETEST":
+                course = courses_collection.find_one({"_id": cid})
+                if course:
+                    try:
+                        # Check if we already generated retest MCQs in admission doc
+                        if "retestMcqs" in admission:
+                            return {
+                                "courseId": course_id,
+                                "mcqs": admission["retestMcqs"],
+                                "courseTitle": course.get("title", "Retest Assessment"),
+                                "isRetest": True
+                            }
+                        
+                        # Fetch skill gaps from AI evaluation
+                        ai_eval = ai_evaluations_collection.find_one({"responseId": rid})
+                        gaps = ai_eval.get("skillGaps", []) if ai_eval else []
+                        
+                        if not gaps:
+                            gaps = course.get("skills_required", [])
+                        
+                        # Fetch settings for retest count
+                        settings = settings_collection.find_one({"type": "global_config"})
+                        mcq_count = settings.get("mcqCount", 10) if settings else 10
+                        
+                        dynamic_mcqs = generate_retest_mcqs(course, gaps, count=mcq_count)
+                        
+                        # Store in admission status
+                        admissions_status_collection.update_one(
+                            {"_id": admission["_id"]},
+                            {"$set": {"retestMcqs": dynamic_mcqs}}
+                        )
+                        
                         return {
                             "courseId": course_id,
-                            "mcqs": result["retestMcqs"],
+                            "mcqs": dynamic_mcqs,
                             "courseTitle": course.get("title", "Retest Assessment"),
                             "isRetest": True
                         }
-                    
-                    # Fallback for gaps: use previous ones or course skills
-                    gaps = result.get("previousSkillGap")
-                    if not gaps:
-                        gaps = course.get("skills_required", [])
-                    
-                    # Fetch settings for retest count
-                    settings = settings_collection.find_one({"type": "global_config"})
-                    mcq_count = settings.get("mcqCount", 10) if settings else 10
-                    
-                    dynamic_mcqs = generate_retest_mcqs(course, gaps, count=mcq_count)
-                    
-                    results_collection.update_one(
-                        {"_id": result["_id"]},
-                        {"$set": {"retestMcqs": dynamic_mcqs}}
-                    )
-                    
-                    return {
-                        "courseId": course_id,
-                        "mcqs": dynamic_mcqs,
-                        "courseTitle": course.get("title", "Retest Assessment"),
-                        "isRetest": True
-                    }
-                except Exception as e:
-                    print(f"Dynamic assessment fallback: {e}")
+                    except Exception as e:
+                        print(f"Dynamic assessment fallback: {e}")
 
     # Default logic (Same questions)
     mcq = mcq_collection.find_one({"courseId": ObjectId(course_id)})
@@ -151,7 +152,6 @@ def generate_video_questions_route(course_id:str):
         upsert=True
     )
     
-
     courses_collection.update_one(
         {"_id": ObjectId(course_id)},
         {"$set": {"aiStatus.videoQuestionsGenerated": True}}
@@ -161,64 +161,62 @@ def generate_video_questions_route(course_id:str):
 
 @router.get("/get/video-questions/{course_id}")
 def get_video_questions(course_id: str, student_id: str = Query(None)):
-    # 1. Check if this is a dynamic retest for a specific student
     print(f"DEBUG: get_video_questions course_id={course_id} student_id={student_id}")
 
     if not ObjectId.is_valid(course_id):
         raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid ObjectId")
 
     if student_id and ObjectId.is_valid(student_id):
-        result = results_collection.find_one({
-            "studentId": ObjectId(student_id),
-            "courseId": ObjectId(course_id)
-        }, sort=[("timestamp", -1)])
+        sid = ObjectId(student_id)
+        cid = ObjectId(course_id)
         
-        if result:
-            print(f"DEBUG: result found status={result.get('status')} prevGaps={result.get('previousSkillGap')}")
-        else:
-            print(f"DEBUG: result NOT found")
-
-        # If student is in READY_FOR_RETEST, generate dynamic questions
-        if result and result.get("status") == "READY_FOR_RETEST":
-            course = courses_collection.find_one({"_id": ObjectId(course_id)})
-            if course:
-                try:
-                    # Check if we already generated retest questions
-                    if "retestQuestions" in result:
-                        print("DEBUG: returning cached retestQuestions")
+        # 1. Fetch Latest Response and Its Status
+        response = responses_collection.find_one({"studentId": sid, "courseId": cid}, sort=[("submittedAt", -1)])
+        if response:
+            rid = response["_id"]
+            admission = admissions_status_collection.find_one({"responseId": rid})
+            
+            # If student is in READY_FOR_RETEST, generate dynamic questions
+            if admission and admission.get("status") == "READY_FOR_RETEST":
+                course = courses_collection.find_one({"_id": cid})
+                if course:
+                    try:
+                        # Check if we already generated retest questions
+                        if "retestQuestions" in admission:
+                            return {
+                                "courseId": course_id,
+                                "videoQuestions": admission["retestQuestions"],
+                                "courseTitle": course.get("title", "Retest Assessment"),
+                                "isRetest": True
+                            }
+                        
+                        # Fetch skill gaps from AI evaluation
+                        ai_eval = ai_evaluations_collection.find_one({"responseId": rid})
+                        gaps = ai_eval.get("skillGaps", []) if ai_eval else []
+                        
+                        if not gaps:
+                            gaps = course.get("skills_required", [])
+                        
+                        # Fetch settings for retest count
+                        settings = settings_collection.find_one({"type": "global_config"})
+                        video_count = settings.get("videoCount", 6) if settings else 6
+                        
+                        dynamic_questions = generate_retest_video_questions(course, gaps, count=video_count)
+                        
+                        # Store in admission status
+                        admissions_status_collection.update_one(
+                            {"_id": admission["_id"]},
+                            {"$set": {"retestQuestions": dynamic_questions}}
+                        )
+                        
                         return {
                             "courseId": course_id,
-                            "videoQuestions": result["retestQuestions"],
+                            "videoQuestions": dynamic_questions,
                             "courseTitle": course.get("title", "Retest Assessment"),
                             "isRetest": True
                         }
-                    
-                    # Fallback for gaps: use previous ones or course skills
-                    gaps = result.get("previousSkillGap")
-                    if not gaps:
-                        gaps = course.get("skills_required", [])
-                    
-                    # Fetch settings for retest count
-                    settings = settings_collection.find_one({"type": "global_config"})
-                    video_count = settings.get("videoCount", 6) if settings else 6
-                    
-                    print(f"DEBUG: generating retest video questions for gaps={gaps}")
-                    dynamic_questions = generate_retest_video_questions(course, gaps, count=video_count)
-                    
-                    # Store these questions in the result
-                    results_collection.update_one(
-                        {"_id": result["_id"]},
-                        {"$set": {"retestQuestions": dynamic_questions}}
-                    )
-                    
-                    return {
-                        "courseId": course_id,
-                        "videoQuestions": dynamic_questions,
-                        "courseTitle": course.get("title", "Retest Assessment"),
-                        "isRetest": True
-                    }
-                except Exception as e:
-                    print(f"Dynamic assessment fallback: {e}")
+                    except Exception as e:
+                        print(f"Dynamic assessment fallback: {e}")
 
     # Default: Return standard course questions (Same questions)
     video_questions = video_questions_collection.find_one({"courseId": ObjectId(course_id)})

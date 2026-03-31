@@ -14,7 +14,6 @@ const menuItems = [
     { label: "Students", path: "/admin/students" },
     { label: "Courses", path: "/admin/courses" },
     { label: "Evaluations", path: "/admin/evaluations" },
-    { label: "AI Reports", path: "/admin/ai-evaluations" },
     { label: "Announcements", path: "/admin/announcements" },
     { label: "Export", path: "/admin/export" },
     { label: "Profile", path: "/admin/profile" },

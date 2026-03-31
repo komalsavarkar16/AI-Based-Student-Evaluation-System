@@ -1,13 +1,14 @@
 import sys
 import os
 from bson import ObjectId
+from datetime import datetime
 
 # Add the current directory to sys.path so 'app' can be imported
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
     from app.services.transcription_service import transcribe_videos
-    from app.database.connection import results_collection
+    from app.database.connection import responses_collection, ai_evaluations_collection, admissions_status_collection
     print("Successfully imported transcription_service and database connection")
 except ImportError as e:
     print(f"Error importing app modules: {e}")
@@ -23,8 +24,8 @@ def main():
 
     # Validate ObjectIds
     try:
-        ObjectId(student_id)
-        ObjectId(course_id)
+        sid = ObjectId(student_id)
+        cid = ObjectId(course_id)
     except Exception:
         print("Invalid studentId or courseId format. Must be a 24-character hex string.")
         sys.exit(1)
@@ -35,45 +36,19 @@ def main():
     
     # Step 1: Fetch existing data to get the video URLs
     try:
-        record = results_collection.find_one({
-            "studentId": ObjectId(student_id),
-            "courseId": ObjectId(course_id)
-        })
+        response_doc = responses_collection.find_one({
+            "studentId": sid,
+            "courseId": cid
+        }, sort=[("submittedAt", -1)])
         
-        if not record:
-            print("No test result record found for this student and course.")
+        if not response_doc:
+            print("No response record found for this student and course.")
             sys.exit(1)
             
-        # Try to get videoUrls first (new schema)
-        video_urls_to_process = record.get("videoUrls", [])
+        video_urls_to_process = response_doc.get("videoUrls", [])
         
-        # Fallback to reconstructing from current videoAnswers (if they exist)
         if not video_urls_to_process:
-            video_answers = record.get("videoAnswers", [])
-            for answer in video_answers:
-                if "videoUrl" in answer and "questionId" in answer:
-                    video_urls_to_process.append({
-                        "question": answer["questionId"],
-                        "url": answer["videoUrl"]
-                    })
-        
-        # FINAL FALLBACK: Check evaluationHistory for "Old Videos" (if they were cleared)
-        if not video_urls_to_process:
-            history = record.get("evaluationHistory", [])
-            if history:
-                print("No current videos found, using video from previous attempt (evaluationHistory)...")
-                # Get the latest history entry
-                latest_history = history[-1]
-                old_video_answers = latest_history.get("videoAnswers", [])
-                for answer in old_video_answers:
-                    if "videoUrl" in answer and "questionId" in answer:
-                        video_urls_to_process.append({
-                            "question": answer["questionId"],
-                            "url": answer["videoUrl"]
-                        })
-
-        if not video_urls_to_process:
-            print("Could not find any video URLs in current record or evaluationHistory.")
+            print("Could not find any video URLs in latest response record.")
             sys.exit(1)
             
         print(f"Found {len(video_urls_to_process)} videos to process.")
@@ -82,36 +57,32 @@ def main():
          print(f"Error fetching data from DB: {e}")
          sys.exit(1)
 
-    # Step 2: Clear existing data
+    # Step 2: Clear existing data (Normalized)
     try:
-        reset_query = {
-            "studentId": ObjectId(student_id),
-            "courseId": ObjectId(course_id)
-        }
+        rid = response_doc["_id"]
         
-        # We need to unset the old analysis results to start fresh
-        update_op = {
-            "$set": {
-                "videoTestEvaluationStatus": "pending"
-            },
-            "$unset": {
-                "overallVideoScore": "",
-                "detailedSkillGap": "",
-                "skillGap": "",
-                "eligibilitySignal": "",
-                "executiveSummary": "",
-                "overallReasoning": "",
-                "competencyGapReport": "",
-                "vibeCheck": "",
-                "aiVerdict": "",
-                "evaluatedAt": "",
-                "videoAnswers": ""
-            }
-        }
+        print("Clearing existing video analysis and transcription data from Normalized collections...")
         
-        print("Clearing existing video analysis and transcription data from DB...")
-        res = results_collection.update_many(reset_query, update_op)
-        print(f"DB reset complete. Modified {res.modified_count} records.")
+        # Clear AI Evaluation
+        ai_evaluations_collection.delete_one({"responseId": rid})
+        
+        # Reset Admissions Status to Pending
+        admissions_status_collection.update_one(
+            {"responseId": rid},
+            {"$set": {
+                "status": "Pending",
+                "decisionNotes": "Re-triggered analysis",
+                "decidedAt": datetime.utcnow()
+            }}
+        )
+        
+        # Clear video answers from response
+        responses_collection.update_one(
+            {"_id": rid},
+            {"$unset": {"videoAnswers": ""}}
+        )
+        
+        print(f"DB reset complete for Response ID: {rid}")
 
     except Exception as e:
         print(f"Warning: Failed to clear existing data: {e}")

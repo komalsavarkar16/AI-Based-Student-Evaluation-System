@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult, StudentResponse, AIEvaluation, AdmissionsStatus, BridgeCurriculum
-from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, settings_collection, announcements_collection
+from app.database.connection import db, students_collection, courses_collection, video_questions_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, settings_collection, announcements_collection
 from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
@@ -160,11 +160,12 @@ async def submit_test(result: TestResult):
     # --- Normalized Implementation START ---
     
     # 1. Update Student Responses
+    mcq_score = round(result.score, 2)
     response_data = {
         "studentId": student_id,
         "courseId": course_id,
         "mcqAnswers": result.answers,
-        "mcqScore": result.score,
+        "mcqScore": mcq_score,
         "submittedAt": timestamp
     }
     
@@ -189,7 +190,7 @@ async def submit_test(result: TestResult):
             "responseId": response_id,
             "studentId": student_id,
             "courseId": course_id,
-            "scores": {"mcq": result.score},
+            "scores": {"mcq": mcq_score},
             "executiveSummary": "MCQ results analyzed.",
             "skillGaps": analysis_content.get("weak_skills", []),
             "vibeCheck": "N/A",
@@ -215,33 +216,6 @@ async def submit_test(result: TestResult):
     )
     
     # --- Normalized Implementation END ---
-
-    # Old results_collection logic (backward compatibility)
-    result_dict = result.model_dump()
-    result_dict["studentId"] = student_id
-    result_dict["courseId"] = course_id
-    result_dict["timestamp"] = timestamp
-    
-    existing_result = results_collection.find_one(
-        {"studentId": student_id, "courseId": course_id},
-        sort=[("timestamp", -1)]
-    )
-
-    if existing_result:
-        results_collection.update_one(
-            {"_id": existing_result["_id"]},
-            {"$set": {
-                "score": result.score,
-                "totalQuestions": result.totalQuestions,
-                "correctAnswers": result.correctAnswers,
-                "answers": result.answers,
-                "courseTitle": result.courseTitle,
-                "status": "Pending",
-                "timestamp": timestamp
-            }}
-        )
-    else:
-        results_collection.insert_one(result_dict)
     
     return {
         "message": "Test results submitted successfully", 
@@ -258,44 +232,14 @@ async def check_test_status(student_id: str, course_id: str):
         raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid course ID")
         
     try:
-        # Check normalized data first
+        # Check normalized data 
         response = responses_collection.find_one({
             "studentId": ObjectId(student_id),
             "courseId": ObjectId(course_id)
         }, sort=[("submittedAt", -1)])
         
-        # If no normalized response, check old results collection
         if not response:
-            result = results_collection.find_one({
-                "studentId": ObjectId(student_id),
-                "courseId": ObjectId(course_id)
-            }, sort={"timestamp": -1})
-            # Fetch settings for passing score verification
-            settings = settings_collection.find_one({"type": "global_config"})
-            passing_score = settings.get("passingScore", 70) if settings else 70
-            
-            if not result:
-                return {"completed": False, "passed": False, "score": 0}
-            return {
-                "completed": True, 
-                "passed": result.get("score", 0) >= passing_score,
-                "score": result.get("score", 0),
-                "videoTestSubmittedAt": result.get("videoTestSubmittedAt"),
-                "videoTestEvaluationStatus": result.get("videoTestEvaluationStatus", "not_started"),
-                "videoAnswers": result.get("videoAnswers", []),
-                "overallVideoScore": result.get("overallVideoScore", 0),
-                "skillGap": result.get("skillGap", []),
-                "detailedSkillGap": result.get("detailedSkillGap", []),
-                "eligibilitySignal": result.get("eligibilitySignal", "-"),
-                "executiveSummary": result.get("executiveSummary", ""),
-                "overallReasoning": result.get("overallReasoning", ""),
-                "status": result.get("status", "Pending"),
-                "decisionNotes": result.get("decisionNotes", ""),
-                "analysis": result.get("analysis", {}),
-                "bridgeChecklistData": result.get("bridgeChecklistData", None),
-                "enrollmentLetter": result.get("enrollmentLetter", None),
-                "evaluationHistory": result.get("evaluationHistory", [])
-            }
+            return {"completed": False, "passed": False, "score": 0}
 
         # Aggregate normalized data
         response_id = response["_id"]
@@ -317,7 +261,7 @@ async def check_test_status(student_id: str, course_id: str):
             "videoAnswers": response.get("videoAnswers", []),
             "overallVideoScore": ai_eval.get("scores", {}).get("overallVideo", 0),
             "skillGap": ai_eval.get("skillGaps", []),
-            "detailedSkillGap": ai_eval.get("detailedSkillGap", []), # Placeholder for new categorical gaps
+            "detailedSkillGap": ai_eval.get("detailedSkillGap", []),
             "eligibilitySignal": ai_eval.get("eligibilitySignal", "-"),
             "executiveSummary": ai_eval.get("executiveSummary", ""),
             "overallReasoning": ai_eval.get("overallReasoning", ""),
@@ -329,7 +273,7 @@ async def check_test_status(student_id: str, course_id: str):
                 "references": bridge.get("references", [])
             } if bridge else None,
             "enrollmentLetter": admission.get("enrollmentLetter"),
-            "evaluationHistory": [] # History will be moved to separate collection later
+            "evaluationHistory": [] 
         }
 
     except Exception as e:
@@ -396,18 +340,6 @@ async def submit_video_test(
             }}
         )
 
-        # Legacy Support
-        results_collection.update_one(
-            {"studentId": ObjectId(studentId), "courseId": ObjectId(courseId)},
-            {"$set": {
-                "videoUrls": video_urls,
-                "videoTestSubmittedAt": datetime.utcnow().strftime("%Y-%m-%d"),
-                "videoTestEvaluationStatus": "pending",
-                "status": "Pending",
-                "timestamp": datetime.utcnow()
-            }}
-        )
-
         background_tasks.add_task(transcribe_videos, studentId, courseId, video_urls)
 
         return {"message": "Video test submitted successfully.", "videoUrls": video_urls}
@@ -416,26 +348,20 @@ async def submit_video_test(
 
 def process_video_test_analysis(student_id: str, course_id: str):
     try:
-        # 1. Fetch the latest test result
-        result = results_collection.find_one({
+        # 1. Fetch the latest student response
+        response = responses_collection.find_one({
             "studentId": ObjectId(student_id),
             "courseId": ObjectId(course_id)
-        }, sort=[("timestamp", -1)])
+        }, sort=[("submittedAt", -1)])
         
-        if not result or "videoAnswers" not in result:
+        if not response or "videoAnswers" not in response:
             print("No video answers found for analysis")
             return
 
-        # 2. Identify which questions were used (Retest vs Standard)
+        # 2. Identify which questions were used
         course = courses_collection.find_one({"_id": ObjectId(course_id)})
-        retest_questions = result.get("retestQuestions")
-        
-        if retest_questions:
-            active_questions = retest_questions
-        else:
-            # Fallback to standard video questions for the course
-            video_questions_doc = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
-            active_questions = video_questions_doc.get("videoQuestions", []) if video_questions_doc else []
+        video_questions_doc = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
+        active_questions = video_questions_doc.get("videoQuestions", []) if video_questions_doc else []
         
         if not course:
             print("Course not found")
@@ -446,7 +372,7 @@ def process_video_test_analysis(student_id: str, course_id: str):
         count = 0
         updated_answers = []
         
-        for q_answer in result["videoAnswers"]:
+        for q_answer in response.get("videoAnswers", []):
             question_id = q_answer.get("questionId")
             transcript = q_answer.get("transcript")
             
@@ -489,10 +415,10 @@ def process_video_test_analysis(student_id: str, course_id: str):
         settings = settings_collection.find_one({"type": "global_config"})
         skill_threshold = settings.get("passingScore", 70) / 10 if settings else 7.0
         
-        mcq_answers = result.get("answers", [])
+        mcq_answers = response.get("mcqAnswers", [])
         detailed_skill_gaps = discover_skill_gaps(mcq_answers, updated_answers, course, threshold=skill_threshold)
         
-        # Flatten the detailed categorical gaps into a simple list of skills to not break old frontend code just in case
+        # Flatten the detailed categorical gaps 
         unique_weak_skills = []
         for cat in detailed_skill_gaps:
             for skill in cat.get("skills", []):
@@ -503,20 +429,17 @@ def process_video_test_analysis(student_id: str, course_id: str):
         
         # 4.1 Overall Performance Signal (AI-based)
         overall_eval = generate_overall_video_evaluation(updated_answers, course)
-        avg_score = total_score / count if count > 0 else 0
+        avg_score = round(total_score / count, 2) if count > 0 else 0
 
-        # 5. Update DB
-        
-        # Normalized Implementation
-        response_doc = responses_collection.find_one({"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)})
-        response_id = response_doc["_id"] if response_doc else None
+        # 5. Update DB (Normalized)
+        response_id = response["_id"]
         
         ai_eval_data = {
             "responseId": response_id,
             "studentId": ObjectId(student_id),
             "courseId": ObjectId(course_id),
             "scores": {
-                "mcq": result.get("score", 0),
+                "mcq": response.get("mcqScore", 0),
                 "overallVideo": avg_score
             },
             "executiveSummary": overall_eval.get("executiveSummary"),
@@ -531,33 +454,14 @@ def process_video_test_analysis(student_id: str, course_id: str):
         }
         
         ai_evaluations_collection.update_one(
-            {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+            {"responseId": response_id},
             {"$set": ai_eval_data},
             upsert=True
         )
         
         responses_collection.update_one(
-            {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
+            {"_id": response_id},
             {"$set": {"videoAnswers": updated_answers}}
-        )
-
-        # Legacy Update
-        results_collection.update_one(
-            {"_id": result["_id"]},
-            {"$set": {
-                "videoAnswers": updated_answers,
-                "overallVideoScore": avg_score,
-                "detailedSkillGap": detailed_skill_gaps,
-                "skillGap": unique_weak_skills,
-                "videoTestEvaluationStatus": "completed",
-                "eligibilitySignal": overall_eval.get("overallEligibilitySignal"),
-                "executiveSummary": overall_eval.get("executiveSummary"),
-                "overallReasoning": overall_eval.get("overallReasoning"),
-                "competencyGapReport": overall_eval.get("competencyGap"),
-                "vibeCheck": overall_eval.get("vibeCheck"),
-                "aiVerdict": overall_eval.get("aiVerdict"),
-                "evaluatedAt": datetime.utcnow()
-            }}
         )
         
         # 6. Notify Admin
@@ -611,15 +515,12 @@ async def get_student_notifications(student_id: str, current_user: dict = Depend
     read_receipts = list(db.read_receipts.find({"studentId": sid}))
     read_item_ids = {str(r["itemId"]) for r in read_receipts}
     
-    # 2. Fetch relevant announcements (Reuse logic from get_student_announcements)
-    # Get student's enrolled/attempted courses for targeting
+    # 2. Fetch relevant announcements 
+    # Get student's enrolled/attempted courses for targeting from NEW collection
     responses = list(responses_collection.find({"studentId": sid}, {"courseId": 1}))
-    legacy_results = list(results_collection.find({"studentId": sid}, {"courseId": 1}))
     
     enrolled_course_ids = set()
     for r in responses:
-        if r.get("courseId"): enrolled_course_ids.add(str(r["courseId"]))
-    for r in legacy_results:
         if r.get("courseId"): enrolled_course_ids.add(str(r["courseId"]))
         
     query = {
@@ -735,12 +636,9 @@ async def mark_all_notifications_read(student_id: str):
 
     # 2. Get all targetable announcements for this student to create receipts
     responses = list(responses_collection.find({"studentId": sid}, {"courseId": 1}))
-    legacy_results = list(results_collection.find({"studentId": sid}, {"courseId": 1}))
     
     enrolled_course_ids = set()
     for r in responses:
-        if r.get("courseId"): enrolled_course_ids.add(r["courseId"])
-    for r in legacy_results:
         if r.get("courseId"): enrolled_course_ids.add(r["courseId"])
         
     query = {
@@ -791,54 +689,44 @@ async def start_bridge_course(student_id: str, course_id: str):
     if not ObjectId.is_valid(course_id):
         raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid course ID")
         
-    result = results_collection.find_one({
+    response = responses_collection.find_one({
         "studentId": ObjectId(student_id),
         "courseId": ObjectId(course_id)
-    }, sort=[("timestamp", -1)])
+    }, sort=[("submittedAt", -1)])
     
-    if not result:
-        raise HTTPException(status_code=404, detail="Test not found")
+    if not response:
+        raise HTTPException(status_code=404, detail="Response not found")
         
-    checklist_data = generate_bridge_path_b_content(result.get("skillGap", []))
+    # Skill gaps are in ai_evaluations
+    ai_eval = ai_evaluations_collection.find_one({"responseId": response["_id"]})
+    skill_gaps = ai_eval.get("skillGaps", []) if ai_eval else []
     
-    # Add a checked property to each item natively
-    for item in checklist_data.get("checklist", []):
-        item["checked"] = False
-        
-    # Normalized Implementation
-    response_doc = responses_collection.find_one({"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)}, sort=[("submittedAt", -1)])
-    response_id = response_doc["_id"] if response_doc else None
+    # Generate content
+    checklist_data = generate_bridge_path_b_content(skill_gaps)
     
+    # Store in bridge_curriculum_collection
     bridge_curriculum_collection.update_one(
         {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
         {"$set": {
-            "responseId": response_id,
+            "responseId": response["_id"],
             "studentId": ObjectId(student_id),
             "courseId": ObjectId(course_id),
-            "roadmap": checklist_data.get("roadmap", []),
             "checklist": checklist_data.get("checklist", []),
-            "isActive": True
+            "references": checklist_data.get("references", []),
+            "isActive": True,
+            "generatedAt": datetime.utcnow()
         }},
         upsert=True
     )
 
-    if response_id:
-        admissions_status_collection.update_one(
-            {"responseId": response_id},
-            {"$set": {
-                "status": "Bridge Course In Progress",
-                "decidedAt": datetime.utcnow()
-            }}
-        )
-
-    # Legacy Implementation
-    results_collection.update_one(
-        {"_id": result["_id"]},
+    admissions_status_collection.update_one(
+        {"responseId": response["_id"]},
         {"$set": {
             "status": "Bridge Course In Progress",
-            "bridgeChecklistData": checklist_data
+            "decidedAt": datetime.utcnow()
         }}
     )
+
     return {"message": "Bridge course started", "data": checklist_data}
 
 class CheckListUpdateRequest(BaseModel):
@@ -851,12 +739,6 @@ async def update_bridge_checklist(student_id: str, course_id: str, request: Chec
         {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
         {"$set": {"checklist": request.checklistData.get("checklist", [])}}
     )
-
-    # Legacy Update
-    results_collection.update_one(
-        {"studentId": ObjectId(student_id), "courseId": ObjectId(course_id)},
-        {"$set": {"bridgeChecklistData": request.checklistData}}
-    )
     return {"message": "Updated"}
     
 
@@ -865,11 +747,6 @@ async def finish_bridge_course(student_id: str, course_id: str):
     sid = ObjectId(student_id)
     cid = ObjectId(course_id)
     
-    # Fetch existing to archive it
-    existing = results_collection.find_one({"studentId": sid, "courseId": cid}, sort=[("timestamp", -1)])
-    if not existing:
-        raise HTTPException(status_code=404, detail="Test results not found")
-
     # Normalized Logic
     bridge_curriculum_collection.update_one(
         {"studentId": sid, "courseId": cid},
@@ -883,36 +760,7 @@ async def finish_bridge_course(student_id: str, course_id: str):
             {"$set": {"status": "READY_FOR_RETEST", "decidedAt": datetime.utcnow()}}
         )
 
-    # Prepare historical entry (Legacy)
-    history_entry = {
-        "overallVideoScore": existing.get("overallVideoScore"),
-        "detailedSkillGap": existing.get("detailedSkillGap"),
-        "skillGap": existing.get("skillGap"),
-        "eligibilitySignal": existing.get("eligibilitySignal"),
-        "executiveSummary": existing.get("executiveSummary"),
-        "overallReasoning": existing.get("overallReasoning"),
-        "evaluatedAt": existing.get("evaluatedAt"),
-        "videoAnswers": existing.get("videoAnswers"),
-        "competencyGapReport": existing.get("competencyGapReport"),
-        "vibeCheck": existing.get("vibeCheck"),
-        "aiVerdict": existing.get("aiVerdict"),
-        "bridgeChecklistData": existing.get("bridgeChecklistData"),
-        "archivedAt": datetime.utcnow()
-    }
-
-    # Legacy Update
-    results_collection.update_many(
-        {"studentId": sid, "courseId": cid},
-        {
-            "$set": {
-                "status": "READY_FOR_RETEST",
-                "videoTestEvaluationStatus": "not_started",
-                # ... other resets ...
-            },
-            "$push": {"evaluationHistory": {k: v for k, v in history_entry.items() if v is not None}}
-        }
-    )
-    return {"message": "Pass data archived. Ready to retest."}
+    return {"message": "Bridge course finished. Ready for retest."}
     
 
 @router.get("/dashboard-stats/{student_id}")
@@ -945,9 +793,6 @@ async def get_dashboard_stats(student_id: str, current_user: dict = Depends(get_
     
     normalized_attempts = list(responses_collection.aggregate(pipeline))
     
-    # 2. Legacy Results
-    legacy_results = list(results_collection.find({"studentId": sid}).sort("timestamp", -1))
-    
     enrolled_courses = []
     total_score = 0
     test_count = 0
@@ -956,17 +801,22 @@ async def get_dashboard_stats(student_id: str, current_user: dict = Depends(get_
     recommendations = []
     seen_courses = set()
 
-    # Process Normalized first
+    # Process Normalized
     for item in normalized_attempts:
-        course_id = str(item.get("courseId"))
-        if course_id in seen_courses: continue
-        seen_courses.add(course_id)
+        cid = item.get("courseId")
+        course_id_str = str(cid)
+        if course_id_str in seen_courses: continue
+        seen_courses.add(course_id_str)
+        
+        # Fetch actual course title
+        course = courses_collection.find_one({"_id": cid})
+        course_title = course.get("title") if course else "Unknown Assessment"
         
         status = item.get("admission", {}).get("status", "Pending")
         progress = 100 if status == "Approved" else (30 if status == "Pending" else (70 if "Bridge" in status else 50))
         
         enrolled_courses.append({
-            "name": "Assessment", # Placeholder
+            "name": course_title,
             "progress": progress,
             "status": status
         })
@@ -984,39 +834,10 @@ async def get_dashboard_stats(student_id: str, current_user: dict = Depends(get_
                 all_gaps.append({
                     "id": str(item["_id"]),
                     "title": g,
-                    "description": "Identified in latest assessment"
+                    "description": f"Identified in {course_title}"
                 })
 
-    # Process Legacy (only for courses NOT in normalized yet)
-    for r in legacy_results:
-        course_id = str(r.get("courseId"))
-        if course_id in seen_courses: continue
-        seen_courses.add(course_id)
-        
-        status = r.get("status", "Pending")
-        progress = 100 if status == "Approved" else (30 if status == "Pending" else (70 if "Bridge" in status else 50))
-        
-        enrolled_courses.append({
-            "name": r.get("courseTitle", "Unknown Course"),
-            "progress": progress,
-            "status": status
-        })
-        
-        if r.get("score"):
-            total_score += r.get("score")
-            test_count += 1
-        if status == "Approved":
-            certificates += 1
-            
-        if r.get("skillGap"):
-            for g in r.get("skillGap"):
-                all_gaps.append({
-                    "id": str(r["_id"]),
-                    "title": g,
-                    "description": f"Identified in {r.get('courseTitle')} assessment"
-                })
-
-    avg_score = round(total_score / test_count) if test_count > 0 else 0
+    avg_score = round(total_score / test_count, 2) if test_count > 0 else 0
     
     # Simple recommendation based on latest gap
     if all_gaps:
@@ -1044,13 +865,9 @@ async def get_student_announcements(student_id: str, current_user: dict = Depend
     # 1. Get student's enrolled/attempted courses
     # Normalized
     responses = list(responses_collection.find({"studentId": sid}, {"courseId": 1}))
-    # Legacy
-    legacy_results = list(results_collection.find({"studentId": sid}, {"courseId": 1}))
     
     enrolled_course_ids = set()
     for r in responses:
-        if r.get("courseId"): enrolled_course_ids.add(str(r["courseId"]))
-    for r in legacy_results:
         if r.get("courseId"): enrolled_course_ids.add(str(r["courseId"]))
         
     # 2. Fetch announcements
@@ -1099,7 +916,7 @@ async def get_all_student_results(student_id: str, current_user: dict = Depends(
     
     student["id"] = str(student.pop("_id"))
     
-    # --- Aggregate Evaluation History (Simplified version of Admin logic) ---
+    # --- Aggregate Evaluation History ---
     all_evaluations = []
     course_titles = {}
 
@@ -1138,42 +955,13 @@ async def get_all_student_results(student_id: str, current_user: dict = Depends(
             "id": str(item["_id"]),
             "courseTitle": course_titles[str(cid)], 
             "timestamp": item.get("submittedAt").isoformat() if item.get("submittedAt") else None,
-            "score": item.get("mcqScore", 0),
+            "score": round(item.get("mcqScore", 0), 2),
             "overallVideoScore": round(item.get("ai_eval", {}).get("scores", {}).get("overallVideo", 0), 2) if item.get("ai_eval") else 0,
             "status": item.get("admission", {}).get("status", "Pending") if item.get("admission") else "Pending",
             "skillGap": item.get("ai_eval", {}).get("skillGaps", []) if item.get("ai_eval") else [],
             "enrollmentLetter": item.get("admission", {}).get("decisionNotes", "") if item.get("admission") else ""
         })
 
-    # 2. Legacy Results
-    legacy_results = list(results_collection.find({"studentId": sid}).sort("timestamp", -1))
-    for r in legacy_results:
-        # Avoid duplicates
-        if any(e.get("score") == r.get("score") and e.get("courseTitle") == r.get("courseTitle") for e in all_evaluations):
-            continue
-
-        all_evaluations.append({
-            "id": str(r.get("_id")),
-            "courseTitle": r.get("courseTitle", "Assessment"),
-            "timestamp": r.get("timestamp").isoformat() if r.get("timestamp") else None,
-            "score": r.get("score", 0),
-            "overallVideoScore": round(r.get("overallVideoScore", 0), 2) if r.get("overallVideoScore") else 0,
-            "status": r.get("status", "Pending"),
-            "skillGap": r.get("skillGap", []),
-            "enrollmentLetter": r.get("enrollmentLetter", "") or r.get("decisionNotes", "")
-        })
-        
-        # History (Legacy)
-        if "evaluationHistory" in r:
-            for hist in r["evaluationHistory"]:
-                all_evaluations.append({
-                    "id": f"{str(r['_id'])}_h_{hist.get('archivedAt')}", 
-                    "courseTitle": r.get("courseTitle"),
-                    "score": hist.get("mcqScore", 0),
-                    "overallVideoScore": round(hist.get("overallVideoScore", 0), 2) if hist.get("overallVideoScore") else 0,
-                    "status": hist.get("status", "Archived"),
-                    "timestamp": hist.get("archivedAt").isoformat() if hist.get("archivedAt") else None
-                })
 
     all_evaluations.sort(key=lambda x: x.get("timestamp") or "", reverse=True)
 

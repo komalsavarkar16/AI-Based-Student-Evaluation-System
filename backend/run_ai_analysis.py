@@ -7,39 +7,42 @@ from dotenv import load_dotenv
 # Add project root to sys.path to allow absolute imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from app.database.connection import results_collection
+from app.database.connection import responses_collection, courses_collection
 from app.routes.student import process_video_test_analysis
 
 load_dotenv()
 
-def run_manual_evaluation(result_id_str):
-    print(f"--- Triggering Manual AI Evaluation for Result ID: {result_id_str} ---")
+def run_manual_evaluation(response_id_str):
+    print(f"--- Triggering Manual AI Evaluation for Response ID: {response_id_str} ---")
     
     try:
-        result_id = ObjectId(result_id_str)
+        rid = ObjectId(response_id_str)
     except:
-        print(f"Error: Invalid Result ID format: {result_id_str}")
+        print(f"Error: Invalid Response ID format: {response_id_str}")
         return
 
-    # 1. Fetch Result to get student and course context
-    result = results_collection.find_one({"_id": result_id})
-    if not result:
-        print("Error: Result not found in database.")
+    # 1. Fetch Response to get student and course context
+    response = responses_collection.find_one({"_id": rid})
+    if not response:
+        print("Error: Response not found in database.")
         return
     
-    student_id = str(result.get("studentId"))
-    course_id = str(result.get("courseId"))
+    student_id = str(response.get("studentId"))
+    course_id = str(response.get("courseId"))
     
     if not student_id or not course_id:
-        print("Error: Result is missing studentId or courseId.")
+        print("Error: Response is missing studentId or courseId.")
         return
+
+    course = courses_collection.find_one({"_id": ObjectId(course_id)})
+    course_title = course.get("title") if course else "Unknown"
 
     print(f"Student ID: {student_id}")
     print(f"Course ID: {course_id}")
-    print(f"Course Title: {result.get('courseTitle')}")
+    print(f"Course Title: {course_title}")
 
     # 2. Check if transcripts exist
-    if not result.get("videoAnswers") or len(result.get("videoAnswers", [])) == 0:
+    if not response.get("videoAnswers") or len(response.get("videoAnswers", [])) == 0:
         print("Warning: No transcripts found in 'videoAnswers'.")
         print("If you need to RE-TRANSCRIBE from original videos, please use the transcription service first.")
         print("Currently, we will try to analyze existing answers.")
@@ -58,7 +61,7 @@ def run_manual_evaluation(result_id_str):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python run_ai_analysis.py <result_id>")
+        print("Usage: python run_ai_analysis.py <response_id>")
         sys.exit(1)
         
     res_id = sys.argv[1]

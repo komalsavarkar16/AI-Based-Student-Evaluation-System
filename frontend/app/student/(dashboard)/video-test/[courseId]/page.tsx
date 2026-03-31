@@ -84,7 +84,7 @@ export default function VideoTestPage() {
             }
             fetchQuestions();
             startTestTimer();
-        } catch(e) {
+        } catch (e) {
             console.error(e);
             toast.error("Error loading assessment");
             setLoading(false);
@@ -214,7 +214,7 @@ export default function VideoTestPage() {
         if (isRecording) {
             await stopRecording();
         }
-        
+
         if (currentIdx < questions.length - 1) {
             setCurrentIdx(prev => prev + 1);
         } else {
@@ -281,7 +281,7 @@ export default function VideoTestPage() {
 
     const handleChecklistChange = async (idx: number, checked: boolean) => {
         if (!bridgeChecklist || !bridgeChecklist.checklist) return;
-        
+
         const newChecklist = { ...bridgeChecklist };
         newChecklist.checklist[idx].checked = checked;
         setBridgeChecklist(newChecklist);
@@ -348,15 +348,13 @@ export default function VideoTestPage() {
 
         return (
             <div className={styles.pageWrapper}>
-                <header className={styles.header} style={{ justifyContent: 'center', background: '#eef2ff' }}>
-                    <div className={styles.brand} style={{ color: '#4338ca', fontWeight: 'bold' }}>
-                        <Brain size={24} color="#4338ca"/> <span>Bridge Path Checklist Active</span>
-                    </div>
-                </header>
 
                 <main className={styles.mainContent}>
+                    <div className={styles.brand} style={{ color: '#4338ca', fontWeight: 'bold', fontSize: '1.5rem', alignItems: 'center', padding: '1rem' }}>
+                        <span>Bridge Path Checklist Active</span>
+                    </div>
                     <div className={styles.videoSection} style={{ maxWidth: '800px', margin: '0 auto', background: 'transparent', boxShadow: 'none' }}>
-                       
+
                         <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
                             <h2 style={{ fontSize: '24px', color: '#1e293b', marginTop: 0, marginBottom: '8px' }}>Your Concept Roadmap</h2>
                             <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '24px' }}>
@@ -370,9 +368,9 @@ export default function VideoTestPage() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 {bridgeChecklist.checklist?.map((item: any, idx: number) => (
                                     <div key={idx} style={{ padding: '16px', background: item.checked ? '#f8fafc' : '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', gap: '16px', alignItems: 'flex-start', transition: 'all 0.2s', opacity: item.checked ? 0.7 : 1 }}>
-                                        <input 
-                                            type="checkbox" 
-                                            checked={item.checked} 
+                                        <input
+                                            type="checkbox"
+                                            checked={item.checked}
                                             onChange={(e) => handleChecklistChange(idx, e.target.checked)}
                                             style={{ width: '20px', height: '20px', marginTop: '4px', cursor: 'pointer' }}
                                         />
@@ -394,7 +392,7 @@ export default function VideoTestPage() {
                                     </div>
                                 ))}
                             </div>
-                            
+
                             {bridgeChecklist.references && bridgeChecklist.references.length > 0 && (
                                 <div style={{ marginTop: '30px', padding: '20px', background: '#f8fafc', borderRadius: '8px' }}>
                                     <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#1e293b' }}>Recommended Web Resources:</h3>
@@ -407,17 +405,17 @@ export default function VideoTestPage() {
                             )}
 
                             <div style={{ marginTop: '30px', textAlign: 'center' }}>
-                                <button 
+                                <button
                                     onClick={handleBridgeSubmit}
                                     disabled={!allChecked}
-                                    style={{ 
-                                        padding: '16px 32px', 
-                                        borderRadius: '8px', 
-                                        fontSize: '16px', 
-                                        fontWeight: 'bold', 
-                                        border: 'none', 
-                                        cursor: allChecked ? 'pointer' : 'not-allowed', 
-                                        background: allChecked ? '#4f46e5' : '#cbd5e1', 
+                                    style={{
+                                        padding: '16px 32px',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: 'bold',
+                                        border: 'none',
+                                        cursor: allChecked ? 'pointer' : 'not-allowed',
+                                        background: allChecked ? '#4f46e5' : '#cbd5e1',
                                         color: allChecked ? '#fff' : '#64748b',
                                         transition: 'all 0.2s',
                                         width: '100%'
@@ -442,12 +440,12 @@ export default function VideoTestPage() {
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <span className={styles.subTitle}>Video Assessment • {courseTitle}</span>
                         {isRetest && (
-                            <span style={{ 
-                                padding: '2px 8px', 
-                                background: '#ecfdf5', 
-                                color: '#059669', 
-                                fontSize: '11px', 
-                                fontWeight: 'bold', 
+                            <span style={{
+                                padding: '2px 8px',
+                                background: '#ecfdf5',
+                                color: '#059669',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
                                 borderRadius: '12px',
                                 border: '1px solid #10b981'
                             }}>Dynamic Assessment</span>

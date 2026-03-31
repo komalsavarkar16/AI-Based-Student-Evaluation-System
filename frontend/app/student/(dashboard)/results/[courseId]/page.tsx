@@ -190,7 +190,7 @@ export default function ResultDetail() {
             </div>
 
             {/* Admission Decision Section */}
-            {result.status && result.status !== 'Pending' && (
+            {result.status && (
                 <div className={styles.section} style={{ background: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                     <h2 className={styles.sectionTitle} style={{ color: '#0f172a' }}>Admission Decision</h2>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -200,11 +200,13 @@ export default function ResultDetail() {
                             fontWeight: 700,
                             fontSize: '14px',
                             backgroundColor: result.status === 'Approved' ? '#dcfce7' :
-                                result.status === 'Bridge Course Recommended' ? '#e0f2fe' : '#fee2e2',
+                                result.status === 'Bridge Course Recommended' ? '#e0f2fe' :
+                                    result.status === 'Retry Required' ? '#fee2e2' : '#f1f5f9',
                             color: result.status === 'Approved' ? '#166534' :
-                                result.status === 'Bridge Course Recommended' ? '#0369a1' : '#991b1b'
+                                result.status === 'Bridge Course Recommended' ? '#0369a1' :
+                                    result.status === 'Retry Required' ? '#991b1b' : '#475569'
                         }}>
-                            {result.status}
+                            {result.status.replace(/_/g, " ")}
                         </span>
                     </div>
                     {result.decisionNotes && (
@@ -229,9 +231,9 @@ export default function ResultDetail() {
                                         <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>AI is analyzing your skill gaps and generating study concepts...</div>
                                     ) : pathBData && (
                                         <>
-                                            <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                            <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                                 <h5 style={{ color: '#1e293b', marginTop: 0, fontSize: '15px' }}>Your AI Concept Checklist:</h5>
-                                                <div style={{ marginBottom: '16px' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                                     {pathBData.checklist?.map((item: any, idx: number) => (
                                                         <div key={idx} style={{ padding: '12px', background: '#fff', marginBottom: '8px', borderRadius: '6px', borderLeft: item.difficulty === 'HARD' ? '4px solid #ef4444' : item.difficulty === 'MEDIUM' ? '4px solid #f59e0b' : '4px solid #10b981', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
                                                             <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.concept} <span style={{ fontSize: '11px', padding: '2px 6px', background: '#e2e8f0', borderRadius: '4px', marginLeft: '6px', verticalAlign: 'middle' }}>{item.difficulty}</span></div>

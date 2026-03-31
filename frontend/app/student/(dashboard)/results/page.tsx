@@ -37,11 +37,14 @@ export default function ResultsList() {
 
             if (!studentId) return;
 
-            // 1. Fetch all courses
             const coursesRes = await fetch(`${API_BASE_URL}/courses/`, {
                 credentials: "include"
             });
-            const coursesData: Course[] = await coursesRes.json();
+            let coursesData: Course[] = [];
+            if (coursesRes.ok) {
+                const data = await coursesRes.json();
+                coursesData = Array.isArray(data) ? data : [];
+            }
 
             // 2. Fetch test statuses and filter for completed video evaluations
             const completedTests: CompletedResult[] = [];
@@ -116,6 +119,7 @@ export default function ResultsList() {
                                                 item.status === 'Retry Required' ? '#ef4444' : '#f59e0b',
                                         fontWeight: 700
                                     }}>
+                                        {item.status.replace(/_/g, " ")}
                                     </span>
                                     {item.hasHistory && (
                                         <div style={{ fontSize: '12px', color: '#64748b', background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', marginTop: '8px', display: 'inline-block' }}>

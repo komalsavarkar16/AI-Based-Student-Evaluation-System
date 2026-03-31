@@ -1,6 +1,6 @@
 import os
 import requests
-from app.database.connection import results_collection, responses_collection
+from app.database.connection import responses_collection
 from bson import ObjectId
 from tempfile import NamedTemporaryFile
 from dotenv import load_dotenv
@@ -135,21 +135,8 @@ def transcribe_videos(student_id: str, course_id: str, video_urls: list):
                 "$set": {
                     "videoAnswers": transcripts
                 }
-            }
-        )
-
-        # Legacy Update
-        results_collection.update_one(
-            {
-                "studentId": ObjectId(student_id),
-                "courseId": ObjectId(course_id)
             },
-            {
-                "$set": {
-                    "videoAnswers": transcripts,
-                    "videoTestEvaluationStatus": "transcribed"
-                }
-            }
+            upsert=True
         )
         print(f"Gemini transcription completed for student {student_id}")
         

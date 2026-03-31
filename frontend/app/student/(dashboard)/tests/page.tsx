@@ -41,7 +41,11 @@ export default function TestsPage() {
             const coursesRes = await fetch(`${API_BASE_URL}/courses/`, {
                 credentials: "include"
             });
-            const coursesData = await coursesRes.json();
+            let coursesData = [];
+            if (coursesRes.ok) {
+                const data = await coursesRes.json();
+                coursesData = Array.isArray(data) ? data : [];
+            }
             setCourses(coursesData);
 
             if (studentId) {
