@@ -60,7 +60,9 @@ export default function ResultDetail() {
             const studentId = localStorage.getItem("student_id");
             if (!studentId || !courseId) return;
 
-            const res = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`);
+            const res = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`, {
+                credentials: "include"
+            });
             if (res.ok) {
                 const data = await res.json();
                 setResult(data);
@@ -82,7 +84,8 @@ export default function ResultDetail() {
             const resB = await fetch(`${API_BASE_URL}/student/bridge-path-b`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ skillGap })
+                body: JSON.stringify({ skillGap }),
+                credentials: "include"
             });
 
             if (resB.ok) {
@@ -261,7 +264,8 @@ export default function ResultDetail() {
                                                         const studentId = localStorage.getItem("student_id");
                                                         if (!studentId) return;
                                                         const res = await fetch(`${API_BASE_URL}/student/start-bridge-course/${studentId}/${courseId}`, {
-                                                            method: 'POST'
+                                                            method: 'POST',
+                                                            credentials: "include"
                                                         });
                                                         if (res.ok) {
                                                             window.alert("You are now enrolled in the Bridge Course! Follow the study plan to bridge your gaps.");

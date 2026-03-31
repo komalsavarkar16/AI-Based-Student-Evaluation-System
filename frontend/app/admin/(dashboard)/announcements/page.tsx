@@ -56,9 +56,8 @@ export default function AnnouncementsPage() {
 
     const fetchAnnouncements = async () => {
         try {
-            const token = localStorage.getItem("auth_token");
             const response = await fetch(`${API_BASE_URL}/admin/announcements`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: "include"
             });
             if (response.ok) {
                 const data = await response.json();
@@ -74,9 +73,8 @@ export default function AnnouncementsPage() {
 
     const fetchCourses = async () => {
         try {
-            const token = localStorage.getItem("auth_token");
             const response = await fetch(`${API_BASE_URL}/courses`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: "include"
             });
             if (response.ok) {
                 const data = await response.json();
@@ -115,7 +113,6 @@ export default function AnnouncementsPage() {
         setIsSubmitting(true);
 
         try {
-            const token = localStorage.getItem("auth_token");
             const url = editingAnnouncement 
                 ? `${API_BASE_URL}/admin/announcements/${editingAnnouncement.id}`
                 : `${API_BASE_URL}/admin/announcements`;
@@ -131,10 +128,10 @@ export default function AnnouncementsPage() {
             const response = await fetch(url, {
                 method,
                 headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload),
+                credentials: "include"
             });
 
             if (response.ok) {
@@ -156,10 +153,9 @@ export default function AnnouncementsPage() {
         if (!window.confirm("Are you sure you want to delete this announcement?")) return;
 
         try {
-            const token = localStorage.getItem("auth_token");
             const response = await fetch(`${API_BASE_URL}/admin/announcements/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: "include"
             });
 
             if (response.ok) {

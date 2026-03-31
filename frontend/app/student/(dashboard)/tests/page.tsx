@@ -36,11 +36,10 @@ export default function TestsPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("auth_token");
             const studentId = localStorage.getItem("student_id");
 
             const coursesRes = await fetch(`${API_BASE_URL}/courses/`, {
-                headers: { "Authorization": `Bearer ${token}` }
+                credentials: "include"
             });
             const coursesData = await coursesRes.json();
             setCourses(coursesData);
@@ -48,7 +47,9 @@ export default function TestsPage() {
             if (studentId) {
                 const statuses: Record<string, TestStatus> = {};
                 for (const course of coursesData) {
-                    const statusRes = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${course._id}`);
+                    const statusRes = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${course._id}`, {
+                        credentials: "include"
+                    });
                     if (statusRes.ok) {
                         statuses[course._id] = await statusRes.json();
                     }

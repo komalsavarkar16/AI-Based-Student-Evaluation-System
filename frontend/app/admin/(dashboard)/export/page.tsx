@@ -32,14 +32,18 @@ export default function ExportPage() {
             let headers: string[] = [];
 
             if (selectedData === 'students') {
-                const res = await fetch(`${API_BASE_URL}/admin/students`);
+                const res = await fetch(`${API_BASE_URL}/admin/students`, {
+                    credentials: "include"
+                });
                 if (!res.ok) throw new Error("Failed to fetch students");
                 data = await res.json();
                 fileName = `Students_List_${new Date().toISOString().split('T')[0]}`;
                 title = "SkillBridge AI - Student Master List";
                 headers = ["Name", "Email", "MCQ Score", "Video Score", "Status"];
             } else if (selectedData === 'evaluations') {
-                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`);
+                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`, {
+                    credentials: "include"
+                });
                 if (!res.ok) throw new Error("Failed to fetch evaluations");
                 data = await res.json();
                 fileName = `Evaluation_Results_${new Date().toISOString().split('T')[0]}`;

@@ -14,14 +14,11 @@ const SkillGapAnalytics = () => {
 
     useEffect(() => {
         const fetchAnalytics = async () => {
-            const token = localStorage.getItem("auth_token");
-            const headers: Record<string, string> = token ? { "Authorization": `Bearer ${token}` } : {};
-            
             try {
                 const [skillsRes, courseRes, statusRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/admin/analytics/skill-gaps`, { headers }),
-                    fetch(`${API_BASE_URL}/admin/analytics/course-performance`, { headers }),
-                    fetch(`${API_BASE_URL}/admin/analytics/overall-status`, { headers })
+                    fetch(`${API_BASE_URL}/admin/analytics/skill-gaps`, { credentials: "include" }),
+                    fetch(`${API_BASE_URL}/admin/analytics/course-performance`, { credentials: "include" }),
+                    fetch(`${API_BASE_URL}/admin/analytics/overall-status`, { credentials: "include" })
                 ]);
 
                 if (skillsRes.ok) setWeakSkillsData(await skillsRes.json());

@@ -11,11 +11,10 @@ const EnrollmentChart = () => {
 
     useEffect(() => {
         const fetchEnrollments = async () => {
-            const token = localStorage.getItem("auth_token");
-            const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
-            
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/analytics/course-performance`, { headers });
+                const res = await fetch(`${API_BASE_URL}/admin/analytics/course-performance`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     setData(await res.json());
                 }

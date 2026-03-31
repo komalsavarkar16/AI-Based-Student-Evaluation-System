@@ -31,7 +31,9 @@ const EvaluationDetailPage = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/evaluation-report/${resultId}`);
+                const res = await fetch(`${API_BASE_URL}/admin/evaluation-report/${resultId}`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setReport(data);
@@ -58,7 +60,8 @@ const EvaluationDetailPage = () => {
             const res = await fetch(`${API_BASE_URL}/admin/submit-decision/${resultId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: decision, notes })
+                body: JSON.stringify({ status: decision, notes }),
+                credentials: "include"
             });
 
             if (res.ok) {

@@ -64,7 +64,9 @@ export default function MCQTestPage() {
     const fetchMCQs = async () => {
         try {
             const studentId = localStorage.getItem("student_id");
-            const res = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}${studentId ? `?student_id=${studentId}` : ""}`);
+            const res = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}${studentId ? `?student_id=${studentId}` : ""}`, {
+                credentials: "include"
+            });
             if (res.ok) {
                 const data = await res.json();
                 setTestData(data);
@@ -141,7 +143,8 @@ export default function MCQTestPage() {
                     totalQuestions: testData.mcqs.length,
                     correctAnswers: correctCount,
                     answers: answersLog
-                })
+                }),
+                credentials: "include"
             });
 
             if (response.ok) {

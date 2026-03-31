@@ -27,7 +27,9 @@ const StudentDetailPage = () => {
     useEffect(() => {
         const fetchStudentDetail = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/students/${studentId}`);
+                const res = await fetch(`${API_BASE_URL}/admin/students/${studentId}`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const json = await res.json();
                     setData(json);

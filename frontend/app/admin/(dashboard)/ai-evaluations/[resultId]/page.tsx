@@ -15,7 +15,9 @@ const EvaluationDetailPage = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/evaluation-report/${resultId}`);
+                const res = await fetch(`${API_BASE_URL}/admin/evaluation-report/${resultId}`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setReport(data);

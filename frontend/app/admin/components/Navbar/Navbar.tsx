@@ -35,7 +35,6 @@ export default function Navbar() {
         } catch (error) {
             console.error("Logout failed:", error);
         }
-        localStorage.removeItem("auth_token");
         localStorage.removeItem("role");
         localStorage.removeItem("admin_info");
         router.push("/admin/login");

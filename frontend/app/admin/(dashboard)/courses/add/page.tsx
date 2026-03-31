@@ -39,14 +39,13 @@ export default function AddCourse() {
         };
 
         try {
-            const token = localStorage.getItem("auth_token");
             const res = await fetch(`${API_BASE_URL}/courses/add`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(payload),
+                credentials: "include"
             });
 
             if (res.ok) {

@@ -49,7 +49,9 @@ export default function EditAdminProfile() {
             try {
                 const { id } = JSON.parse(adminData);
                 setAdminId(id);
-                const res = await fetch(`${API_BASE_URL}/admin/profile/${id}`);
+                const res = await fetch(`${API_BASE_URL}/admin/profile/${id}`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setFormData({
@@ -106,7 +108,8 @@ export default function EditAdminProfile() {
             const res = await fetch(`${API_BASE_URL}/admin/profile/${adminId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
+                credentials: "include"
             });
 
             if (res.ok) {

@@ -31,7 +31,9 @@ export default function SettingsPage() {
 
     const fetchSettings = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/admin/settings`);
+            const response = await fetch(`${API_BASE_URL}/admin/settings`, {
+                credentials: "include"
+            });
             if (response.ok) {
                 const data = await response.json();
                 setSettings(data);
@@ -55,6 +57,7 @@ export default function SettingsPage() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(settings),
+                credentials: "include"
             });
 
             if (response.ok) {

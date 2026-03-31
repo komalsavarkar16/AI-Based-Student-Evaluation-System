@@ -12,7 +12,9 @@ const AIEvaluationsPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`);
+                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setEvaluations(data);

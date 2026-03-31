@@ -42,7 +42,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const studentId = JSON.parse(info).id;
       if (!studentId) return;
 
-      const res = await fetch(`${API_BASE_URL}/student/notifications/${studentId}`);
+      const res = await fetch(`${API_BASE_URL}/student/notifications/${studentId}`, {
+        credentials: "include"
+      });
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
@@ -62,6 +64,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       const res = await fetch(`${API_BASE_URL}/student/notifications/${notificationId}/read?student_id=${studentId}`, {
         method: "PUT",
+        credentials: "include"
       });
 
       if (res.ok) {
@@ -84,6 +87,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       const res = await fetch(`${API_BASE_URL}/student/notifications/${studentId}/read-all`, {
         method: "PUT",
+        credentials: "include"
       });
 
       if (res.ok) {

@@ -12,7 +12,9 @@ const PendingDecisions = () => {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/notifications`);
+                const res = await fetch(`${API_BASE_URL}/admin/notifications`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setNotifications(data);

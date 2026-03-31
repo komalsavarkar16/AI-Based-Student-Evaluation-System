@@ -32,7 +32,9 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
         if (!studentId || isAdmin) return;
 
         try {
-            const res = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`);
+            const res = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`, {
+                credentials: "include"
+            });
             if (res.ok) {
                 const data = await res.json();
                 setTestCompleted(data.completed);
@@ -45,11 +47,8 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
 
     const fetchCourse = async () => {
         try {
-            const token = localStorage.getItem("auth_token");
             const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
+                credentials: "include"
             })
             const data = await response.json()
             setCourse(data)
@@ -66,12 +65,9 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const handleGenerateMCQ = async () => {
         setGeneratingMcq(true);
         try {
-            const token = localStorage.getItem("auth_token");
             const response = await fetch(`${API_BASE_URL}/ai/generate/mcq/${courseId}`, {
                 method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
+                credentials: "include"
             });
             if (response.ok) {
                 toast.success("MCQs generated successfully!");
@@ -98,7 +94,9 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             }
 
             // 1. Fetch student profile to check skills and academic details
-            const profileRes = await fetch(`${API_BASE_URL}/student/profile/${studentId}`);
+            const profileRes = await fetch(`${API_BASE_URL}/student/profile/${studentId}`, {
+                credentials: "include"
+            });
             if (!profileRes.ok) {
                 toast.error("Failed to verify profile details");
                 return;
@@ -117,7 +115,9 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             }
 
             // 3. Check if MCQs exist for the course
-            const mcqRes = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`);
+            const mcqRes = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`, {
+                credentials: "include"
+            });
             if (!mcqRes.ok) {
                 if (mcqRes.status === 404) {
                     toast.info("Assessment is not yet ready for this course. Please contact administrator.");
@@ -143,14 +143,13 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const handleStatusChange = async (newStatus: string) => {
         setUpdatingStatus(true);
         try {
-            const token = localStorage.getItem("auth_token");
             const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ status: newStatus })
+                body: JSON.stringify({ status: newStatus }),
+                credentials: "include"
             });
 
             if (response.ok) {
@@ -172,12 +171,9 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const handleGenerateVideoQuestions = async () => {
         setGeneratingVideo(true);
         try {
-            const token = localStorage.getItem("auth_token");
             const response = await fetch(`${API_BASE_URL}/ai/generate/video-questions/${courseId}`, {
                 method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
+                credentials: "include"
             });
             if (response.ok) {
                 toast.success("Video questions generated successfully!");

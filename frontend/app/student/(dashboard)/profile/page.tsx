@@ -84,9 +84,10 @@ export default function StudentProfile() {
             }
 
             try {
+                const fetchOptions = { credentials: "include" as const };
                 const [profileRes, statsRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/student/profile/${studentId}`),
-                    fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`)
+                    fetch(`${API_BASE_URL}/student/profile/${studentId}`, fetchOptions),
+                    fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`, fetchOptions)
                 ]);
 
                 if (profileRes.ok) {
@@ -130,7 +131,8 @@ export default function StudentProfile() {
                 body: JSON.stringify({
                     oldPassword: passwords.oldPassword,
                     newPassword: passwords.newPassword
-                })
+                }),
+                credentials: "include"
             });
 
             if (res.ok) {

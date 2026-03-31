@@ -26,11 +26,8 @@ export default function StudentCourses() {
 
     const fetchCourses = async () => {
         try {
-            const token = localStorage.getItem("auth_token");
             const res = await fetch(`${API_BASE_URL}/courses`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
+                credentials: "include"
             });
             const data = await res.json();
             // Filter for active/published courses if necessary, for now showing all

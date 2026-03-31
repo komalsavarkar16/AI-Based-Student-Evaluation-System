@@ -12,7 +12,9 @@ const StudentManagementTable = () => {
     useEffect(() => {
         const fetchEvaluations = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`);
+                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     // Show only completed AI evaluations (where videoScore is not "Pending")

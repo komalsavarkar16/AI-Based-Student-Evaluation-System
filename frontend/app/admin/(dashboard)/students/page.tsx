@@ -13,7 +13,9 @@ const StudentsPage = () => {
     useEffect(() => {
         const fetchStudents = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/students`);
+                const res = await fetch(`${API_BASE_URL}/admin/students`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setStudents(data);

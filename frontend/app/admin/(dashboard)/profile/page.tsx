@@ -43,7 +43,9 @@ export default function AdminProfile() {
 
             try {
                 const { id } = JSON.parse(adminData);
-                const res = await fetch(`${API_BASE_URL}/admin/profile/${id}`);
+                const res = await fetch(`${API_BASE_URL}/admin/profile/${id}`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setAdminInfo(data);

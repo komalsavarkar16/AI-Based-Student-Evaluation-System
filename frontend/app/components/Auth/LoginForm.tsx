@@ -52,11 +52,12 @@ const LoginForm: React.FC<LoginFormProps> = ({
   }[role];
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (token) {
+    // Check if user info exists as a hint for redirection
+    const userInfo = localStorage.getItem(config.storageKey);
+    if (userInfo) {
       router.push(config.redirectPath);
     }
-  }, [router, config.redirectPath]);
+  }, [router, config.redirectPath, config.storageKey]);
 
   const handleRoleToggle = (newRole: "admin" | "student") => {
     setRole(newRole);
@@ -89,7 +90,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       }
 
       toast.success("Login successful");
-      if (data.access_token) localStorage.setItem("auth_token", data.access_token);
+      // Token is now handled via HttpOnly cookie automatically
       
       // Store user info based on role
       if (data[role]) {

@@ -22,14 +22,11 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         const fetchDashboardData = async () => {
-            const token = localStorage.getItem("auth_token");
-            const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
-
             try {
                 const [studentsRes, coursesRes, statusRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/admin/students`, { headers }),
-                    fetch(`${API_BASE_URL}/courses/`, { headers }),
-                    fetch(`${API_BASE_URL}/admin/analytics/overall-status`, { headers })
+                    fetch(`${API_BASE_URL}/admin/students`, { credentials: "include" }),
+                    fetch(`${API_BASE_URL}/courses/`, { credentials: "include" }),
+                    fetch(`${API_BASE_URL}/admin/analytics/overall-status`, { credentials: "include" })
                 ]);
 
                 const students = studentsRes.ok ? await studentsRes.json() : [];

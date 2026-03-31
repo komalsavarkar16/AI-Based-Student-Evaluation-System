@@ -62,7 +62,6 @@ export default function StudentNavbar() {
         }
         localStorage.removeItem("student_info");
         localStorage.removeItem("student_id");
-        localStorage.removeItem("auth_token");
         router.push("/student/login");
     };
 

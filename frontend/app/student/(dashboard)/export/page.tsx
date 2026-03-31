@@ -33,7 +33,9 @@ export default function StudentExportPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`${API_BASE_URL}/student/all-results/${studentId}`);
+                const res = await fetch(`${API_BASE_URL}/student/all-results/${studentId}`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setResults(data.results || []);

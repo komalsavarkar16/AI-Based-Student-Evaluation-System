@@ -69,7 +69,9 @@ export default function VideoTestPage() {
         try {
             const studentId = localStorage.getItem("student_id");
             if (studentId) {
-                const statusRes = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`);
+                const statusRes = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`, {
+                    credentials: "include"
+                });
                 if (statusRes.ok) {
                     const statusData = await statusRes.json();
                     if (statusData.status === "Bridge Course In Progress") {
@@ -92,7 +94,9 @@ export default function VideoTestPage() {
     const fetchQuestions = async () => {
         try {
             const studentId = localStorage.getItem("student_id");
-            const res = await fetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}${studentId ? `?student_id=${studentId}` : ""}`);
+            const res = await fetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}${studentId ? `?student_id=${studentId}` : ""}`, {
+                credentials: "include"
+            });
             if (res.ok) {
                 const data: VideoQuestionsData = await res.json();
                 setQuestions(data.videoQuestions);
@@ -251,6 +255,7 @@ export default function VideoTestPage() {
             const response = await fetch(`${API_BASE_URL}/student/submit-video-test`, {
                 method: "POST",
                 body: formData,
+                credentials: "include"
             });
 
             if (response.ok) {
@@ -287,7 +292,8 @@ export default function VideoTestPage() {
                 await fetch(`${API_BASE_URL}/student/update-bridge-checklist/${studentId}/${courseId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ checklistData: newChecklist })
+                    body: JSON.stringify({ checklistData: newChecklist }),
+                    credentials: "include"
                 });
             } catch (error) {
                 console.error("Error syncing checklist", error);
@@ -303,7 +309,8 @@ export default function VideoTestPage() {
             setSubmitting(true);
             try {
                 const response = await fetch(`${API_BASE_URL}/student/finish-bridge-course/${studentId}/${courseId}`, {
-                    method: 'POST'
+                    method: 'POST',
+                    credentials: "include"
                 });
                 if (response.ok) {
                     toast.success("Skill gaps cleared! You can now access the video test.");

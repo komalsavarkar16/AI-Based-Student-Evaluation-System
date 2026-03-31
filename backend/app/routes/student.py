@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form, BackgroundTasks
+from fastapi import APIRouter, HTTPException, status, File, UploadFile, Form, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from app.schemas.student import StudentCreate, StudentLogin, StudentProfile, StudentProfileUpdate, TestResult, StudentResponse, AIEvaluation, AdmissionsStatus, BridgeCurriculum
 from app.database.connection import db, students_collection, results_collection, courses_collection, video_questions_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, settings_collection, announcements_collection
@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 from typing import List
 from pydantic import BaseModel
+from app.core.dependencies import get_current_user
 
 router = APIRouter(prefix="/student", tags=["Student"])
 
@@ -53,10 +54,9 @@ async def login_student(data: StudentLogin):
         expires_delta=expiry_time
     )
 
-    # Prepare response data
+    # Prepare response data (Remove access_token from body)
     content = {
         "message": "Login successful",
-        "access_token": access_token, # Add this to support localStorage
         "role": student["role"],
         "student": {
             "id": str(student["_id"]),
@@ -73,10 +73,10 @@ async def login_student(data: StudentLogin):
     response.set_cookie(
         key="access_token",
         value=access_token,
-        httponly=True,  # Prevent JS access (Secure)
+        httponly=True,
         max_age=max_age,
-        samesite="lax", # Recommended for local dev
-        secure=False,    # Set to True in Production with HTTPS
+        samesite="lax",
+        secure=False, # Set to True in Production
     )
 
     return response
@@ -89,7 +89,7 @@ async def logout_student():
 
 
 @router.get("/profile/{student_id}", response_model=StudentProfile)
-async def get_student_profile(student_id: str):
+async def get_student_profile(student_id: str, current_user: dict = Depends(get_current_user)):
     try:
         student = students_collection.find_one({"_id": ObjectId(student_id)})
     except:
@@ -595,7 +595,7 @@ def notify_admin_of_evaluation(student_id, course_id, score, skill_gap):
         print(f"Failed to notify admin: {str(e)}")
 
 @router.get("/notifications/{student_id}")
-async def get_student_notifications(student_id: str):
+async def get_student_notifications(student_id: str, current_user: dict = Depends(get_current_user)):
     if not ObjectId.is_valid(student_id):
         raise HTTPException(status_code=400, detail="Invalid student ID")
         
@@ -916,7 +916,7 @@ async def finish_bridge_course(student_id: str, course_id: str):
     
 
 @router.get("/dashboard-stats/{student_id}")
-async def get_dashboard_stats(student_id: str):
+async def get_dashboard_stats(student_id: str, current_user: dict = Depends(get_current_user)):
     sid = ObjectId(student_id)
     
     # 1. New Normalized Aggregation
@@ -1035,7 +1035,7 @@ async def get_dashboard_stats(student_id: str):
     }
 
 @router.get("/announcements/{student_id}")
-async def get_student_announcements(student_id: str):
+async def get_student_announcements(student_id: str, current_user: dict = Depends(get_current_user)):
     if not ObjectId.is_valid(student_id):
         raise HTTPException(status_code=400, detail="Invalid student ID")
         
@@ -1085,7 +1085,7 @@ async def get_student_announcements(student_id: str):
     return results
     
 @router.get("/all-results/{student_id}")
-async def get_all_student_results(student_id: str):
+async def get_all_student_results(student_id: str, current_user: dict = Depends(get_current_user)):
     try:
         sid = ObjectId(student_id)
     except:

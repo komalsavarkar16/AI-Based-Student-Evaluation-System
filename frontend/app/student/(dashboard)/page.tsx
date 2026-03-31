@@ -24,19 +24,19 @@ export default function StudentDashboard() {
   const fetchDashboardData = async () => {
     setLoading(true);
     const studentId = localStorage.getItem("student_id");
-    const token = localStorage.getItem("auth_token");
+    // token is now handled via HttpOnly cookie
 
-    if (!studentId || !token) {
+    if (!studentId) {
       setLoading(false);
       return;
     }
 
     try {
-      // Parallel fetch profile, consolidated dashboard-stats, and announcements
+      const fetchOptions = { credentials: "include" as const };
       const [profileRes, statsRes, announcementsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/student/profile/${studentId}`),
-        fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`),
-        fetch(`${API_BASE_URL}/student/announcements/${studentId}`)
+        fetch(`${API_BASE_URL}/student/profile/${studentId}`, fetchOptions),
+        fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`, fetchOptions),
+        fetch(`${API_BASE_URL}/student/announcements/${studentId}`, fetchOptions)
       ]);
 
       let profileData = {};

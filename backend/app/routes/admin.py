@@ -23,9 +23,6 @@ def register_admin(admin: AdminCreate):
     admin_dict["password"] = hash_password(admin.password)
     admin_dict["role"] = "admin"
 
-    # 🚨 REMOVE confirmPassword if it exists
-    admin_dict.pop("confirmPassword", None)
-
     admins_collection.insert_one(admin_dict)
 
     return {"message": "Admin registered successfully"}
@@ -38,7 +35,7 @@ async def login_admin(data: AdminLogin):
     if not admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="User not found!"
         )
 
     if not verify_password(data.password, admin["password"]):
@@ -47,16 +44,15 @@ async def login_admin(data: AdminLogin):
             detail="Invalid email or password"
         )
 
-    # Determine expiration based on Remember Me
     remember_me = data.remember_me
     if remember_me:
         # 7 days
         expiry_time = timedelta(days=7)
-        max_age = 604800  # seconds (7 days)
+        max_age = 604800
     else:
         # 1 hour
         expiry_time = timedelta(hours=1)
-        max_age = 3600  # seconds (1 hour)
+        max_age = 3600
 
     # Create the token
     access_token = create_access_token(
@@ -64,11 +60,9 @@ async def login_admin(data: AdminLogin):
         expires_delta=expiry_time
     )
 
-    # Prepare response data
+    # Prepare response data (Remove access_token from body)
     content = {
-        "message": "Login successful",
-        "access_token": access_token, # Keep it for localStorage
-        "token_type": "bearer",
+        "message": "Successfully signed in.",
         "admin": {
             "id": str(admin["_id"]),
             "email": admin["email"],
@@ -78,18 +72,16 @@ async def login_admin(data: AdminLogin):
         "role": admin["role"]
     }
 
-    # Create JSONResponse to set the cookie
     from fastapi.responses import JSONResponse
     response = JSONResponse(content=content)
     
-    # Set the cookie (for future unification or if frontend starts using it)
     response.set_cookie(
         key="access_token",
         value=access_token,
-        httponly=True,  # Prevent JS access
+        httponly=True,
         max_age=max_age,
         samesite="lax",
-        secure=False,    # Set to True in Production
+        secure=False,
     )
 
     return response
@@ -108,7 +100,7 @@ async def forgot_password(data: ForgotPasswordRequest):
     if not admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="User not found!"
         )
 
     token = secrets.token_urlsafe(32)
@@ -154,7 +146,7 @@ async def reset_password(data: ResetPasswordRequest):
     return {"message": "Password reset successfully"}
 
 @router.get("/profile/{admin_id}")
-async def get_admin_profile(admin_id: str):
+async def get_admin_profile(admin_id: str, current_user: dict = Depends(get_current_user)):
     if not ObjectId.is_valid(admin_id):
         raise HTTPException(status_code=400, detail="Invalid admin ID")
     
@@ -171,7 +163,7 @@ async def get_admin_profile(admin_id: str):
     return admin
 
 @router.put("/profile/{admin_id}")
-async def update_admin_profile(admin_id: str, admin_update: AdminUpdate):
+async def update_admin_profile(admin_id: str, admin_update: AdminUpdate, current_user: dict = Depends(get_current_user)):
     if not ObjectId.is_valid(admin_id):
         raise HTTPException(status_code=400, detail="Invalid admin ID")
     
@@ -191,7 +183,7 @@ async def update_admin_profile(admin_id: str, admin_update: AdminUpdate):
     return {"message": "Profile updated successfully"}
 
 @router.get("/notifications")
-async def get_notifications():
+async def get_notifications(current_user: dict = Depends(get_current_user)):
     notifications = list(db.notifications.find().sort("timestamp", -1).limit(20))
     for n in notifications:
         n["_id"] = str(n["_id"])
@@ -200,7 +192,7 @@ async def get_notifications():
     return notifications
 
 @router.get("/analytics/skill-gaps")
-async def get_skill_gap_analytics():
+async def get_skill_gap_analytics(current_user: dict = Depends(get_current_user)):
     # 1. New Normalized Data
     pipeline_norm = [
         {"$unwind": "$skillGaps"},
@@ -225,7 +217,7 @@ async def get_skill_gap_analytics():
     
 
 @router.get("/analytics/course-performance")
-async def get_course_performance():
+async def get_course_performance(current_user: dict = Depends(get_current_user)):
     # Fetch from both legacy and new
     legacy_pipeline = [
         {"$group": {"_id": "$courseTitle", "avg": {"$avg": "$overallVideoScore"}, "count": {"$sum": 1}}}
@@ -244,7 +236,7 @@ async def get_course_performance():
     
 
 @router.get("/analytics/overall-status")
-async def get_overall_status():
+async def get_overall_status(current_user: dict = Depends(get_current_user)):
     # Aggregate from both legacy and normalized
     l_pipeline = [{"$group": {"_id": "$status", "count": {"$sum": 1}}}]
     n_pipeline = [{"$group": {"_id": "$status", "count": {"$sum": 1}}}]
@@ -277,7 +269,7 @@ async def get_overall_status():
     
 
 @router.get("/all-evaluations")
-async def get_all_evaluations():
+async def get_all_evaluations(current_user: dict = Depends(get_current_user)):
     # 1. New Normalized Aggregation
     pipeline = [
         {"$sort": {"submittedAt": -1}},
@@ -366,7 +358,7 @@ async def get_all_evaluations():
     
 
 @router.get("/evaluation-report/{result_id}")
-async def get_evaluation_report(result_id: str):
+async def get_evaluation_report(result_id: str, current_user: dict = Depends(get_current_user)):
     if not ObjectId.is_valid(result_id):
         raise HTTPException(status_code=400, detail="Invalid ID")
     
@@ -436,7 +428,7 @@ async def get_evaluation_report(result_id: str):
     
 
 @router.post("/submit-decision/{result_id}")
-async def submit_decision(result_id: str, decision_data: dict):
+async def submit_decision(result_id: str, decision_data: dict, current_user: dict = Depends(get_current_user)):
     if not ObjectId.is_valid(result_id):
         raise HTTPException(status_code=400, detail="Invalid Result ID")
     
@@ -571,7 +563,7 @@ async def submit_decision(result_id: str, decision_data: dict):
     return {"message": f"Decision submitted: {status}"}
 
 @router.get("/students")
-async def get_students():
+async def get_students(current_user: dict = Depends(get_current_user)):
     students = list(students_collection.find().sort("firstName", 1))
     
     results = []
@@ -613,7 +605,7 @@ async def get_students():
     return results
 
 @router.get("/students/{student_id}")
-async def get_student_detail(student_id: str):
+async def get_student_detail(student_id: str, current_user: dict = Depends(get_current_user)):
     try:
         sid = ObjectId(student_id)
     except:
@@ -725,7 +717,7 @@ async def get_student_detail(student_id: str):
     }
 
 @router.get("/settings", response_model=SystemSettings)
-async def get_system_settings():
+async def get_system_settings(current_user: dict = Depends(get_current_user)):
     settings = settings_collection.find_one({"type": "global_config"})
     if not settings:
         # Return default settings
@@ -736,7 +728,7 @@ async def get_system_settings():
     return settings
 
 @router.post("/settings")
-async def update_system_settings(settings: SystemSettings):
+async def update_system_settings(settings: SystemSettings, current_user: dict = Depends(get_current_user)):
     settings_dict = settings.model_dump()
     settings_dict["type"] = "global_config"
     settings_dict["updatedAt"] = datetime.utcnow()

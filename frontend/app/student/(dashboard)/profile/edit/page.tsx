@@ -51,7 +51,9 @@ export default function EditProfile() {
             }
 
             try {
-                const res = await fetch(`${API_BASE_URL}/student/profile/${studentId}`);
+                const res = await fetch(`${API_BASE_URL}/student/profile/${studentId}`, {
+                    credentials: "include"
+                });
                 if (res.ok) {
                     const data = await res.json();
                     setFormData(data);
@@ -92,7 +94,8 @@ export default function EditProfile() {
             const res = await fetch(`${API_BASE_URL}/student/profile/${studentId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify(updatedData),
+                credentials: "include"
             });
 
             if (res.ok) {
