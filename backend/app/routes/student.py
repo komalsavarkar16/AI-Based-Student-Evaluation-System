@@ -76,7 +76,8 @@ async def login_student(data: StudentLogin):
         httponly=True,
         max_age=max_age,
         samesite="lax",
-        secure=False, # Set to True in Production
+        secure=False,
+        path="/",
     )
 
     return response

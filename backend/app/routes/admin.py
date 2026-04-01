@@ -82,6 +82,7 @@ async def login_admin(data: AdminLogin):
         max_age=max_age,
         samesite="lax",
         secure=False,
+        path="/",
     )
 
     return response
@@ -206,28 +207,37 @@ async def get_skill_gap_analytics(current_user: dict = Depends(get_current_user)
 
 @router.get("/analytics/course-performance")
 async def get_course_performance(current_user: dict = Depends(get_current_user)):
-    # Simplified aggregate for now, ideally group by courseTitle
-    norm_pipeline = [
-        {
-            "$lookup": {
-                "from": "courses",
-                "localField": "courseId",
-                "foreignField": "_id",
-                "as": "course"
-            }
-        },
-        {"$unwind": "$course"},
-        {
-            "$group": {
-                "_id": "$course.title", 
-                "avg": {"$avg": "$scores.overallVideo"}, 
-                "count": {"$sum": 1}
-            }
-        }
-    ]
+    # 1. Fetch all published courses
+    all_courses = list(courses_collection.find({"status": "published"}))
     
-    results = list(ai_evaluations_collection.aggregate(norm_pipeline))
-    return [{"name": r["_id"], "score": round(r["avg"], 2) if r["avg"] else 0, "students": r["count"]} for r in results]
+    performance_data = []
+    
+    for course in all_courses:
+        cid = course["_id"]
+        
+        # 2. Get students who have submitted ANY response (MCQ)
+        student_count = responses_collection.count_documents({"courseId": cid})
+        
+        # 3. Calculate Average MCQ Score
+        mcq_avg = 0
+        mcq_responses = list(responses_collection.find({"courseId": cid}, {"mcqScore": 1}))
+        if mcq_responses:
+            mcq_avg = sum(r.get("mcqScore", 0) for r in mcq_responses) / len(mcq_responses)
+            
+        # 4. Calculate Average AI Video Score (from evals)
+        ai_avg = 0
+        ai_evals = list(ai_evaluations_collection.find({"courseId": cid}, {"scores.overallVideo": 1}))
+        if ai_evals:
+            ai_avg = sum(e.get("scores", {}).get("overallVideo", 0) for e in ai_evals) / len(ai_evals)
+            
+        performance_data.append({
+            "name": course["title"],
+            "students": student_count,
+            "score": round(ai_avg, 2),
+            "mcqScore": round(mcq_avg, 2)
+        })
+        
+    return performance_data
     
 
 @router.get("/analytics/overall-status")
