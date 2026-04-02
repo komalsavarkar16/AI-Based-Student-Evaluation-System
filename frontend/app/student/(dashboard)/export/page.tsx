@@ -25,8 +25,12 @@ export default function StudentExportPage() {
     const [downloadHistory, setDownloadHistory] = useState<any[]>([]);
     const [selectedCourse, setSelectedCourse] = useState<string>('');
     const [uniqueCourses, setUniqueCourses] = useState<string[]>([]);
+    const [mounted, setMounted] = useState(false);
+    const [formattedDate, setFormattedDate] = useState('');
 
     useEffect(() => {
+        setMounted(true);
+        setFormattedDate(new Date().toLocaleDateString());
         const studentId = localStorage.getItem("student_id");
         if (!studentId) return;
 
@@ -85,26 +89,56 @@ export default function StudentExportPage() {
                 fileName = `Enrollment_Letter_${approved.courseTitle.replace(/\s+/g, '_')}_${dateStr}`;
                 
                 const doc = new jsPDF();
+                const logo = approved.instituteLogo;
+                
+                // 1. Header & Logo
+                if (logo) {
+                   try {
+                        doc.addImage(logo, 'PNG', 14, 15, 40, 15);
+                   } catch(e) { /* skip logo if invalid */ }
+                } else {
+                    doc.setFontSize(18);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Official Confirmation", 14, 25);
+                }
+
                 doc.setFontSize(22);
-                doc.setTextColor(140, 82, 255);
-                doc.text("OFFICIAL ADMISSION LETTER", 105, 40, { align: 'center' });
+                doc.setFont("times", "bold");
+                doc.setTextColor(30, 41, 59);
+                doc.text("LETTER OF ADMISSION", 105, 50, { align: 'center' });
                 
+                doc.setDrawColor(226, 232, 240);
+                doc.line(14, 55, 196, 55);
+
+                // 2. Metadata
+                doc.setFontSize(10);
+                doc.setFont("times", "normal");
+                doc.setTextColor(100);
+                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 140, 62);
+                
+                // 3. Recipient Details
                 doc.setFontSize(12);
-                doc.setTextColor(50);
-                doc.text(new Date().toLocaleDateString(), 14, 60);
+                doc.setTextColor(30);
+                doc.setFont("times", "bold");
+                doc.text(`To: ${studentProfile?.firstName || "Student"} ${studentProfile?.lastName || ""}`, 14, 75);
+                doc.text(`Subject: Confirmation of Admission - ${approved.courseTitle}`, 14, 82);
                 
-                doc.setFontSize(14);
-                doc.text(`To: ${studentProfile?.firstName || "Student"} ${studentProfile?.lastName || ""}`, 14, 80);
-                doc.text(`Ref: Course Enrollment for ${approved.courseTitle}`, 14, 90);
-                
-                doc.setFontSize(12);
+                // 4. Letter Content
+                doc.setFont("times", "normal");
                 const letterContent = approved.enrollmentLetter || `Congratulations! You have been successfully enrolled in the ${approved.courseTitle} course based on your excellent performance in the AI-based evaluation.`;
                 const splitText = doc.splitTextToSize(letterContent, 180);
-                doc.text(splitText, 14, 110);
+                doc.text(splitText, 14, 100);
                 
-                doc.text("Best Regards,", 14, 220);
-                doc.setFontSize(14);
-                doc.text("SkillBridge AI Admissions Team", 14, 230);
+                // 5. Official Stamp Representation
+                const finalY = doc.getTextDimensions(splitText).h + 120;
+                doc.setDrawColor(22, 101, 52);
+                doc.setLineWidth(0.5);
+                doc.rect(14, finalY, 50, 15);
+                doc.setFontSize(12);
+                doc.setTextColor(22, 101, 52);
+                doc.setFont("helvetica", "bold");
+                doc.text("OFFICIALLY CLEARED", 18, finalY + 10);
+
                 doc.save(`${fileName}.pdf`);
             } else {
                 let filteredResults = results;
@@ -272,7 +306,7 @@ export default function StudentExportPage() {
             <div style={{ marginTop: '3rem', padding: '1.5rem', background: '#f5f3ff', borderRadius: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', border: '1px solid #ddd6fe' }}>
                 <ShieldCheck size={24} color="#8c52ff" />
                 <p style={{ fontSize: '0.875rem', color: '#5b21b6', fontWeight: '500' }}>
-                    All exported documents are verified digital copies of your records as of {new Date().toLocaleDateString()}.
+                    All exported documents are verified digital copies of your records as of {mounted ? formattedDate : '... (Calculating Date)'}.
                 </p>
             </div>
         </div>

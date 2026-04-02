@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 from bson import ObjectId
 from datetime import datetime
 from app.database.connection import courses_collection, mcq_collection, video_questions_collection, settings_collection, admissions_status_collection, responses_collection, ai_evaluations_collection
-from app.services.ai_service import generate_mcqs, generate_video_questions, generate_retest_video_questions, generate_retest_mcqs
+from app.services.ai_service import generate_mcqs, generate_video_questions, generate_retest_video_questions
 
 router = APIRouter(prefix="/ai", tags=["AI"])
 
@@ -50,58 +50,6 @@ def get_mcq(course_id: str, student_id: str = Query(None)):
 
     if not ObjectId.is_valid(course_id):
         raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid ObjectId")
-
-    if student_id and ObjectId.is_valid(student_id):
-        sid = ObjectId(student_id)
-        cid = ObjectId(course_id)
-        
-        # 1. Fetch Latest Response and Its Status
-        response = responses_collection.find_one({"studentId": sid, "courseId": cid}, sort=[("submittedAt", -1)])
-        if response:
-            rid = response["_id"]
-            admission = admissions_status_collection.find_one({"responseId": rid})
-            
-            # If student is in READY_FOR_RETEST, generate dynamic questions
-            if admission and admission.get("status") == "READY_FOR_RETEST":
-                course = courses_collection.find_one({"_id": cid})
-                if course:
-                    try:
-                        # Check if we already generated retest MCQs in admission doc
-                        if "retestMcqs" in admission:
-                            return {
-                                "courseId": course_id,
-                                "mcqs": admission["retestMcqs"],
-                                "courseTitle": course.get("title", "Retest Assessment"),
-                                "isRetest": True
-                            }
-                        
-                        # Fetch skill gaps from AI evaluation
-                        ai_eval = ai_evaluations_collection.find_one({"responseId": rid})
-                        gaps = ai_eval.get("skillGaps", []) if ai_eval else []
-                        
-                        if not gaps:
-                            gaps = course.get("skills_required", [])
-                        
-                        # Fetch settings for retest count
-                        settings = settings_collection.find_one({"type": "global_config"})
-                        mcq_count = settings.get("mcqCount", 10) if settings else 10
-                        
-                        dynamic_mcqs = generate_retest_mcqs(course, gaps, count=mcq_count)
-                        
-                        # Store in admission status
-                        admissions_status_collection.update_one(
-                            {"_id": admission["_id"]},
-                            {"$set": {"retestMcqs": dynamic_mcqs}}
-                        )
-                        
-                        return {
-                            "courseId": course_id,
-                            "mcqs": dynamic_mcqs,
-                            "courseTitle": course.get("title", "Retest Assessment"),
-                            "isRetest": True
-                        }
-                    except Exception as e:
-                        print(f"Dynamic assessment fallback: {e}")
 
     # Default logic (Same questions)
     mcq = mcq_collection.find_one({"courseId": ObjectId(course_id)})

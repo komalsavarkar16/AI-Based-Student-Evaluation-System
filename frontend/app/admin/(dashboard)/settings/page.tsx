@@ -20,7 +20,14 @@ export default function SettingsPage() {
         mcqWeightage: 40,
         videoWeightage: 60,
         passingScore: 50,
+        instituteName: "",
+        instituteAddress: "",
+        instituteWebsite: "",
+        instituteEmail: "",
+        signatureText: "",
+        instituteLogo: "",
     });
+
 
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -179,6 +186,77 @@ export default function SettingsPage() {
                             className={styles.input}
                             value={settings.passingScore}
                             onChange={(e) => setSettings({ ...settings, passingScore: parseInt(e.target.value) })}
+                        />
+                    </div>
+                </div>
+            </section>
+            {/* 3. Institute Profile & Letterhead */}
+            <section className={styles.section}>
+                <div className={styles.sectionHeader}>
+                    <div className={styles.sectionIcon}>
+                        <SettingsIcon />
+                    </div>
+                    <h2 className={styles.sectionTitle}>Institute Profile & Letterhead</h2>
+                </div>
+                <div className={styles.grid}>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Institute Name</label>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            placeholder="e.g. SkillBridge AI Academy"
+                            value={settings.instituteName}
+                            onChange={(e) => setSettings({ ...settings, instituteName: e.target.value })}
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Institute Address</label>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            placeholder="Full Address"
+                            value={settings.instituteAddress}
+                            onChange={(e) => setSettings({ ...settings, instituteAddress: e.target.value })}
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Official Website</label>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            placeholder="www.institute.com"
+                            value={settings.instituteWebsite}
+                            onChange={(e) => setSettings({ ...settings, instituteWebsite: e.target.value })}
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Official Email</label>
+                        <input
+                            type="email"
+                            className={styles.input}
+                            placeholder="admissions@institute.com"
+                            value={settings.instituteEmail}
+                            onChange={(e) => setSettings({ ...settings, instituteEmail: e.target.value })}
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Signature Text</label>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            placeholder="e.g. Director of Admissions"
+                            value={settings.signatureText}
+                            onChange={(e) => setSettings({ ...settings, signatureText: e.target.value })}
+                        />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Institute Logo URL (Optional)</label>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            placeholder="https://link-to-logo.png"
+                            value={settings.instituteLogo}
+                            onChange={(e) => setSettings({ ...settings, instituteLogo: e.target.value })}
                         />
                     </div>
                 </div>

@@ -39,6 +39,7 @@ interface TestResult {
     status: string;
     decisionNotes: string;
     enrollmentLetter?: string;
+    instituteLogo?: string;
     evaluationHistory?: any[];
 }
 
@@ -288,46 +289,40 @@ export default function ResultDetail() {
                 </div>
             )}
 
-            {/* 📜 Enrollment Letter / Certificate of Clearance */}
-            {result.status === 'Approved' && result.enrollmentLetter && (
-                <div className={styles.enrollmentSection}>
+            {/* 📜 Enrollment Letter / Confirmation of Admission */}
+            {(result.status === 'Approved' || result.status === 'Bridge Course Recommended') && result.enrollmentLetter && (
+                <div className={styles.enrollmentSection} id="confirmation-letter">
                     <div className={styles.letterDecoration}></div>
                     <div className={styles.letterHeader}>
-                        <img src="/logo.png" alt="Institute Logo" style={{ width: '80px', marginBottom: '10px' }}
-                            onError={(e) => { (e.currentTarget as any).src = "https://cdn-icons-png.flaticon.com/512/2641/2641333.png"; }} />
-                        <h2>Certificate of Enrollment</h2>
-                        <p style={{ color: '#64748b', fontSize: '14px' }}>Official Clearance Certificate & Welcome Letter</p>
+                        {result.instituteLogo ? (
+                            <img src={result.instituteLogo} alt="Institute Logo" style={{ maxWidth: '180px', maxHeight: '80px', marginBottom: '15px', objectFit: 'contain' }} />
+                        ) : (
+                            <div style={{ fontSize: '24px', fontWeight: 800, color: '#1e293b', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                Official Confirmation
+                            </div>
+                        )}
+                        <h2>Letter of Admission</h2>
+                        <p style={{ color: '#64748b', fontSize: '14px', fontWeight: 500 }}>Official Assessment Completion & Welcome Notification</p>
                     </div>
 
-                    <pre className={styles.letterContent}>
-                        {result.enrollmentLetter}
-                    </pre>
+                    <div className={styles.letterContent}>
+                        {result.enrollmentLetter.split('\n').map((line, i) => (
+                            <p key={i} style={{ marginBottom: line.trim() === '' ? '1.5rem' : '0.5rem' }}>{line}</p>
+                        ))}
+                    </div>
 
                     <div className={styles.letterFooter}>
-                        <p><strong>Signed by,</strong></p>
-                        <p style={{ marginTop: '5px', fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>The Admissions Dean</p>
-                        <p style={{ fontSize: '14px', color: '#64748b' }}>AI Training Institute</p>
-                        <div className={styles.letterStamp}>OFFICIALLY CLEARED</div>
+                       <div className={styles.letterStamp}>OFFICIALLY CLEARED</div>
                     </div>
 
-                    <button
-                        onClick={() => window.print()}
-                        style={{
-                            marginTop: '40px',
-                            background: '#1e293b',
-                            color: 'white',
-                            border: 'none',
-                            padding: '10px 20px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontSize: '14px'
-                        }}
-                    >
-                        🖨 Download / Print Certificate
-                    </button>
+                    <div className={styles.printActions}>
+                        <button
+                            onClick={() => window.print()}
+                            className={styles.printBtn}
+                        >
+                            <span>🖨️</span> Download / Print Confirmation Letter
+                        </button>
+                    </div>
                 </div>
             )}
 

@@ -274,6 +274,7 @@ async def check_test_status(student_id: str, course_id: str):
                 "references": bridge.get("references", [])
             } if bridge else None,
             "enrollmentLetter": admission.get("enrollmentLetter"),
+            "instituteLogo": admission.get("instituteLogo"),
             "evaluationHistory": [] 
         }
 
@@ -341,6 +342,14 @@ async def submit_video_test(
             }}
         )
 
+        # Ensure status is updated from READY_FOR_RETEST to Pending
+        response_doc = responses_collection.find_one({"studentId": ObjectId(studentId), "courseId": ObjectId(courseId)})
+        if response_doc:
+            admissions_status_collection.update_one(
+                {"responseId": response_doc["_id"]},
+                {"$set": {"status": "Pending"}}
+            )
+
         background_tasks.add_task(transcribe_videos, studentId, courseId, video_urls)
 
         return {"message": "Video test submitted successfully.", "videoUrls": video_urls}
@@ -361,8 +370,16 @@ def process_video_test_analysis(student_id: str, course_id: str):
 
         # 2. Identify which questions were used
         course = courses_collection.find_one({"_id": ObjectId(course_id)})
-        video_questions_doc = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
-        active_questions = video_questions_doc.get("videoQuestions", []) if video_questions_doc else []
+        
+        # Check if it was a retest with dynamic questions
+        admission = admissions_status_collection.find_one({"responseId": response["_id"]})
+        if admission and "retestQuestions" in admission:
+            active_questions = admission["retestQuestions"]
+            print(f"Using dynamic retest questions for student {student_id}")
+        else:
+            video_questions_doc = video_questions_collection.find_one({"courseId": ObjectId(course_id)})
+            active_questions = video_questions_doc.get("videoQuestions", []) if video_questions_doc else []
+            print(f"Using standard course questions for student {student_id}")
         
         if not course:
             print("Course not found")
@@ -833,7 +850,7 @@ async def get_dashboard_stats(student_id: str, current_user: dict = Depends(get_
             gaps = item["ai_eval"].get("skillGaps", [])
             for g in gaps:
                 all_gaps.append({
-                    "id": str(item["_id"]),
+                    "id": f"{str(item['_id'])}_{g}",
                     "title": g,
                     "description": f"Identified in {course_title}"
                 })
@@ -843,6 +860,7 @@ async def get_dashboard_stats(student_id: str, current_user: dict = Depends(get_
     # Simple recommendation based on latest gap
     if all_gaps:
         recommendations.append({
+            "id": f"rec_{all_gaps[0]['id']}",
             "title": "Skill Improvement Needed",
             "description": f"Focusing on {all_gaps[0]['title']} will help you clear the assessment."
         })
@@ -960,7 +978,8 @@ async def get_all_student_results(student_id: str, current_user: dict = Depends(
             "overallVideoScore": round(item.get("ai_eval", {}).get("scores", {}).get("overallVideo", 0), 2) if item.get("ai_eval") else 0,
             "status": item.get("admission", {}).get("status", "Pending") if item.get("admission") else "Pending",
             "skillGap": item.get("ai_eval", {}).get("skillGaps", []) if item.get("ai_eval") else [],
-            "enrollmentLetter": item.get("admission", {}).get("decisionNotes", "") if item.get("admission") else ""
+            "enrollmentLetter": item.get("admission", {}).get("enrollmentLetter", "") if item.get("admission") else "",
+            "instituteLogo": item.get("admission", {}).get("instituteLogo", "") if item.get("admission") else ""
         })
 
 

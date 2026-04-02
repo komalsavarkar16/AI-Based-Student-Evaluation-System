@@ -114,8 +114,8 @@ export default function StudentDashboard() {
               
               <div className={styles.announcementList}>
                 {announcements.length > 0 ? (
-                  announcements.map((announcement) => (
-                    <div key={announcement.id} className={styles.announcementItem}>
+                  announcements.map((announcement, idx) => (
+                    <div key={announcement.id || `ann-${idx}`} className={styles.announcementItem}>
                       <div className={styles.announcementHeader}>
                         <h4 className={styles.announcementTitle}>{announcement.title}</h4>
                         <span className={styles.announcementDate}>

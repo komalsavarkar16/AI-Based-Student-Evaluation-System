@@ -2,6 +2,7 @@ import os
 import json
 from google import genai
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 
@@ -60,47 +61,7 @@ def generate_mcqs(course, count=10):
         print(f"Error in generate_mcqs: {str(e)}")
         raise e
 
-def generate_retest_mcqs(course, previous_gaps, count=10):
-    """
-    Generates {count} custom MCQs specifically targeting previous skill gaps for a retest.
-    """
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    
-    prompt = f"""
-    You are an expert educator. A student is retaking a simplified theoretical assessment for the course: "{course.get('title')}".
-    The student previously struggled with these areas: {', '.join(previous_gaps)}.
-    
-    Generate {count} VERY SIMPLE, entry-level Multiple Choice Questions (MCQs) that specifically test the absolute basics of these weak areas.
-    
-    Difficulty Rules:
-    - Questions must be at an absolute beginner level.
-    - Focus strictly on the most fundamental definitions and simple "Hello World" level concepts of the struggling topics.
-    - Avoid ANY advanced theory, logic, or complex scenarios.
-    - Each question should be extremely clear and easy to understand.
-    - The goal is to verify if they have learned the bare minimum fundamentals during their bridge course.
 
-    Requirements:
-    1. Exactly {count} questions.
-    2. Each question must have exactly 4 simple options.
-    3. One correct answer.
-    4. The output MUST be a valid JSON array.
-    5. Each object must contain:
-    - "question"
-    - "options" (array of 4 strings)
-    - "answer" (must match one option exactly)
-    
-    Return ONLY the JSON array.
-    """
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={"response_mime_type": "application/json"}
-        )
-        return json.loads(response.text)
-    except Exception as e:
-        print(f"Error in generate_retest_mcqs: {str(e)}")
-        return generate_mcqs(course, count=count)
 
 def generate_video_questions(course, count=6):
     """
@@ -486,42 +447,65 @@ def generate_bridge_path_b_content(skill_gaps):
             ]
         }
 
-def generate_welcome_letter(student_name, course_title, overall_score):
+def generate_confirmation_letter(student_name, course_title, overall_score, settings=None):
     """
-    Generates a personalized, professional welcome & enrollment letter for an approved student.
+    Generates a personalized, professional formal confirmation letter for an approved student.
     """
     client = genai.Client(api_key=GEMINI_API_KEY)
+    
+    # Use provided settings or defaults
+    inst_name = settings.get("instituteName", "SkillBridge AI Academy") if settings else "SkillBridge AI Academy"
+    inst_addr = settings.get("instituteAddress", "123 Learning Lane, Tech City") if settings else "123 Learning Lane, Tech City"
+    inst_web = settings.get("instituteWebsite", "www.skillbridge.ai") if settings else "www.skillbridge.ai"
+    inst_sig = settings.get("signatureText", "Director of Admissions") if settings else "Director of Admissions"
+    current_date = datetime.now().strftime("%B %d, %Y")
 
     prompt = f"""
-    You are the Admissions Dean at a prestigious AI Training Institute. 
-    A student has just passed a rigorous evaluation gauntlet (MCQ + AI Video Interviews) and has been officially APPROVED for enrollment.
-
-    Student Name: {student_name}
-    Course: {course_title}
-    Overall Performance Score: {overall_score}/100
-
-    Generate a personalized, professional, and highly encouraging "Welcome & Enrollment" letter.
+    You are the Admissions Dean at {inst_name}. 
+    A student has just passed our entrance evaluation for the course: {course_title}.
     
-    Requirements:
-    1. Tone: Professional, warm, and inspiring.
-    2. Content:
-       - Formal congratulations on passing the evaluation.
-       - Briefly mention the impressive performance (referencing their score).
-       - Welcome them to the program.
-       - Mention that they have shown the necessary technical foundation and potential.
-       - A closing statement about the journey ahead.
-    3. Formatting: Use clear paragraphs. Include a formal header and sign-off.
-    4. Keep it concise but meaningful (around 200-250 words).
+    Student Name: {student_name}
+    Overall Performance Score: {overall_score}/100
+    Institute Details:
+    - Name: {inst_name}
+    - Address: {inst_addr}
+    - Website: {inst_web}
+    - Signature: {inst_sig}
+    - Date: {current_date}
 
-    Return the letter as plain text.
+    Generate a formal, professional "Confirmation of Admission" letter.
+    
+    The output must strictly follow this formal template:
+    1. Header: Institute Name, Address, Website, and Date.
+    2. Recipient: Student Name.
+    3. Subject: CONFIRMATION OF ADMISSION - {course_title}
+    4. Salutation: Dear {student_name},
+    5. Body:
+       - Formally congratulate the student on their performance.
+       - State that based on their score of {overall_score}/100, they have been officially selected for the {course_title} program.
+       - Mention their technical and communication skills met the academy's standards.
+       - A brief sentence about the upcoming orientation and enrollment journey.
+    6. Sign-off: Sincerely, followed by {inst_sig}.
+
+    Formatting:
+    - Professional and authoritative tone.
+    - Standard formal letter layout.
+    - Around 200-250 words.
+    - Return ONLY the final letter as plain text.
     """
 
     try:
+        current_date = datetime.now().strftime("%B %d, %Y")
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
         )
         return response.text.strip()
     except Exception as e:
-        print(f"Error in generate_welcome_letter: {str(e)}")
-        return f"Dear {student_name},\n\nCongratulations! We are pleased to inform you that you have been approved for enrollment in the {course_title} program. Your performance during the evaluation process was impressive, and we are excited to have you join us.\n\nBest regards,\nThe Admissions Team"
+        print(f"Error in generate_confirmation_letter: {str(e)}")
+        # Fallback to a basic template
+        try:
+            current_date = datetime.now().strftime("%B %d, %Y")
+        except:
+            current_date = "Official Date"
+        return f"{inst_name}\n{inst_addr}\n{inst_web}\n\nDate: {current_date}\n\nTo: {student_name}\nSubject: CONFIRMATION OF ADMISSION\n\nDear {student_name},\n\nCongratulations! We are pleased to inform you that you have been approved for enrollment in the {course_title} program with a score of {overall_score}/100. We are excited to have you join us.\n\nSincerely,\n{inst_sig}"

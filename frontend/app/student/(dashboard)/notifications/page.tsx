@@ -71,7 +71,7 @@ export default function StudentNotificationsPage() {
     const handleAction = (e: React.MouseEvent, type: string) => {
         e.stopPropagation();
         if (type === "view_data") {
-            router.push("/student/dashboard");
+            router.push("/student");
         } else if (type === "view_changelog") {
             router.push("/student/courses");
         }

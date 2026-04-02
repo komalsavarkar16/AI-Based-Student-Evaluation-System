@@ -39,6 +39,12 @@ class SystemSettings(BaseModel):
     mcqWeightage: int = 40
     videoWeightage: int = 60
     passingScore: int = 50
+    instituteName: str
+    instituteAddress: str
+    instituteWebsite: str
+    instituteEmail: str
+    signatureText: str
+    instituteLogo: Optional[str] = None
 
 class AnnouncementCreate(BaseModel):
     title: str

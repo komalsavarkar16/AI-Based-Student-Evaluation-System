@@ -253,13 +253,16 @@
 .enrollmentSection {
     background: white;
     border-radius: 12px;
-    padding: 3.5rem;
+    padding: 5rem;
     margin-bottom: 2.5rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     background-image: linear-gradient(to bottom right, #ffffff, #fcfcfc);
     border: 1px solid #e2e8f0;
     position: relative;
     overflow: hidden;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .letterDecoration {
@@ -276,7 +279,7 @@
 
 .letterHeader {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 3.5rem;
     border-bottom: 2px double #e2e8f0;
     padding-bottom: 2rem;
     position: relative;
@@ -284,29 +287,35 @@
 }
 
 .letterHeader h2 {
-    font-size: 30px;
+    font-size: 32px;
     color: #1e293b;
     margin: 15px 0 5px;
     letter-spacing: 2px;
     text-transform: uppercase;
     font-family: 'Times New Roman', Times, serif;
+    font-weight: 800;
 }
 
 .letterContent {
     font-family: 'Georgia', 'Times New Roman', Times, serif;
-    font-size: 18px;
-    line-height: 1.9;
-    color: #334155;
-    white-space: pre-wrap;
-    max-width: 850px;
+    font-size: 17px;
+    line-height: 1.8;
+    color: #1e293b;
+    max-width: 100%;
     margin: 0 auto;
     position: relative;
     z-index: 1;
 }
 
+.letterContent p {
+    margin-bottom: 1.2rem;
+}
+
 .letterFooter {
     margin-top: 4rem;
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
     font-family: 'Georgia', serif;
     color: #475569;
     position: relative;
@@ -314,16 +323,66 @@
 }
 
 .letterStamp {
-    display: inline-block;
-    border: 4px solid #166534;
+    border: 3px solid #166534;
     color: #166534;
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-weight: 800;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 900;
     text-transform: uppercase;
-    transform: rotate(-8deg);
-    margin-top: 25px;
-    opacity: 0.9;
-    font-size: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: rotate(-10deg);
+    opacity: 0.8;
+    font-size: 18px;
+    letter-spacing: 1px;
+}
+
+.printActions {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid #f1f5f9;
+    text-align: center;
+}
+
+.printBtn {
+    background: #1e293b;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.printBtn:hover {
+    background: #0f172a;
+    transform: translateY(-2px);
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .enrollmentSection, .enrollmentSection * {
+        visibility: visible;
+    }
+    .enrollmentSection {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 2cm;
+        box-shadow: none;
+        border: none;
+    }
+    .printActions, .letterDecoration {
+        display: none !important;
+    }
+    @page {
+        margin: 0;
+    }
 }

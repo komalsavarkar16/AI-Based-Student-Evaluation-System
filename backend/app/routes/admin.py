@@ -7,7 +7,7 @@ from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
 import secrets
 from datetime import datetime, timedelta
-from app.services.ai_service import generate_welcome_letter
+from app.services.ai_service import generate_confirmation_letter
 from app.core.dependencies import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -389,15 +389,17 @@ async def submit_decision(response_id: str, decision_data: dict, current_user: d
     course_title = course.get("title", "Assessment") if course else "Assessment"
     
     welcome_letter = None
-    # Generate Welcome Letter if Approved
-    if status == "Approved":
+    institute_logo = None
+    # Generate Confirmation Letter if Approved
+    if status == "Approved" or status == "Bridge Course Recommended":
         student = students_collection.find_one({"_id": student_id})
         student_name = f"{student.get('firstName', '')} {student.get('lastName', '')}" if student else "Student"
         
-        # Fetch settings for dynamic weightages
-        settings = settings_collection.find_one({"type": "global_config"})
-        mcq_w = settings.get("mcqWeightage", 40) if settings else 40
-        video_w = settings.get("videoWeightage", 60) if settings else 60
+        # Fetch settings for dynamic letterhead and weightages
+        settings = settings_collection.find_one({"type": "global_config"}) or {}
+        mcq_w = settings.get("mcqWeightage", 40)
+        video_w = settings.get("videoWeightage", 60)
+        institute_logo = settings.get("instituteLogo")
         
         mcq_score = response.get("mcqScore", 0)
         ai_eval = ai_evaluations_collection.find_one({"responseId": oid})
@@ -407,9 +409,9 @@ async def submit_decision(response_id: str, decision_data: dict, current_user: d
         overall_avg = (mcq_score * mcq_w / 100) + (video_score_scaled * video_w / 100)
         
         try:
-            welcome_letter = generate_welcome_letter(student_name, course_title, round(overall_avg, 1))
+            welcome_letter = generate_confirmation_letter(student_name, course_title, round(overall_avg, 1), settings)
         except Exception as e:
-            print(f"Failed to generate welcome letter: {e}")
+            print(f"Failed to generate confirmation letter: {e}")
 
     # Update admissions_status_collection
     admissions_status_collection.update_one(
@@ -420,6 +422,7 @@ async def submit_decision(response_id: str, decision_data: dict, current_user: d
             "status": status,
             "decisionNotes": notes,
             "enrollmentLetter": welcome_letter,
+            "instituteLogo": institute_logo,
             "decidedAt": datetime.utcnow()
         }},
         upsert=True
