@@ -80,8 +80,8 @@ async def login_admin(data: AdminLogin):
         value=access_token,
         httponly=True,
         max_age=max_age,
-        samesite="lax",
-        secure=False,
+        samesite="none",
+        secure=True,
         path="/",
     )
 
