@@ -78,9 +78,9 @@ const SkillGapAnalytics = () => {
                 <div className={styles.chartWrapper}>
                     <h3 className={styles.chartTitle}>Most Common Weak Skills (AI Detected)</h3>
                     <ResponsiveContainer width="100%" height={260}>
-                        <BarChart data={weakSkillsData} layout="vertical">
+                        <BarChart data={weakSkillsData} layout="vertical" margin={{ left: 30, right: 30, top: 10, bottom: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
-                            <XAxis type="number" hide />
+                            <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
                             <YAxis dataKey="skill" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} width={120} />
                             <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                             <Bar dataKey="value" fill="#38a3a5" radius={[0, 4, 4, 0]} barSize={20} />

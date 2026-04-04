@@ -13,8 +13,6 @@
     flex: 1;
     padding: 2rem;
     overflow-y: auto;
-    max-width: 1400px;
-    margin: 0 auto;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -135,23 +133,9 @@
     gap: 1.5rem;
 }
 
-/* RESPONSIVENESS */
-
-/* 1. Large screens (High-res desktops) */
-@media (min-width: 1281px) {
-    .mainContent {
-        max-width: 90%;
-        margin: 0 auto;
-    }
-}
 
 /* 2. Laptops/Desktops (Standard) */
 @media (min-width: 1025px) and (max-width: 1280px) {
-    .mainContent {
-        max-width: 1200px;
-        padding: 1.5rem;
-    }
-
     .ctaText h2 {
         font-size: 28px;
     }

@@ -4,8 +4,6 @@
 }
 
 .main {
-    max-width: 1200px;
-    margin: 0 auto;
     padding: 2rem;
 }
 
@@ -28,7 +26,7 @@
 
 .testsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 2rem;
 }
 
@@ -92,6 +90,7 @@
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     transition: all 0.2s ease;
+    column-gap: 1rem;
 }
 
 .testItem.completed {
@@ -247,5 +246,10 @@
 
     .pageTitle {
         font-size: 1.8rem;
+    }
+
+    .testsGrid {
+        display: flex;
+        flex-direction: column;
     }
 }

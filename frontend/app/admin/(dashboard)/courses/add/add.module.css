@@ -12,7 +12,6 @@
     border-radius: 16px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     width: 100%;
-    max-width: 800px;
 }
 
 .header {
@@ -30,7 +29,7 @@
 }
 
 .backButton:hover {
-    color: #5664f5;
+    color: #57cc99;
 }
 
 .title {
@@ -79,8 +78,7 @@
 .inputGroup textarea:focus,
 .inputGroup select:focus {
     outline: none;
-    border-color: #5664f5;
-    box-shadow: 0 0 0 3px rgba(86, 100, 245, 0.1);
+    border-color: #e2e8f0;
     background-color: #ffffff;
 }
 
@@ -99,15 +97,16 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    background-color: #5664f5;
+    background-color: #57cc99;
     color: #ffffff;
     width: 50%;
     align-self: center;
 }
 
 .submitButton:hover {
-    background-color: #4351e0;
+    background: #059669;
     transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px #10b98166;
 }
 
 .aiButtonGroup {

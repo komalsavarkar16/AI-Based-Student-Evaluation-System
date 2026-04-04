@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Course } from "../../../types/course";
 import styles from "./courseDetailsContainer.module.css";
-import { LayoutList, Video, Clock, BarChart, GraduationCap, Sparkles } from "lucide-react";
+import { LayoutList, Video, Clock, BarChart, GraduationCap, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/app/utils/api";
@@ -21,6 +21,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const [testCompleted, setTestCompleted] = useState(false);
     const [testPassed, setTestPassed] = useState(false);
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         fetchCourse()
@@ -61,6 +62,35 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             setLoading(false)
         }
     }
+
+    const handleDeleteCourse = async () => {
+        if (!course) return;
+        
+        if (!window.confirm(`Are you sure you want to delete the course "${course.title}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                toast.success("Course deleted successfully!");
+                router.push("/admin/courses");
+            } else {
+                const data = await response.json();
+                toast.error(data.detail || "Failed to delete course");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error deleting course");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     const handleGenerateMCQ = async () => {
         setGeneratingMcq(true);
@@ -253,7 +283,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                 <div className={styles.actionsSection}>
                     {isAdmin ? (
                         <div className={styles.actionCard}>
-                            <h3 className={styles.sectionTitle}>AI Generation</h3>
+                            <h3 className={styles.sectionTitle}>Course Management</h3>
                             <button
                                 className={`${styles.actionBtn} ${styles.generateMcq}`}
                                 onClick={handleGenerateMCQ}
@@ -269,6 +299,14 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                             >
                                 {generatingVideo ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <Video size={20} />}
                                 {generatingVideo ? "Generating..." : "Generate Video Questions"}
+                            </button>
+                            <button
+                                className={`${styles.actionBtn} ${styles.deleteCourseBtn}`}
+                                onClick={handleDeleteCourse}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? <div className={styles.spinner} style={{ width: '20px', height: '20px' }}></div> : <Trash2 size={20} />}
+                                {isDeleting ? "Deleting..." : "Delete Course"}
                             </button>
                         </div>
                     ) : (

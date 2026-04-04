@@ -1,7 +1,5 @@
 .container {
     padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
 @media (max-width: 768px) {
@@ -48,7 +46,7 @@
 }
 
 .createBtn {
-    background: #57cc99;
+    background: linear-gradient(135deg, #57cc99, #38a3a5);
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
@@ -63,9 +61,8 @@
 }
 
 .createBtn:hover {
-    background: #7b46e0;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px -1px rgba(140, 82, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(87, 204, 153, 0.4);
 }
 
 .grid {
@@ -290,7 +287,7 @@
 
 .submitBtn {
     flex: 1;
-    background: #8c52ff;
+    background: #57cc99;
     color: white;
     border: none;
     padding: 0.75rem;
@@ -301,7 +298,7 @@
 }
 
 .submitBtn:hover {
-    background: #7b46e0;
+    background: #38a3a5;
 }
 
 .cancelBtn {

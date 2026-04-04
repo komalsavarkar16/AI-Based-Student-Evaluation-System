@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import styles from "./courseVideoQuestionsContainer.module.css";
 import { API_BASE_URL } from "@/app/utils/api";
-import { Video, HelpCircle } from "lucide-react";
+import { Video, HelpCircle, Plus } from "lucide-react";
+import ManualQuestionModal from "../ManualQuestionModal/ManualQuestionModal";
 
 interface courseDetailsProps {
     courseId: string;
@@ -16,6 +17,7 @@ interface VideoQuestion {
 export default function CourseVideoQuestionsContainer({ courseId }: courseDetailsProps) {
     const [videoQuestions, setVideoQuestions] = useState<VideoQuestion[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const getVideoQuestions = async () => {
         setLoading(true);
@@ -51,9 +53,26 @@ export default function CourseVideoQuestionsContainer({ courseId }: courseDetail
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <Video size={28} className={styles.icon} />
-                <h1 className={styles.title}>Course Video Assessment Questions</h1>
+                <div className={styles.titleSection}>
+                    <Video size={28} className={styles.icon} />
+                    <h1 className={styles.title}>Course Video Assessment Questions</h1>
+                </div>
+                <button 
+                    className={styles.addBtn}
+                    onClick={() => setIsModalOpen(true)}
+                >
+                    <Plus size={20} />
+                    Add Video Question
+                </button>
             </div>
+
+            <ManualQuestionModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                type="video"
+                courseId={courseId}
+                onSuccess={getVideoQuestions}
+            />
 
             {loading ? (
                 <div className={styles.loadingContainer}>

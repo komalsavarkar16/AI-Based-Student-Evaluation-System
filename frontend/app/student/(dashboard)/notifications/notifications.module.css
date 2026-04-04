@@ -1,7 +1,5 @@
 .pageWrapper {
     padding: 2.5rem;
-    max-width: 1200px;
-    margin: 0 auto;
     min-height: calc(100vh - 70px);
     background-color: #F8FAFC;
     background-size: cover;
@@ -12,7 +10,7 @@
     margin-bottom: 2.5rem;
     background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
     border-radius: 20px;
-    padding: 2.5rem;
+    padding: 2rem;
     color: white;
     box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
     position: relative;
@@ -108,7 +106,7 @@
 .notificationCard {
     background: #FFFFFF;
     border-radius: 8px;
-    padding: 1.25rem 1.5rem;
+    padding: 0.9rem 1rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     border: 1px solid #F1F5F9;
     transition: all 0.2s ease;
@@ -164,11 +162,25 @@
     margin-top: 2px;
 }
 
-.iconInfo { color: #0EA5E9; }
-.iconSuccess { color: #22C55E; }
-.iconWarning { color: #EAB308; }
-.iconAnnouncement { color: #A855F7; }
-.iconError { color: #EF4444; }
+.iconInfo {
+    color: #0EA5E9;
+}
+
+.iconSuccess {
+    color: #22C55E;
+}
+
+.iconWarning {
+    color: #EAB308;
+}
+
+.iconAnnouncement {
+    color: #A855F7;
+}
+
+.iconError {
+    color: #EF4444;
+}
 
 /* Content Area */
 .contentArea {
@@ -215,7 +227,7 @@
 .actionBtn {
     background: white;
     border: 1px solid #E2E8F0;
-    padding: 0.5rem 1rem;
+    padding: 8px 14px;
     border-radius: 6px;
     font-size: 0.8125rem;
     font-weight: 600;

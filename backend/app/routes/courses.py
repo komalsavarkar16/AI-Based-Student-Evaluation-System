@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.database.connection import courses_collection
-from app.schemas.courses import CourseCreate, CourseUpdate
+from app.database.connection import courses_collection, mcq_collection, video_questions_collection
+from app.schemas.courses import CourseCreate, CourseUpdate, ManualMCQ, ManualVideoQuestion
 from datetime import datetime
 from bson import ObjectId
 from app.core.dependencies import get_current_user
@@ -114,7 +114,6 @@ def update_course(course_id: str, course_update: CourseUpdate, current_user: dic
     current_status = course.get("status")
     
     if new_status and str(new_status).lower() == "published" and str(current_status).lower() != "published":
-        from app.database.connection import mcq_collection, video_questions_collection
         
         # We need to find the single document that contains the array of questions
         mcq_doc = mcq_collection.find_one({"courseId": ObjectId(course_id)})
@@ -142,3 +141,92 @@ def update_course(course_id: str, course_update: CourseUpdate, current_user: dic
         return {"message": "Course updated successfully"}
     
     return {"message": "No changes made to the course"}
+
+@router.post("/{course_id}/add-mcq")
+def add_manual_mcq(course_id: str, mcq: ManualMCQ, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can add questions")
+
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail="Invalid course ID")
+    
+    course_oid = ObjectId(course_id)
+    course = courses_collection.find_one({"_id": course_oid})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    mcq_data = mcq.dict()
+    
+    # Append to existing MCQs or create new document
+    mcq_collection.update_one(
+        {"courseId": course_oid},
+        {
+            "$push": {"mcqs": mcq_data},
+            "$set": {
+                "courseTitle": course.get("title"),
+                "updatedAt": datetime.utcnow()
+            }
+        },
+        upsert=True
+    )
+
+    return {"message": "MCQ added successfully"}
+
+@router.post("/{course_id}/add-video-question")
+def add_manual_video_question(course_id: str, vq: ManualVideoQuestion, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can add questions")
+
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail="Invalid course ID")
+    
+    course_oid = ObjectId(course_id)
+    course = courses_collection.find_one({"_id": course_oid})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    vq_data = vq.dict()
+    
+    # Append to existing Video Questions or create new document
+    video_questions_collection.update_one(
+        {"courseId": course_oid},
+        {
+            "$push": {"videoQuestions": vq_data},
+            "$set": {
+                "courseTitle": course.get("title"),
+                "updatedAt": datetime.utcnow()
+            }
+        },
+        upsert=True
+    )
+
+    return {"message": "Video question added successfully"}
+    
+@router.delete("/{course_id}")
+def delete_course(course_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can delete courses")
+
+    if not ObjectId.is_valid(course_id):
+        raise HTTPException(status_code=400, detail="Invalid course ID")
+
+    course_oid = ObjectId(course_id)
+    
+    # Check if course exists
+    course = courses_collection.find_one({"_id": course_oid})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    # 1. Delete associated MCQs
+    mcq_collection.delete_one({"courseId": course_oid})
+
+    # 2. Delete associated Video Questions
+    video_questions_collection.delete_one({"courseId": course_oid})
+
+    # 3. Finally, delete the course record
+    result = courses_collection.delete_one({"_id": course_oid})
+    
+    if result.deleted_count > 0:
+        return {"message": "Course and all associated questions deleted successfully"}
+    
+    raise HTTPException(status_code=400, detail="Failed to delete course")

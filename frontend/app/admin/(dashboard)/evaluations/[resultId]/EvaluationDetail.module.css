@@ -1,7 +1,5 @@
 .container {
-    padding: 24px;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 2rem;
 }
 
 .backLink {
@@ -19,7 +17,7 @@
     border-radius: 16px;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    padding: 32px;
+    padding: 2rem 3rem;
 }
 
 .header {
@@ -32,6 +30,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    column-gap: 1rem;
 }
 
 .title {
@@ -64,9 +63,8 @@
 
 /* MCQ Section */
 .mcqGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    display: flex;
+    gap: 2rem;
 }
 
 .infoCard {
@@ -99,6 +97,7 @@
 .videoTable {
     width: 100%;
     border-collapse: collapse;
+    border: 1px solid #e2e8f0;
 }
 
 .videoTable th {
@@ -107,7 +106,7 @@
     background: #f8fafc;
     color: #64748b;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 1rem;
     border-bottom: 1px solid #e2e8f0;
 }
 
@@ -118,7 +117,7 @@
 }
 
 .transcriptText {
-    font-size: 13px;
+    font-size: 1rem;
     color: #475569;
     font-style: italic;
     max-width: 300px;
@@ -130,12 +129,12 @@
     padding: 4px 10px;
     border-radius: 9999px;
     font-weight: 700;
-    font-size: 12px;
+    font-size: 14px;
     width: max-content;
 }
 
 .feedbackText {
-    font-size: 13px;
+    font-size: 14px;
     color: #334155;
     line-height: 1.5;
 }

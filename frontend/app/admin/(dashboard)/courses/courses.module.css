@@ -257,3 +257,30 @@
     flex-direction: column;
     gap: 0.5rem;
 }
+
+/* DELETE BUTTON STYLING */
+.deleteBtn {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    background: #fff;
+    color: #ef4444;
+    border: 1px solid #fee2e2;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.deleteBtn:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}

@@ -3,12 +3,22 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/app/utils/api';
-import styles from './students.module.css';
+import { DataTable, Column } from '@/app/components/DataTable/DataTable';
+import styles from '@/app/components/DataTable/DataTable.module.css'; // Reuse shared styles if needed for specific tweaks
+
+interface Student {
+    id: string;
+    name: string;
+    email: string;
+    mcqScore: string | number;
+    videoScore: string | number;
+    status: string;
+    createdAt: string;
+}
 
 const StudentsPage = () => {
-    const [students, setStudents] = useState<any[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -29,78 +39,87 @@ const StudentsPage = () => {
         fetchStudents();
     }, []);
 
-    const filteredStudents = students.filter(student =>
-        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        student.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const getStatusStyle = (status: string) => {
+        const s = status.toLowerCase();
+        if (s.includes('active') || s.includes('approved')) return { backgroundColor: '#dcfce7', color: '#166534' };
+        if (s.includes('completed')) return { backgroundColor: '#dbeafe', color: '#1e40af' };
+        if (s.includes('learning') || s.includes('progress') || s.includes('bridge')) return { backgroundColor: '#fffbeb', color: '#92400e' };
+        if (s.includes('retry')) return { backgroundColor: '#fee2e2', color: '#991b1b' };
+        return { backgroundColor: '#f1f5f9', color: '#475569' };
+    };
 
-    if (loading) return <div className={styles.loading}>Loading student records...</div>;
+    const columns: Column<Student>[] = [
+        {
+            id: 'name',
+            label: 'Name',
+            render: (student) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                        width: '32px', height: '32px', backgroundColor: '#f1f5f9', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px',
+                        fontWeight: 700, color: '#475569', flexShrink: 0
+                    }}>
+                        {student.name.charAt(0)}
+                    </div>
+                    <span style={{ fontWeight: 600, color: '#0f172a' }}>{student.name}</span>
+                </div>
+            )
+        },
+        { id: 'email', label: 'Email' },
+        {
+            id: 'mcqScore',
+            label: 'MCQ Score',
+            render: (student) => <span className={styles.score}>{student.mcqScore}</span>
+        },
+        {
+            id: 'videoScore',
+            label: 'Video Score',
+            render: (student) => <span className={styles.score}>{student.videoScore} {student.videoScore !== 'N/A' && '/ 10'}</span>
+        },
+        {
+            id: 'createdAt',
+            label: 'CreatedAt',
+            render: (student) => {
+                const date = new Date(student.createdAt || '2024-06-01');
+                return <span style={{ color: '#64748b' }}>{date.toISOString().split('T')[0]}</span>;
+            }
+        },
+        {
+            id: 'status',
+            label: 'Status',
+            render: (student) => {
+                const colors = getStatusStyle(student.status);
+                return (
+                    <span className={styles.pill} style={colors}>
+                        {student.status}
+                    </span>
+                );
+            }
+        },
+        {
+            id: 'actions',
+            label: 'Actions',
+            render: (student) => (
+                <div style={{ textAlign: 'right' }}>
+                    <Link href={`/admin/students/${student.id}`} className={styles.btnAction} style={{ display: 'inline-flex', padding: '8px 12px' }}>
+                        View Profile
+                    </Link>
+                </div>
+            )
+        }
+    ];
 
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <h1 className={styles.title}>Student Management</h1>
-                <input
-                    type="text"
-                    placeholder="Search students..."
-                    className={styles.searchBar}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-
-            <div className={styles.tableCard}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Email</th>
-                            <th>MCQ Score (Latest)</th>
-                            <th>Video AI Score (Latest)</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredStudents.map((student) => (
-                            <tr key={student.id} className={styles.row}>
-                                <td>
-                                    <div className={styles.studentInfo}>
-                                        <div className={styles.avatar}>
-                                            {student.name.charAt(0)}
-                                        </div>
-                                        <div className={styles.name}>{student.name}</div>
-                                    </div>
-                                </td>
-                                <td>{student.email}</td>
-                                <td>
-                                    <span style={{ fontWeight: 600, color: student.mcqScore >= 70 ? '#166534' : student.mcqScore === 'N/A' ? '#64748b' : '#991b1b' }}>
-                                        {student.mcqScore}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span style={{ fontWeight: 600, color: student.videoScore >= 7 ? '#166534' : student.videoScore === 'N/A' ? '#64748b' : '#991b1b' }}>
-                                        {student.videoScore}{student.videoScore !== 'N/A' && ' / 10'}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={styles.statusBadge}>{student.status}</span>
-                                </td>
-                                <td>
-                                    <Link href={`/admin/students/${student.id}`}>
-                                        <button className={styles.viewBtn}>View Profile</button>
-                                    </Link>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {filteredStudents.length === 0 && (
-                    <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-                        No students found matching your search.
-                    </div>
-                )}
-            </div>
+        <div style={{ padding: '2rem' }}>
+            <DataTable
+                title="Student Management"
+                data={students}
+                columns={columns}
+                searchKey={['name', 'email']}
+                searchPlaceholder="Filter students..."
+                isLoading={loading}
+                emptyMessage="Try adjusting your filters or search terms."
+            />
         </div>
     );
 };

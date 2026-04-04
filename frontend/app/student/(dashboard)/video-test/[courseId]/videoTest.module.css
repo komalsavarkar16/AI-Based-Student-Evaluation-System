@@ -128,8 +128,6 @@
 
 /* Main Layout Grid */
 .mainContainer {
-    max-width: 1440px;
-    margin: 0 auto;
     padding: 1.5rem 2rem;
     display: grid;
     grid-template-columns: 1fr 320px;

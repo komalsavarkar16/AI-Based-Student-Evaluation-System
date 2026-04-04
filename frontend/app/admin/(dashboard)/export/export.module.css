@@ -1,22 +1,27 @@
 .container {
-    padding: 2.5rem;
-    max-width: 850px;
-    margin: 0 auto;
+    padding: 2.5rem 0;
     animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .header {
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
     text-align: center;
 }
 
 .header h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 800;
     color: #1e293b;
     margin-bottom: 0.75rem;
@@ -25,12 +30,12 @@
 
 .header p {
     color: #64748b;
-    font-size: 1.125rem;
+    font-size: 1rem;
 }
 
 .exportBox {
     background: white;
-    padding: 3rem;
+    padding: 2rem;
     border-radius: 2rem;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     border: 1px solid #f1f5f9;
@@ -50,7 +55,7 @@
 
 .select {
     width: 100%;
-    padding: 1rem 1.25rem;
+    padding: 12px 1rem;
     border-radius: 1rem;
     border: 2px solid #e2e8f0;
     background-color: #f8fafc;
@@ -80,7 +85,7 @@
 
 .downloadBtn {
     width: 100%;
-    padding: 1.125rem;
+    padding: 14px;
     background: #10b981;
     color: white;
     border-radius: 1rem;
@@ -174,9 +179,20 @@
     text-transform: uppercase;
 }
 
-.badge-pdf { background: #fee2e2; color: #ef4444; }
-.badge-excel { background: #dcfce7; color: #22c55e; }
-.badge-csv { background: #fef9c3; color: #ca8a04; }
+.badge-pdf {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.badge-excel {
+    background: #dcfce7;
+    color: #22c55e;
+}
+
+.badge-csv {
+    background: #fef9c3;
+    color: #ca8a04;
+}
 
 .loadingSpinner {
     width: 24px;
@@ -188,13 +204,16 @@
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (max-width: 640px) {
     .container {
         padding: 1.25rem;
     }
+
     .exportBox {
         padding: 2rem;
     }

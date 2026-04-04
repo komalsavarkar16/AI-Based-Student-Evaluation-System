@@ -5,8 +5,6 @@
 }
 
 .testHeader {
-    max-width: 900px;
-    margin: 0 auto 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -67,10 +65,10 @@
     }
 }
 
-.testMain {
+/* .testMain {
     max-width: 900px;
     margin: 0 auto;
-}
+} */
 
 .progressBar {
     height: 6px;

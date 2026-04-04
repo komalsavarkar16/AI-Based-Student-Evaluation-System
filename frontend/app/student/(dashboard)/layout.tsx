@@ -9,7 +9,7 @@ export default function layout({
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
             <StudentNavbar />
-            <main style={{ flex: 1 }}>
+            <main className="layout-content-wrapper" style={{ flex: 1 }}>
                 {children}
             </main>
             <Footer theme="student" />

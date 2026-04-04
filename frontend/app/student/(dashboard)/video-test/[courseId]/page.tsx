@@ -353,7 +353,7 @@ export default function VideoTestPage() {
                     <div className={styles.brand} style={{ color: '#4338ca', fontWeight: 'bold', fontSize: '1.5rem', alignItems: 'center', padding: '1rem' }}>
                         <span>Bridge Path Checklist Active</span>
                     </div>
-                    <div className={styles.videoSection} style={{ maxWidth: '800px', margin: '0 auto', background: 'transparent', boxShadow: 'none' }}>
+                    <div className={styles.videoSection} style={{ maxWidth: '800px', margin: '0 auto', background: 'transparent', boxShadow: 'none', paddingBottom: '2rem' }}>
 
                         <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
                             <h2 style={{ fontSize: '24px', color: '#1e293b', marginTop: 0, marginBottom: '8px' }}>Your Concept Roadmap</h2>

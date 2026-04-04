@@ -13,7 +13,7 @@
 
   --color-primary: hsl(263.4 70% 50.4%);
   --color-primary-foreground: hsl(210 40% 98%);
-  
+
   --color-muted: hsl(210 40% 96.1%);
   --color-muted-foreground: hsl(215.4 16.3% 46.9%);
 
@@ -116,4 +116,12 @@ body::-webkit-scrollbar {
 
 .Toastify__progress-bar {
   height: 4px;
+}
+
+/* Global Responsive Layout Utility */
+@media (min-width: 1281px) {
+  .layout-content-wrapper {
+    max-width: 90%;
+    margin: 0 auto;
+  }
 }

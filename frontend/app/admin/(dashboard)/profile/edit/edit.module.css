@@ -4,8 +4,6 @@
 }
 
 .mainContent {
-    max-width: 1000px;
-    margin: 0 auto;
     padding: 3rem 1rem;
 }
 
@@ -122,7 +120,7 @@
 
 .saveBtn {
     flex: 2;
-    background: #6366f1;
+    background: #10b981;
     color: white;
     padding: 1rem;
     border: none;
@@ -134,9 +132,9 @@
 }
 
 .saveBtn:hover {
-    background: #4f46e5;
+    background: #059669;
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
 }
 
 .saveBtn:disabled {

@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import styles from "./courseMCQContainer.module.css";
 import { API_BASE_URL } from "@/app/utils/api";
+import { Plus } from "lucide-react";
+import ManualQuestionModal from "../ManualQuestionModal/ManualQuestionModal";
 
 interface courseDetailsProps {
     courseId: string;
@@ -12,6 +14,7 @@ export default function CourseMCQContainer({ courseId }: courseDetailsProps) {
 
     const [mcqs, setMCQs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const getMCQs = async () => {
         setLoading(true);
@@ -46,7 +49,25 @@ export default function CourseMCQContainer({ courseId }: courseDetailsProps) {
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.title}>Course Multiple Choice Questions</h1>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Course Multiple Choice Questions</h1>
+                <button 
+                    className={styles.addBtn}
+                    onClick={() => setIsModalOpen(true)}
+                >
+                    <Plus size={20} />
+                    Add MCQ
+                </button>
+            </div>
+            
+            <ManualQuestionModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                type="mcq"
+                courseId={courseId}
+                onSuccess={getMCQs}
+            />
+
             {loading ? (
                 <div className={styles.loadingContainer}>
                     <div className={styles.spinner}></div>

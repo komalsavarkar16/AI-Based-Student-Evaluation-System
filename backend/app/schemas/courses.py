@@ -27,3 +27,12 @@ class CourseUpdate(BaseModel):
     duration: Optional[str] = None
     skills_required: Optional[List[str]] = None
     status: Optional[str] = None
+
+class ManualMCQ(BaseModel):
+    question: str
+    options: List[str]
+    answer: str
+
+class ManualVideoQuestion(BaseModel):
+    question: str
+    relatedSkill: str
