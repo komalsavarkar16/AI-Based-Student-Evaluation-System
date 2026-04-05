@@ -1,8 +1,6 @@
 'use client';
 import styles from "./styles/home.module.css";
 import Link from 'next/link';
-import SchoolIcon from '@mui/icons-material/School';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AIImage from "@/public/assets/images/Landing Page/AI.png";
 import Image from "next/image";
 import { features } from "./utils/featuresData";
