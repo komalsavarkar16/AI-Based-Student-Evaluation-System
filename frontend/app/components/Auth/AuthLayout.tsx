@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import styles from "./Auth.module.css";
-import Link from "next/link";
 import { AutoAwesome, TipsAndUpdates } from "@mui/icons-material";
 
 interface AuthLayoutProps {

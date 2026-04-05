@@ -118,7 +118,7 @@ export default function TestsPage() {
                                             </div>
                                             {status.completed ? (
                                                 <span className={`${styles.statusBadge} ${status.passed ? styles.passed : styles.failed}`}>
-                                                    {status.passed ? 'Passed' : 'Failed'}
+                                                    {status.passed ? 'Passed' : 'Needs Improvement'}
                                                 </span>
                                             ) : (
                                                 mcqReady ? (
@@ -161,7 +161,7 @@ export default function TestsPage() {
 
                                         {!status.passed && status.completed && (
                                             <div className={styles.lockedMessage}>
-                                                <p>Pass the MCQ test with 70% or more to unlock the video assessment.</p>
+                                                <p>Score 70% or more to unlock the video assessment.</p>
                                             </div>
                                         )}
                                     </div>

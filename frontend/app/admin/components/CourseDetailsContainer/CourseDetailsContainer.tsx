@@ -333,14 +333,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                                 </button>
                             ) : (
                                 <div className={styles.failMessage}>
-                                    <p>You did not pass the MCQ test. Please review the recommendations and try again later if possible.</p>
-                                    <button
-                                        className={`${styles.actionBtn} ${styles.enrollBtn}`}
-                                        onClick={handleEnroll}
-                                    >
-                                        <LayoutList size={20} />
-                                        Retake MCQ Test
-                                    </button>
+                                    <p>Your assessment status: <strong>Needs Improvement</strong>. Please review recommendations to enhance your skills before further action is allowed.</p>
                                 </div>
                             )}
                         </div>

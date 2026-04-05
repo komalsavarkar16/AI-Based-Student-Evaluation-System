@@ -183,16 +183,16 @@ export default function ExportPage() {
                 )}
             </div>
             
-            <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'center', gap: '3rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#64748b', fontSize: '0.875rem', fontWeight: '500' }}>
+            <div className={styles.footer}>
+                <div className={styles.footerItem}>
                     <CheckCircle2 size={18} color="#10b981" />
                     Encrypted Transfer
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#64748b', fontSize: '0.875rem', fontWeight: '500' }}>
+                <div className={styles.footerItem}>
                     <CheckCircle2 size={18} color="#10b981" />
                     Policy Compliant
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#64748b', fontSize: '0.875rem', fontWeight: '500' }}>
+                <div className={styles.footerItem}>
                     <CheckCircle2 size={18} color="#10b981" />
                     Audited Logs
                 </div>

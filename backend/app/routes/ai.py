@@ -51,6 +51,19 @@ def get_mcq(course_id: str, student_id: str = Query(None)):
     if not ObjectId.is_valid(course_id):
         raise HTTPException(status_code=400, detail=f"'{course_id}' is not a valid ObjectId")
 
+    # Check if student already completed this test
+    if student_id and ObjectId.is_valid(student_id):
+        existing_response = responses_collection.find_one({
+            "studentId": ObjectId(student_id),
+            "courseId": ObjectId(course_id)
+        })
+        if existing_response:
+            # Check passing score
+            settings = settings_collection.find_one({"type": "global_config"})
+            passing_score = settings.get("passingScore", 70) if settings else 70
+            if existing_response.get("mcqScore", 0) < passing_score:
+                raise HTTPException(status_code=403, detail="Assessment already completed with 'Needs Improvement' status. Retakes are not permitted.")
+
     # Default logic (Same questions)
     mcq = mcq_collection.find_one({"courseId": ObjectId(course_id)})
 
@@ -130,7 +143,7 @@ def get_video_questions(course_id: str, student_id: str = Query(None)):
                 if course:
                     try:
                         # Check if we already generated retest questions
-                        if "retestQuestions" in admission:
+                        if "retestQuestions" in admission and admission["retestQuestions"]:
                             return {
                                 "courseId": course_id,
                                 "videoQuestions": admission["retestQuestions"],
@@ -149,17 +162,31 @@ def get_video_questions(course_id: str, student_id: str = Query(None)):
                         settings = settings_collection.find_one({"type": "global_config"})
                         video_count = settings.get("videoCount", 6) if settings else 6
                         
+                        # PRIORITY: Check if we have manual questions that match the gaps
+                        video_questions_doc = video_questions_collection.find_one({"courseId": cid})
+                        manual_relevant = []
+                        if video_questions_doc:
+                            std_questions = video_questions_doc.get("videoQuestions", [])
+                            # Find manual questions that match the gaps
+                            manual_relevant = [q for q in std_questions if q.get("relatedSkill") in gaps]
+                        
+                        # Generate dynamic questions
                         dynamic_questions = generate_retest_video_questions(course, gaps, count=video_count)
+                        
+                        # Combine: Use manual relevant first, then dynamic
+                        pool = manual_relevant + dynamic_questions
+                        # Limit to video_count
+                        final_retest_questions = pool[:video_count] if len(pool) > video_count else pool
                         
                         # Store in admission status
                         admissions_status_collection.update_one(
                             {"_id": admission["_id"]},
-                            {"$set": {"retestQuestions": dynamic_questions}}
+                            {"$set": {"retestQuestions": final_retest_questions}}
                         )
                         
                         return {
                             "courseId": course_id,
-                            "videoQuestions": dynamic_questions,
+                            "videoQuestions": final_retest_questions,
                             "courseTitle": course.get("title", "Retest Assessment"),
                             "isRetest": True
                         }

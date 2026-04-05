@@ -202,17 +202,62 @@
     to { transform: rotate(360deg); }
 }
 
+@media (max-width: 1024px) {
+    .container {
+        padding: 1.5rem;
+    }
+    .contentRow {
+        gap: 1.5rem;
+    }
+    .title {
+        font-size: 2rem;
+    }
+}
+
 @media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    .header {
+        margin-bottom: 1.5rem;
+    }
+    .title {
+        font-size: 1.75rem;
+    }
     .contentRow {
         grid-template-columns: 1fr;
     }
-    
     .actionCard {
         position: static;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
     }
-    
+    .statsGrid {
+        margin-bottom: 2rem;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
     .title {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
+    }
+    .skillsContainer {
+        gap: 0.25rem;
+    }
+    .statsGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .statCard {
+        padding: 1rem;
+    }
+    .statValue {
+        font-size: 1rem;
+    }
+    .actionBtn {
+        font-size: 0.875rem;
+        padding: 0.75rem;
     }
 }
 

@@ -160,6 +160,12 @@ async def submit_test(result: TestResult):
     
     # --- Normalized Implementation START ---
     
+    # 0. Fetch details for notifications
+    student = students_collection.find_one({"_id": student_id})
+    student_name = f"{student.get('firstName', '')} {student.get('lastName', '')}" if student else f"Student {str(student_id)[-4:]}"
+    course = courses_collection.find_one({"_id": course_id})
+    course_title = course.get("title", result.courseTitle)
+    
     # 1. Update Student Responses
     mcq_score = round(result.score, 2)
     response_data = {
@@ -184,9 +190,10 @@ async def submit_test(result: TestResult):
     settings = settings_collection.find_one({"type": "global_config"})
     passing_score = settings.get("passingScore", 70) if settings else 70
 
+    analysis_content = None
     analysis = None
     if result.score < passing_score:
-        analysis_content = analyze_test_results(result.answers, result.courseTitle)
+        analysis_content = analyze_test_results(result.answers, course_title)
         ai_eval_data = {
             "responseId": response_id,
             "studentId": student_id,
@@ -215,6 +222,40 @@ async def submit_test(result: TestResult):
         }},
         upsert=True
     )
+
+    # 4. Notify Student
+    status_label = "Passed" if result.score >= passing_score else "Needs Improvement"
+    st_msg = f"Assessment completion: You've completed the MCQ for '{course_title}'. Status: {status_label}."
+    if result.score >= passing_score:
+        st_msg += " Proceed to your video assessment."
+    else:
+        st_msg += " Review AI insights for areas of improvement."
+
+    db.notifications.insert_one({
+        "type": "mcq_completion",
+        "studentId": student_id,
+        "courseId": course_id,
+        "courseTitle": course_title,
+        "status": status_label,
+        "score": mcq_score,
+        "message": st_msg,
+        "isRead": False,
+        "timestamp": timestamp
+    })
+    
+    # 5. Notify Admin
+    db.notifications.insert_one({
+        "type": "video_test_evaluation", # Using existing type for UI compatibility
+        "studentId": student_id,
+        "studentName": student_name, 
+        "courseId": course_id,
+        "courseTitle": course_title,
+        "score": mcq_score,
+        "skillGap": analysis_content.get("weak_skills", []) if analysis_content else [],
+        "status": "unread",
+        "isRead": False,
+        "timestamp": timestamp
+    })
     
     # --- Normalized Implementation END ---
     
@@ -526,7 +567,7 @@ async def get_student_notifications(student_id: str, current_user: dict = Depend
     # 1. Fetch individual notifications
     notifications = list(db.notifications.find({
         "studentId": sid,
-        "type": "admin_decision" 
+        "type": {"$in": ["admin_decision", "mcq_completion"]}
     }))
     
     # 1.1 Fetch read receipts for this student

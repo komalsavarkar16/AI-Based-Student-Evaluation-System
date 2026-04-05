@@ -75,7 +75,7 @@ const SkillGapAnalytics = () => {
                     </div>
                 </div>
 
-                <div className={styles.chartWrapper}>
+                {/* <div className={styles.chartWrapper}>
                     <h3 className={styles.chartTitle}>Most Common Weak Skills (AI Detected)</h3>
                     <ResponsiveContainer width="100%" height={260}>
                         <BarChart data={weakSkillsData} layout="vertical" margin={{ left: 30, right: 30, top: 10, bottom: 20 }}>
@@ -86,7 +86,7 @@ const SkillGapAnalytics = () => {
                             <Bar dataKey="value" fill="#38a3a5" radius={[0, 4, 4, 0]} barSize={20} />
                         </BarChart>
                     </ResponsiveContainer>
-                </div>
+                </div> */}
 
                 <div className={styles.chartWrapper}>
                     <h3 className={styles.chartTitle}>Course-wise Performance (Avg AI Score)</h3>

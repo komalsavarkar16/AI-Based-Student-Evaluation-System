@@ -3,6 +3,7 @@
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { usePathname } from 'next/navigation';
+import { AdminNotificationProvider } from "@/app/context/AdminNotificationContext";
 
 export default function Layout({
     children,
@@ -13,12 +14,14 @@ export default function Layout({
     const isSettingsPage = pathname === '/admin/settings';
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-            <Navbar />
-            <main className={!isSettingsPage ? "layout-content-wrapper" : ""} style={{ paddingTop: '70px', flex: 1 }}>
-                {children}
-            </main>
-            <Footer theme="admin" />
-        </div>
+        <AdminNotificationProvider>
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+                <Navbar />
+                <main className={!isSettingsPage ? "layout-content-wrapper" : ""} style={{ paddingTop: '70px', flex: 1 }}>
+                    {children}
+                </main>
+                <Footer theme="admin" />
+            </div>
+        </AdminNotificationProvider>
     );
 }

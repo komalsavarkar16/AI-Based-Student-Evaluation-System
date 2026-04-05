@@ -3,6 +3,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import styles from "./resultDetail.module.css";
 import { API_BASE_URL } from "@/app/utils/api";
+import { toast } from "react-toastify";
+import ConfirmationModal from "@/app/components/ConfirmationModal/ConfirmationModal";
+import { Sparkles } from "lucide-react";
 
 interface EvaluationAnalysis {
     skill: string;
@@ -50,6 +53,8 @@ export default function ResultDetail() {
     const [loading, setLoading] = useState(true);
     const [pathBData, setPathBData] = useState<any>(null);
     const [loadingPath, setLoadingPath] = useState<boolean>(false);
+    const [isBridgeConfirmModalOpen, setIsBridgeConfirmModalOpen] = useState(false);
+    const [isAccepting, setIsAccepting] = useState(false);
 
     useEffect(() => {
         fetchResultData();
@@ -97,6 +102,33 @@ export default function ResultDetail() {
             console.error("Error fetching path:", error);
         } finally {
             setLoadingPath(false);
+        }
+    };
+
+    const handleStartBridge = async () => {
+        setIsAccepting(true);
+        try {
+            const studentId = localStorage.getItem("student_id");
+            if (!studentId || !courseId) return;
+
+            const res = await fetch(`${API_BASE_URL}/student/start-bridge-course/${studentId}/${courseId}`, {
+                method: 'POST',
+                credentials: "include"
+            });
+
+            if (res.ok) {
+                toast.success("Bridge Course enrolled! Follow the study plan to proceed.");
+                router.push(`/student/video-test/${courseId}`);
+            } else {
+                const data = await res.json();
+                toast.error(data.detail || "Failed to start bridge path");
+            }
+        } catch (err) {
+            console.error("Failed to start bridge path:", err);
+            toast.error("Network error. Please try again.");
+        } finally {
+            setIsAccepting(false);
+            setIsBridgeConfirmModalOpen(false);
         }
     };
 
@@ -259,27 +291,39 @@ export default function ResultDetail() {
                                                 </ul>
                                             </div>
 
-                                            <button style={{ background: '#4f46e5', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: '6px', fontWeight: 600, width: '100%', cursor: 'pointer', transition: 'background 0.2s ease' }}
-                                                onMouseEnter={(e) => { e.currentTarget.style.background = '#4338ca'; }}
-                                                onMouseLeave={(e) => { e.currentTarget.style.background = '#4f46e5'; }}
-                                                onClick={async () => {
-                                                    try {
-                                                        const studentId = localStorage.getItem("student_id");
-                                                        if (!studentId) return;
-                                                        const res = await fetch(`${API_BASE_URL}/student/start-bridge-course/${studentId}/${courseId}`, {
-                                                            method: 'POST',
-                                                            credentials: "include"
-                                                        });
-                                                        if (res.ok) {
-                                                            window.alert("You are now enrolled in the Bridge Course! Follow the study plan to bridge your gaps.");
-                                                            // Redirect them directly to the active checklist (runs inside the video-test wrapper)
-                                                            router.push(`/student/video-test/${courseId}`);
-                                                        }
-                                                    } catch (err) {
-                                                        console.error("Failed to start bridge path:", err);
-                                                    }
+                                            <button
+                                                className={styles.acceptBtn}
+                                                style={{
+                                                    background: '#4f46e5',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    padding: '16px 20px',
+                                                    borderRadius: '10px',
+                                                    fontWeight: 600,
+                                                    width: '100%',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '10px',
+                                                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)'
                                                 }}
-                                            >Accept & Start Bridge Course</button>
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.background = '#4338ca';
+                                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                                    e.currentTarget.style.boxShadow = '0 6px 15px rgba(79, 70, 229, 0.35)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.background = '#4f46e5';
+                                                    e.currentTarget.style.transform = 'translateY(0)';
+                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.25)';
+                                                }}
+                                                onClick={() => setIsBridgeConfirmModalOpen(true)}
+                                            >
+                                                <Sparkles size={20} />
+                                                Accept & Start Bridge Course
+                                            </button>
                                         </>
                                     )}
                                 </div>
@@ -312,7 +356,7 @@ export default function ResultDetail() {
                     </div>
 
                     <div className={styles.letterFooter}>
-                       <div className={styles.letterStamp}>OFFICIALLY CLEARED</div>
+                        <div className={styles.letterStamp}>OFFICIALLY CLEARED</div>
                     </div>
 
                     <div className={styles.printActions}>
@@ -494,6 +538,16 @@ export default function ResultDetail() {
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={isBridgeConfirmModalOpen}
+                onClose={() => setIsBridgeConfirmModalOpen(false)}
+                onConfirm={handleStartBridge}
+                title="Enroll in Bridge Course"
+                message="By accepting the Bridge Course, you agree to complete the recommended modules before being eligible for final admission. Are you ready to start your journey?"
+                confirmText={isAccepting ? "Joining..." : "Accept & Start"}
+                cancelText="Not Yet"
+            />
 
         </div>
     );

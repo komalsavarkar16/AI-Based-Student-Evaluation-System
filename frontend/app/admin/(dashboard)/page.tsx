@@ -1,19 +1,25 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Users, BookOpen, BrainCircuit, LibraryBig, Percent, GraduationCap } from 'lucide-react';
+import { Users, LibraryBig, GraduationCap } from 'lucide-react';
 import StatsCard from '../components/StatsCard/StatsCard';
 import StudentManagementTable from '../components/StudentManagementTable/StudentManagementTable';
 import EnrollmentChart from '../components/EnrollmentChart/EnrollmentChart';
 import EvaluationReports from '../components/EvaluationReports/EvaluationReports';
-import PendingDecisions from '../components/PendingDecisions/PendingDecisions';
 import SkillGapAnalytics from '../components/SkillGapAnalytics/SkillGapAnalytics';
 import { API_BASE_URL } from '@/app/utils/api';
 import styles from './dashboard.module.css';
 import { useRouter } from 'next/navigation';
 
+interface DashboardStats {
+    totalStudents: number;
+    availableCourses: number;
+    passRate: number;
+    bridgeStudents: number;
+}
+
 export default function AdminDashboard() {
     const router = useRouter();
-    const [stats, setStats] = useState<any>({
+    const [stats, setStats] = useState<DashboardStats>({
         totalStudents: 0,
         availableCourses: 0,
         passRate: 0,
@@ -23,22 +29,11 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [studentsRes, coursesRes, statusRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/admin/students`, { credentials: "include" }),
-                    fetch(`${API_BASE_URL}/courses/`, { credentials: "include" }),
-                    fetch(`${API_BASE_URL}/admin/analytics/overall-status`, { credentials: "include" })
-                ]);
-
-                const students = studentsRes.ok ? await studentsRes.json() : [];
-                const courses = coursesRes.ok ? await coursesRes.json() : [];
-                const status = statusRes.ok ? await statusRes.json() : { passPercent: 0, bridge: 0 };
-
-                setStats({
-                    totalStudents: students.length,
-                    availableCourses: courses.length,
-                    passRate: status.passPercent,
-                    bridgeStudents: status.bridge
-                });
+                const res = await fetch(`${API_BASE_URL}/admin/dashboard-summary`, { credentials: "include" });
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats(prev => ({ ...prev, ...data }));
+                }
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
             }
@@ -68,28 +63,21 @@ export default function AdminDashboard() {
             <div className={styles.statsGrid}>
                 <StatsCard
                     title="Total Students"
-                    value={stats.totalStudents.toLocaleString()}
+                    value={(stats.totalStudents ?? 0).toLocaleString()}
                     icon={Users}
                     trend={{ value: 'Real-time', isPositive: true }}
                     color="#57cc99"
                 />
                 <StatsCard
                     title="Available Courses"
-                    value={stats.availableCourses.toString()}
+                    value={(stats.availableCourses ?? 0).toString()}
                     icon={LibraryBig}
                     trend={{ value: 'Updated', isPositive: true }}
                     color="#38a3a5"
                 />
                 <StatsCard
-                    title="Avg. Pass Rate"
-                    value={`${stats.passRate}%`}
-                    icon={Percent}
-                    trend={{ value: 'AI Verified', isPositive: true }}
-                    color="#80ed99"
-                />
-                <StatsCard
                     title="Bridge Course"
-                    value={stats.bridgeStudents.toString()}
+                    value={(stats.bridgeStudents ?? 0).toString()}
                     icon={GraduationCap}
                     trend={{ value: 'Requires Attention', isPositive: false }}
                     color="#ff9f1c"

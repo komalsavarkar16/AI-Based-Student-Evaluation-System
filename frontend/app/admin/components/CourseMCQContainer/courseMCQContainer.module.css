@@ -91,3 +91,52 @@
         transform: rotate(360deg);
     }
 }
+
+/* RESPONSIVENESS */
+
+@media (max-width: 1024px) {
+    .container {
+        margin: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1.25rem;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .addBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .mcqContainer .question,
+    .mcqContainer .label {
+        font-size: 1.1rem;
+    }
+
+    .mcqContainer .answer {
+        font-size: 1rem;
+    }
+}

@@ -343,3 +343,125 @@
     font-weight: 700;
     color: #0f172a;
 }
+
+/* RESPONSIVENESS */
+
+@media (max-width: 1024px) {
+    .reportCard {
+        padding: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .reportCard {
+        padding: 2rem 1.5rem;
+        border-radius: 12px;
+    }
+
+    .titleRow {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .title {
+        font-size: 22px;
+    }
+
+    .mcqGrid {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .infoCard {
+        width: 100%;
+    }
+
+    .skillGapContainer {
+        gap: 8px;
+    }
+
+    .decisionSection {
+        padding: 1.5rem;
+    }
+
+    .radioItem {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .reportCard {
+        padding: 1.5rem 1rem;
+    }
+
+    .header {
+        margin-bottom: 24px;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .studentInfo {
+        font-size: 14px;
+    }
+
+    .sectionTitle {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    .infoValue {
+        font-size: 20px;
+    }
+
+    .recommendationBox {
+        padding: 15px;
+    }
+
+    .recommendationTitle {
+        font-size: 1rem;
+    }
+
+    .recommendationText {
+        font-size: 14px;
+    }
+
+    .decisionTitle {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    .optionLabel {
+        font-size: 0.95rem;
+    }
+
+    .optionDesc {
+        font-size: 11px;
+    }
+
+    .submitBtn {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    .transcriptText {
+        max-width: 200px;
+        font-size: 14px;
+    }
+
+    .videoTable th,
+    .videoTable td {
+        padding: 10px;
+        font-size: 13px;
+    }
+}

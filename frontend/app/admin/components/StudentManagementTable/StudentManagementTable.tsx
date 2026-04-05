@@ -10,20 +10,14 @@ const StudentManagementTable = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchEvaluations = async () => {
+        const fetchRecentEvaluations = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`, {
+                const res = await fetch(`${API_BASE_URL}/admin/evaluations/recent`, {
                     credentials: "include"
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    // Show only completed AI evaluations (where videoScore is not "Pending")
-                    const completed = data.filter((item: any) => item.videoScore !== "Pending");
-                    // Sort by timestamp descending
-                    const sorted = completed.sort((a: any, b: any) => 
-                        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-                    );
-                    setEvaluations(sorted.slice(0, 5)); 
+                    setEvaluations(data || []);
                 }
             } catch (error) {
                 console.error("Error fetching evaluations:", error);
@@ -31,7 +25,7 @@ const StudentManagementTable = () => {
                 setLoading(false);
             }
         };
-        fetchEvaluations();
+        fetchRecentEvaluations();
     }, []);
 
     if (loading) return <div className={styles.loading}>Loading student data...</div>;
@@ -40,7 +34,7 @@ const StudentManagementTable = () => {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h3 className={styles.title}>Recent AI Evaluations</h3>
-                <Link href="/admin/ai-evaluations" className={styles.viewAll}>View All</Link>
+                <Link href="/admin/evaluations" className={styles.viewAll}>View All</Link>
             </div>
 
             <div className={styles.tableContainer}>
@@ -77,7 +71,7 @@ const StudentManagementTable = () => {
                                     </td>
                                     <td>{evalItem.videoScore} / 10</td>
                                     <td>
-                                        <Link href={`/admin/ai-evaluations/${evalItem.id}`}>
+                                        <Link href={`/admin/evaluations/${evalItem.id}`}>
                                             <button className={styles.actionButton}>View Report</button>
                                         </Link>
                                     </td>

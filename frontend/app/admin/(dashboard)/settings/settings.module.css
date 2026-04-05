@@ -139,21 +139,45 @@
     outline: none;
 }
 
+@media (max-width: 1024px) {
+    .settingsContainer {
+        margin: 2rem 1.5rem;
+        padding: 0;
+    }
+}
+
 @media (max-width: 768px) {
+    .settingsContainer {
+        margin: 1.5rem 1rem;
+        gap: 1.5rem;
+    }
+
     .title {
-        font-size: 1.8rem;
+        font-size: 1.75rem;
     }
 
     .subtitle {
         font-size: 0.9rem;
     }
 
-    .settingsContainer {
-        padding: 1rem;
-    }
-
     .section {
         padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .sectionTitle {
+        font-size: 1.2rem;
+    }
+
+    .saveBtn {
+        width: 100%;
+        padding: 1rem;
+        align-self: center;
+        font-size: 1rem;
+    }
+
+    .removeBtn {
+        width: 100%;
     }
 
     .mappingRow {
@@ -165,20 +189,32 @@
     .arrowIcon {
         display: none;
     }
+}
 
-    .sectionTitle {
-        font-size: 1.2rem;
+@media (max-width: 480px) {
+    .settingsContainer {
+        margin: 1rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .sectionHeader {
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .sectionIcon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .grid {
+        gap: 1.25rem;
     }
 
     .saveBtn {
-        width: 80%;
-        padding: 10px;
-        align-self: center;
-        font-size: 14px;
-    }
-
-    .removeBtn {
-        margin-top: 0;
-        width: 100%;
+        border-radius: 12px;
     }
 }

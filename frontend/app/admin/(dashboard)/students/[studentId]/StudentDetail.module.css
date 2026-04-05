@@ -329,3 +329,75 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .backLink {
+        margin-left: 1.5rem;
+    }
+
+    .profileHeader {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px;
+        gap: 16px;
+    }
+
+    .name {
+        font-size: 1.5rem;
+    }
+
+    .metaRow {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    .resHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .name {
+        font-size: 1.25rem;
+    }
+
+    .metaRow {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .scoreRow {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .timeline {
+        padding-left: 15px;
+    }
+
+    .timelineDot {
+        left: -19px;
+    }
+
+    .timelineContent {
+        padding: 15px;
+    }
+
+    .avatarLarge {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+    }
+}

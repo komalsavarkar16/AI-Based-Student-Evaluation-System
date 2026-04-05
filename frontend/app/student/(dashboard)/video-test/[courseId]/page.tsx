@@ -97,7 +97,11 @@ export default function VideoTestPage() {
         try {
             const studentId = localStorage.getItem("student_id");
             const res = await fetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}${studentId ? `?student_id=${studentId}` : ""}`, {
-                credentials: "include"
+                credentials: "include",
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
             });
             if (res.ok) {
                 const data: VideoQuestionsData = await res.json();
@@ -512,7 +516,7 @@ export default function VideoTestPage() {
 
                         <div className={styles.questionSection}>
                             <h2 className={styles.questionText}>
-                                Q{currentIdx + 1}: {currentQuestion?.question}
+                                Q{currentIdx + 1}: {typeof currentQuestion === 'string' ? currentQuestion : currentQuestion?.question}
                             </h2>
                             <div className={styles.aspectsBox}>
                                 <p className={styles.aspectsTitle}>In your response, please cover the following aspects:</p>

@@ -22,6 +22,8 @@ admissions_status_collection = db["admissions_status"]
 bridge_curriculum_collection = db["bridge_curriculum"]
 settings_collection = db1["system_settings"]
 announcements_collection = db1["announcements"]
+notifications_collection = db["notifications"]
+read_receipts_collection = db["read_receipts"]
 
 
 

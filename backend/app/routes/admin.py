@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.schemas.admin import AdminCreate, AdminLogin, AdminUpdate, SystemSettings, AnnouncementCreate, AnnouncementUpdate
 from bson import ObjectId
-from app.database.connection import db, admins_collection, students_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, courses_collection, settings_collection, announcements_collection
+from app.database.connection import db, admins_collection, students_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, courses_collection, settings_collection, announcements_collection, notifications_collection
 from app.core.security import hash_password, verify_password, create_access_token
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
 from app.services.email_service import send_reset_email
@@ -11,6 +11,59 @@ from app.services.ai_service import generate_confirmation_letter
 from app.core.dependencies import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+@router.get("/notifications")
+async def get_admin_notifications(current_user: dict = Depends(get_current_user)):
+    """Retrieve all notifications of type video_test_evaluation for administrators."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin role required")
+    
+    # Fetch notifications for evaluations that need manual review
+    notifications = list(notifications_collection.find({
+        "type": "video_test_evaluation"
+    }).sort("timestamp", -1))
+    
+    # Process for frontend
+    results = []
+    for n in notifications:
+        n["_id"] = str(n["_id"])
+        n["studentId"] = str(n["studentId"])
+        if "courseId" in n and n["courseId"]:
+            n["courseId"] = str(n["courseId"])
+            
+        # Standardize field for frontend consistency (students use isRead)
+        n["isRead"] = n.get("status") == "read" or n.get("isRead") == True
+        results.append(n)
+        
+    return results
+
+@router.put("/notifications/read-all")
+async def mark_all_admin_notifications_read(current_user: dict = Depends(get_current_user)):
+    """Clear all unread admin notifications."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin role required")
+        
+    notifications_collection.update_many(
+        {"type": "video_test_evaluation", "status": "unread"},
+        {"$set": {"status": "read", "isRead": True}}
+    )
+    return {"message": "All notifications marked as read"}
+
+@router.put("/notifications/{notification_id}/read")
+async def mark_admin_notification_read(notification_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark a specific admin notification as read."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin role required")
+        
+    if not ObjectId.is_valid(notification_id):
+        raise HTTPException(status_code=400, detail="Invalid ID")
+        
+    notifications_collection.update_one(
+        {"_id": ObjectId(notification_id)},
+        {"$set": {"status": "read", "isRead": True}}
+    )
+    return {"message": "Notification marked as read"}
+
 
 @router.post("/register")
 def register_admin(admin: AdminCreate):
@@ -240,6 +293,33 @@ async def get_course_performance(current_user: dict = Depends(get_current_user))
     return performance_data
     
 
+@router.get("/dashboard-summary")
+async def get_dashboard_summary(current_user: dict = Depends(get_current_user)):
+    """Retrieve high-level statistics for the dashboard in a single optimized call."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin role required")
+    
+    total_students = students_collection.count_documents({})
+    total_courses = courses_collection.count_documents({})
+    
+    # Use aggregation for pass rate and bridge counts to avoid fetching records
+    status_pipeline = [{"$group": {"_id": "$status", "count": {"$sum": 1}}}]
+    status_results = {r["_id"]: r["count"] for r in admissions_status_collection.aggregate(status_pipeline)}
+    
+    approved = status_results.get("Approved", 0)
+    bridge = status_results.get("Bridge Course Recommended", 0) + status_results.get("Bridge Course In Progress", 0)
+    total_decided = sum(status_results.values())
+    
+    pass_rate = round((approved / total_decided * 100), 1) if total_decided > 0 else 0
+    
+    return {
+        "totalStudents": total_students,
+        "availableCourses": total_courses,
+        "passRate": pass_rate,
+        "bridgeStudents": bridge
+    }
+
+
 @router.get("/analytics/overall-status")
 async def get_overall_status(current_user: dict = Depends(get_current_user)):
     # Aggregate from normalized admissions_status
@@ -265,6 +345,65 @@ async def get_overall_status(current_user: dict = Depends(get_current_user)):
         "failPercent": round((retry / total * 100), 1) if total > 0 else 0
     }
     
+
+@router.get("/evaluations/recent")
+async def get_recent_evaluations(current_user: dict = Depends(get_current_user)):
+    """Fetch only the 5 most recent completed evaluations for the dashboard widget."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin role required")
+    
+    pipeline = [
+        {"$sort": {"submittedAt": -1}},
+        {"$limit": 15}, # Check the last 15 to find at least 5 completed ones
+        {
+            "$lookup": {
+                "from": "ai_evaluations",
+                "localField": "_id",
+                "foreignField": "responseId",
+                "as": "ai_eval"
+            }
+        },
+        {
+            "$lookup": {
+                "from": "admissions_status",
+                "localField": "_id",
+                "foreignField": "responseId",
+                "as": "admission"
+            }
+        },
+        {"$unwind": {"path": "$ai_eval", "preserveNullAndEmptyArrays": True}},
+        {"$unwind": {"path": "$admission", "preserveNullAndEmptyArrays": True}}
+    ]
+    
+    attempts = list(responses_collection.aggregate(pipeline))
+    results = []
+    
+    for item in attempts:
+        # Prioritize completed evaluations
+        v_score = item.get("ai_eval", {}).get("scores", {}).get("overallVideo")
+        if v_score is None:
+            continue
+            
+        sid = item.get("studentId")
+        st = students_collection.find_one({"_id": sid})
+        cid = item.get("courseId")
+        co = courses_collection.find_one({"_id": cid})
+        
+        results.append({
+            "id": str(item["_id"]),
+            "studentName": f"{st.get('firstName', '')} {st.get('lastName', '')}" if st else "Unknown",
+            "courseTitle": co.get('title') if co else "Assessment",
+            "mcqScore": item.get("mcqScore", 0),
+            "videoScore": round(v_score, 1),
+            "status": item.get("admission", {}).get("status", "Pending") if item.get("admission") else "Pending",
+            "timestamp": item.get("submittedAt").isoformat() if item.get("submittedAt") else None
+        })
+        
+        if len(results) >= 5:
+            break
+            
+    return results
+
 
 @router.get("/all-evaluations")
 async def get_all_evaluations(current_user: dict = Depends(get_current_user)):

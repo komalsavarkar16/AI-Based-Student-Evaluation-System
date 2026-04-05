@@ -181,8 +181,79 @@
     color: #64748b;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
+    .mainContent {
+        padding: 2rem 1.5rem;
+    }
+
+    .card {
+        padding: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.75rem;
+    }
+
+    .header p {
+        font-size: 1rem;
+    }
+
+    .card {
+        padding: 2rem 1.5rem;
+        border-radius: 1rem;
+    }
+
     .row {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .saveBtn,
+    .cancelBtn {
+        width: 100%;
+        flex: none;
+        order: 1;
+    }
+
+    .cancelBtn {
+        order: 2;
+    }
+}
+
+@media (max-width: 480px) {
+    .mainContent {
+        padding: 1rem 0.75rem;
+    }
+
+    .header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .expertiseInput {
+        flex-direction: column;
+    }
+
+    .addBtn {
+        padding: 0.75rem;
+        width: 100%;
+    }
+
+    .input,
+    .textarea,
+    .saveBtn,
+    .cancelBtn {
+        border-radius: 0.6rem;
     }
 }

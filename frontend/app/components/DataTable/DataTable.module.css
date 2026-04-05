@@ -266,13 +266,57 @@
     font-size: 14px;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .actionBar {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 1rem;
     }
 
     .searchWrapper {
         max-width: 100%;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .btnAction {
+        flex: 1;
+        justify-content: center;
+        min-width: 120px;
+    }
+
+    .title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .tableContainer {
+        border-radius: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table th, .table td {
+        padding: 12px 15px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.25rem;
+    }
+    
+    .btnAction {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .actionBar {
+        gap: 0.75rem;
     }
 }
