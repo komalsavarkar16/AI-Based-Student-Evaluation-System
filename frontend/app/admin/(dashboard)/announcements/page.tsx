@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from "@/app/utils/api";
+import ConfirmationModal from "@/app/components/ConfirmationModal/ConfirmationModal";
 
 interface Announcement {
     id: string;
@@ -39,6 +40,10 @@ export default function AnnouncementsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+
+    // Delete Confirmation Modal State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [announcementToDelete, setAnnouncementToDelete] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -149,8 +154,14 @@ export default function AnnouncementsPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this announcement?")) return;
+    const handleDeleteClick = (id: string) => {
+        setAnnouncementToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!announcementToDelete) return;
+        const id = announcementToDelete;
 
         try {
             const response = await fetch(`${API_BASE_URL}/admin/announcements/${id}`, {
@@ -167,6 +178,9 @@ export default function AnnouncementsPage() {
         } catch (error) {
             console.error("Error deleting announcement:", error);
             toast.error("An error occurred");
+        } finally {
+            setAnnouncementToDelete(null);
+            setIsDeleteModalOpen(false);
         }
     };
 
@@ -217,7 +231,7 @@ export default function AnnouncementsPage() {
                                     <button className={`${styles.actionBtn} styles.editBtn`} onClick={() => handleOpenModal(announcement)}>
                                         <Edit fontSize="small" />
                                     </button>
-                                    <button className={`${styles.actionBtn} styles.deleteBtn`} onClick={() => handleDelete(announcement.id)}>
+                                    <button className={`${styles.actionBtn} styles.deleteBtn`} onClick={() => handleDeleteClick(announcement.id)}>
                                         <Delete fontSize="small" />
                                     </button>
                                 </div>
@@ -313,6 +327,16 @@ export default function AnnouncementsPage() {
                     </div>
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+                title="Delete Announcement"
+                message="Are you sure you want to delete this announcement? This action cannot be undone."
+                confirmText="Delete"
+                isDestructive={true}
+            />
         </div>
     );
 }

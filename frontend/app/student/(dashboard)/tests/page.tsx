@@ -59,6 +59,10 @@ export default function TestsPage() {
                     }
                 }
                 setTestStatuses(statuses);
+
+                // Filter to only show courses where the student has at least started/submitted a test (Enrolled)
+                const enrolledCoursesData = coursesData.filter(course => statuses[course._id]?.completed);
+                setCourses(enrolledCoursesData);
             }
         } catch (error) {
             console.error("Error fetching tests data:", error);
@@ -82,87 +86,95 @@ export default function TestsPage() {
         <div className={styles.container}>
             <main className={styles.main}>
                 <header className={styles.header}>
-                    <h1 className={styles.pageTitle}>Available Assessments</h1>
-                    <p className={styles.pageSubTitle}>Complete your MCQ evaluations to unlock advanced video-based tests.</p>
+                    <h1 className={styles.pageTitle}>My Assessments</h1>
+                    <p className={styles.pageSubTitle}>Track your progress and complete pending evaluations for your courses.</p>
                 </header>
 
                 <div className={styles.testsGrid}>
-                    {courses.map((course) => {
-                        const status = testStatuses[course._id] || { completed: false, passed: false, score: 0 };
-                        const mcqReady = course.aiStatus?.mcqGenerated;
+                    {courses.length > 0 ? (
+                        courses.map((course) => {
+                            const status = testStatuses[course._id] || { completed: false, passed: false, score: 0 };
+                            const mcqReady = course.aiStatus?.mcqGenerated;
 
-                        return (
-                            <div key={course._id} className={styles.testCard}>
-                                <div className={styles.cardHeader}>
-                                    <span className={styles.category}>{course.category}</span>
-                                    <h2 className={styles.courseTitle}>{course.title}</h2>
-                                    <span className={styles.levelBadge}>{course.level}</span>
-                                </div>
-
-                                <div className={styles.testsList}>
-                                    {/* MCQ Test Section */}
-                                    <div className={`${styles.testItem} ${status.completed ? styles.completed : ''}`}>
-                                        <div className={styles.testInfo}>
-                                            <div className={styles.iconBox}>
-                                                <ListChecks size={20} />
-                                            </div>
-                                            <div>
-                                                <h3>MCQ Assessment</h3>
-                                                <p>{status.completed ? `Score: ${status.score}%` : 'Theoretical knowledge evaluation'}</p>
-                                            </div>
-                                        </div>
-                                        {status.completed ? (
-                                            <span className={`${styles.statusBadge} ${status.passed ? styles.passed : styles.failed}`}>
-                                                {status.passed ? 'Passed' : 'Failed'}
-                                            </span>
-                                        ) : (
-                                            mcqReady ? (
-                                                <Link href={`/student/test/${course._id}`} className={styles.startLink}>
-                                                    Start <ArrowRight size={16} />
-                                                </Link>
-                                            ) : (
-                                                <span className={styles.notReadyBadge}>Not Ready</span>
-                                            )
-                                        )}
+                            return (
+                                <div key={course._id} className={styles.testCard}>
+                                    <div className={styles.cardHeader}>
+                                        <span className={styles.category}>{course.category}</span>
+                                        <h2 className={styles.courseTitle}>{course.title}</h2>
+                                        <span className={styles.levelBadge}>{course.level}</span>
                                     </div>
 
-                                    {/* Video Test Section - ONLY SHOW IF PASSED MCQ */}
-                                    {status.passed && (
-                                        <div className={styles.testItem}>
+                                    <div className={styles.testsList}>
+                                        {/* MCQ Test Section */}
+                                        <div className={`${styles.testItem} ${status.completed ? styles.completed : ''}`}>
                                             <div className={styles.testInfo}>
-                                                <div className={`${styles.iconBox} ${styles.videoIconBox}`}>
-                                                    <Video size={20} />
+                                                <div className={styles.iconBox}>
+                                                    <ListChecks size={20} />
                                                 </div>
                                                 <div>
-                                                    <h3>Video Assessment</h3>
-                                                    <p>Communication & soft skills evalutaion</p>
+                                                    <h3>MCQ Assessment</h3>
+                                                    <p>{status.completed ? `Score: ${status.score}%` : 'Theoretical knowledge evaluation'}</p>
                                                 </div>
                                             </div>
-                                            {(status.videoTestEvaluationStatus === "not_started" || !status.videoTestEvaluationStatus || (status as any).status === "READY_FOR_RETEST") ? (
-                                                <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn}>
-                                                    <PlayCircle size={18} /> Take Test
-                                                </Link>
-                                            ) : (status as any).status === "Bridge Course In Progress" ? (
-                                                <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn} style={{ background: '#4f46e5' }}>
-                                                    <Brain size={18} /> Resume Bridge Course
-                                                </Link>
-                                            ) : (
-                                                <span className={`${styles.statusBadge} ${styles.pending}`}>
-                                                    {status.videoTestEvaluationStatus ? status.videoTestEvaluationStatus.charAt(0).toUpperCase() + status.videoTestEvaluationStatus.slice(1) : ''}
+                                            {status.completed ? (
+                                                <span className={`${styles.statusBadge} ${status.passed ? styles.passed : styles.failed}`}>
+                                                    {status.passed ? 'Passed' : 'Failed'}
                                                 </span>
+                                            ) : (
+                                                mcqReady ? (
+                                                    <Link href={`/student/test/${course._id}`} className={styles.startLink}>
+                                                        Start <ArrowRight size={16} />
+                                                    </Link>
+                                                ) : (
+                                                    <span className={styles.notReadyBadge}>Not Ready</span>
+                                                )
                                             )}
                                         </div>
-                                    )}
 
-                                    {!status.passed && status.completed && (
-                                        <div className={styles.lockedMessage}>
-                                            <p>Pass the MCQ test with 70% or more to unlock the video assessment.</p>
-                                        </div>
-                                    )}
+                                        {/* Video Test Section - ONLY SHOW IF PASSED MCQ */}
+                                        {status.passed && (
+                                            <div className={styles.testItem}>
+                                                <div className={styles.testInfo}>
+                                                    <div className={`${styles.iconBox} ${styles.videoIconBox}`}>
+                                                        <Video size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <h3>Video Assessment</h3>
+                                                        <p>Communication & soft skills evalutaion</p>
+                                                    </div>
+                                                </div>
+                                                {(status.videoTestEvaluationStatus === "not_started" || !status.videoTestEvaluationStatus || (status as any).status === "READY_FOR_RETEST") ? (
+                                                    <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn}>
+                                                        <PlayCircle size={18} /> Take Test
+                                                    </Link>
+                                                ) : (status as any).status === "Bridge Course In Progress" ? (
+                                                    <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn} style={{ background: '#4f46e5' }}>
+                                                        <Brain size={18} /> Resume Bridge Course
+                                                    </Link>
+                                                ) : (
+                                                    <span className={`${styles.statusBadge} ${styles.pending}`}>
+                                                        {status.videoTestEvaluationStatus ? status.videoTestEvaluationStatus.charAt(0).toUpperCase() + status.videoTestEvaluationStatus.slice(1) : ''}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {!status.passed && status.completed && (
+                                            <div className={styles.lockedMessage}>
+                                                <p>Pass the MCQ test with 70% or more to unlock the video assessment.</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <h3>No assessments found</h3>
+                            <p>You haven't enrolled in any courses yet. Visit the courses catalog to start your journey.</p>
+                            <Link href="/student/courses" className={styles.catalogButton}>Browse Courses</Link>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>

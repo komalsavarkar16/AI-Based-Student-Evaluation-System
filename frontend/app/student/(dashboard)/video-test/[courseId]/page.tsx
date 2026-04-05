@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { API_BASE_URL } from "@/app/utils/api";
+import ConfirmationModal from "@/app/components/ConfirmationModal/ConfirmationModal";
 
 interface Question {
     _id?: string;
@@ -51,6 +52,7 @@ export default function VideoTestPage() {
 
     const [isBridgeCourse, setIsBridgeCourse] = useState(false);
     const [bridgeChecklist, setBridgeChecklist] = useState<any>(null);
+    const [isConfirmRetestModalOpen, setIsConfirmRetestModalOpen] = useState(false);
 
     useEffect(() => {
         const info = localStorage.getItem("student_info");
@@ -302,11 +304,14 @@ export default function VideoTestPage() {
     };
 
     const handleBridgeSubmit = async () => {
+        setIsConfirmRetestModalOpen(true);
+    };
+
+    const confirmBridgeSubmit = async () => {
         const studentId = localStorage.getItem("student_id");
         if (!studentId) return;
 
-        if (window.confirm("By clicking this, you confirm you have mastered these concepts and are ready for the retest.")) {
-            setSubmitting(true);
+        setSubmitting(true);
             try {
                 const response = await fetch(`${API_BASE_URL}/student/finish-bridge-course/${studentId}/${courseId}`, {
                     method: 'POST',
@@ -323,8 +328,8 @@ export default function VideoTestPage() {
                 toast.error("Error updating status.");
             } finally {
                 setSubmitting(false);
+                setIsConfirmRetestModalOpen(false);
             }
-        }
     };
 
     if (loading || submitting) {
@@ -428,6 +433,16 @@ export default function VideoTestPage() {
                         </div>
                     </div>
                 </main>
+
+                <ConfirmationModal
+                    isOpen={isConfirmRetestModalOpen}
+                    onClose={() => setIsConfirmRetestModalOpen(false)}
+                    onConfirm={confirmBridgeSubmit}
+                    title="Ready for Retest?"
+                    message="By clicking this, you confirm you have mastered these concepts and are ready for the assessment."
+                    confirmText="Yes, I'm Ready"
+                    cancelText="Go Back"
+                />
             </div>
         );
     }

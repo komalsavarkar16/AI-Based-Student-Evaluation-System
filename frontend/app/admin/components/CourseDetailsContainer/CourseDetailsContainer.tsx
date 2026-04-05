@@ -6,6 +6,7 @@ import { LayoutList, Video, Clock, BarChart, GraduationCap, Sparkles, Trash2 } f
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/app/utils/api";
+import ConfirmationModal from "@/app/components/ConfirmationModal/ConfirmationModal";
 
 interface courseDetailsProps {
     courseId: string;
@@ -22,6 +23,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const [testPassed, setTestPassed] = useState(false);
     const [updatingStatus, setUpdatingStatus] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     useEffect(() => {
         fetchCourse()
@@ -65,10 +67,11 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
 
     const handleDeleteCourse = async () => {
         if (!course) return;
-        
-        if (!window.confirm(`Are you sure you want to delete the course "${course.title}"? This action cannot be undone.`)) {
-            return;
-        }
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeleteCourse = async () => {
+        if (!course) return;
 
         setIsDeleting(true);
         try {
@@ -344,6 +347,16 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
                     )}
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDeleteCourse}
+                title="Delete Course"
+                message={`Are you sure you want to delete the course "${course.title}"? This action cannot be undone.`}
+                confirmText="Delete Course"
+                isDestructive={true}
+            />
         </div>
     );
 }
