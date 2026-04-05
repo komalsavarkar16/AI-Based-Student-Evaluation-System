@@ -31,14 +31,16 @@ def generate_mcqs(course, count=10):
     - Assume the student has only introductory knowledge.
     Requirements:
     1. Exactly {count} questions.
-    2. Each question must have exactly 4 options.
-    3. Only one correct answer.
-    4. Options must be short and simple.
-    5. The output MUST be a valid JSON array.
-    6. Each object must contain:
+    2. Distribution Rule: Ensure that the questions cover ALL the required skills listed above: {', '.join(course.get('skills_required', []))}. Each skill must have at least one question targeting it.
+    3. Each question must have exactly 4 options.
+    4. Only one correct answer.
+    5. Options must be short and simple.
+    6. The output MUST be a valid JSON array.
+    7. Each object must contain:
     - "question"
     - "options" (array of 4 strings)
     - "answer" (must match one option exactly)
+    - "relatedSkill" (the specific skill from the list this question tests)
     Return ONLY the JSON array.
     """
     try:
@@ -85,16 +87,18 @@ def generate_video_questions(course, count=6):
 
     Requirements:
     1. The questions must test only foundational and prerequisite knowledge.
-    2. Questions should be suitable for spoken (video) answers.
-    3. Avoid advanced, complex, or deep analytical questions.
-    4. Each question must clearly relate to one of the required skills.
-    5. Questions should assess conceptual clarity and basic understanding.
-    6. Output should be in JSON format as an array of objects.
-    7. Don't frame to much long questions.
-    8. Answer should be between two or three lines only.
-    9. Each object must have:
+    2. Distribution Rule: Ensure that the {count} questions cover ALL the required skills listed above: {', '.join(course.get('skills_required', []))}. Each question must clearly relate to one of these required skills.
+    3. Questions should be suitable for spoken (video) answers.
+    4. Avoid advanced, complex, or deep analytical questions.
+    5. Each question must clearly relate to one of the required skills.
+    6. Questions should assess conceptual clarity and basic understanding.
+    7. Output should be in JSON format as an array of objects.
+    8. Don't frame to much long questions.
+    9. Answer should be between two or three lines only.
+    10. Each object must have:
     - "question"
     - "relatedSkill"
+    - "expectedConcepts" (an array of 3-4 simple keywords/concepts that should be in the answer)
 
     Return ONLY the JSON array.
     """
@@ -141,6 +145,7 @@ def generate_retest_video_questions(course, previous_gaps, count=6):
     7. Each object must have:
     - "question"
     - "relatedSkill" (one from the gaps provided)
+    - "expectedConcepts" (an array of 2-3 very simple keywords/points that should be in the answer)
 
     Return ONLY the JSON array.
     """
@@ -314,10 +319,12 @@ def discover_skill_gaps(mcq_answers, video_answers, course_details, threshold=6.
     Required Proficiency Threshold equivalent: {threshold * 10}% (or {threshold}/10).
     
     Tasks:
-    1. For each foundational skill taught in this course, consolidate an overall estimated score out of 10 by blending the MCQ correctness (related to that skill) and the Video technical Score for that skill.
-    2. Compare this consolidated score against the threshold of {threshold}/10.
-    3. If score < threshold, flag it as a "Gap".
-    4. Categorize all flagged gaps into broader topics (e.g., "Logic Building", "Syntax", "Soft Skills", "Domain Concepts").
+    1. Identify all skills that have assessment data in either the MCQ results (answers provided) or the Video technical scores (evaluations provided).
+    2. IMPORTANT RULE: If a skill listed in Course Details has NO corresponding evidence or data in the MCQ or Video logs, DO NOT include it in the analysis. Do not invent scores for untested skills.
+    3. For each assessed skill, consolidate an overall estimated score out of 10 by blending the MCQ correctness (related to that skill) and the Video technical Score for that skill.
+    4. Compare this consolidated score against the threshold of {threshold}/10.
+    5. If score < threshold, flag it as a "Gap".
+    6. Categorize all flagged gaps into broader topics (e.g., "Logic Building", "Syntax", "Soft Skills", "Domain Concepts").
     
     Output strictly in this JSON format:
     [

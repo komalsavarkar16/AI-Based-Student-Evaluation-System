@@ -10,12 +10,11 @@
 
 .resultCard {
     background: white;
-    padding: 3rem;
+    padding: 2rem;
     border-radius: 32px;
     text-align: center;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
     max-width: 600px;
-    width: 95%;
 }
 
 .resultCard h1 {

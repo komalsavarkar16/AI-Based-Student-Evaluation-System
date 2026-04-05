@@ -32,7 +32,9 @@ class ManualMCQ(BaseModel):
     question: str
     options: List[str]
     answer: str
+    relatedSkill: Optional[str] = "General"
 
 class ManualVideoQuestion(BaseModel):
     question: str
     relatedSkill: str
+    expectedConcepts: Optional[List[str]] = []

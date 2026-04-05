@@ -22,6 +22,7 @@ interface Question {
     question: string;
     options: string[];
     answer: string;
+    relatedSkill?: string;
 }
 
 interface MCQData {
@@ -107,14 +108,15 @@ export default function MCQTestPage() {
         if (!testData) return;
 
         let correctCount = 0;
-        const answersLog = testData.mcqs.map((q, index) => {
+        const answersLog = testData.mcqs.map((q: any, index) => {
             const isCorrect = selectedAnswers[index] === q.answer;
             if (isCorrect) correctCount++;
             return {
                 question: q.question,
                 selectedAnswer: selectedAnswers[index] || "Not Answered",
                 correctAnswer: q.answer,
-                isCorrect
+                isCorrect,
+                relatedSkill: q.relatedSkill || "General"
             };
         });
 
