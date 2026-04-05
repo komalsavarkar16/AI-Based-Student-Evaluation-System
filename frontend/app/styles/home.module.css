@@ -60,7 +60,7 @@
 }
 
 .content .heading {
-  font-size: 50px;
+  font-size: 3rem;
   font-weight: bold;
   line-height: 120%;
 }
@@ -72,7 +72,7 @@
 .content .subHeading {
   color: rgb(75 85 99 / var(--tw-text-opacity, 1));
   font-size: 24px;
-  line-height: 130%;
+  line-height: 120%;
 }
 
 .content .buttonContainer {
@@ -221,7 +221,6 @@
   font-size: 24px;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 10px;
 }
 
 .featureCard .featureDescription {
