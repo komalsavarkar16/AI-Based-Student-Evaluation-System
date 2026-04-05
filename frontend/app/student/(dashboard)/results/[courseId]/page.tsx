@@ -290,7 +290,7 @@ export default function ResultDetail() {
             )}
 
             {/* 📜 Enrollment Letter / Confirmation of Admission */}
-            {(result.status === 'Approved' || result.status === 'Bridge Course Recommended') && result.enrollmentLetter && (
+            {result.status === 'Approved' && result.enrollmentLetter && (
                 <div className={styles.enrollmentSection} id="confirmation-letter">
                     <div className={styles.letterDecoration}></div>
                     <div className={styles.letterHeader}>

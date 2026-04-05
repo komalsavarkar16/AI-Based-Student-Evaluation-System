@@ -391,7 +391,7 @@ async def submit_decision(response_id: str, decision_data: dict, current_user: d
     welcome_letter = None
     institute_logo = None
     # Generate Confirmation Letter if Approved
-    if status == "Approved" or status == "Bridge Course Recommended":
+    if status == "Approved":
         student = students_collection.find_one({"_id": student_id})
         student_name = f"{student.get('firstName', '')} {student.get('lastName', '')}" if student else "Student"
         
