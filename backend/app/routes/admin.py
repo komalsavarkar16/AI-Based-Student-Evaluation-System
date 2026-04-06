@@ -113,9 +113,10 @@ async def login_admin(data: AdminLogin):
         expires_delta=expiry_time
     )
 
-    # Prepare response data (Remove access_token from body)
+    # Prepare response data (Include access_token for header-based auth)
     content = {
         "message": "Successfully signed in.",
+        "access_token": access_token,
         "admin": {
             "id": str(admin["_id"]),
             "email": admin["email"],

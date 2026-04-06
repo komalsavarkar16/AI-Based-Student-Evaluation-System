@@ -1,16 +1,23 @@
-from fastapi import Depends, HTTPException, status, Cookie
+from fastapi import Depends, HTTPException, status, Cookie, Request
 from jose import JWTError, jwt
 from app.core.security import SECRET_KEY, ALGORITHM
 from app.database.connection import students_collection, admins_collection
 from bson import ObjectId
 from typing import Optional
 
-async def get_current_user(access_token: Optional[str] = Cookie(None)):
+async def get_current_user(request: Request, access_token: Optional[str] = Cookie(None)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    # If cookie is missing, check Authorization header
+    if not access_token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            access_token = auth_header.split(" ")[1]
+
     if not access_token:
         raise credentials_exception
 

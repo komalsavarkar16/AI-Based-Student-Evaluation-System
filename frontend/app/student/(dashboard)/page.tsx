@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "./dashboard.module.css";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import WelcomeHeader from "../components/Dashboard/WelcomeHeader/WelcomeHeader";
 import StatsRow from "../components/Dashboard/StatsRow/StatsRow";
 import CtaBanner from "../components/Dashboard/CtaBanner/CtaBanner";
@@ -32,11 +32,10 @@ export default function StudentDashboard() {
     }
 
     try {
-      const fetchOptions = { credentials: "include" as const };
       const [profileRes, statsRes, announcementsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/student/profile/${studentId}`, fetchOptions),
-        fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`, fetchOptions),
-        fetch(`${API_BASE_URL}/student/announcements/${studentId}`, fetchOptions)
+        authenticatedFetch(`${API_BASE_URL}/student/profile/${studentId}`),
+        authenticatedFetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`),
+        authenticatedFetch(`${API_BASE_URL}/student/announcements/${studentId}`)
       ]);
 
       let profileData = {};
@@ -44,10 +43,10 @@ export default function StudentDashboard() {
         profileData = await profileRes.ok ? await profileRes.json() : {};
         setStudentInfo(profileData);
       }
-      
+
       if (statsRes.ok) {
         const statsData = await statsRes.json();
-        
+
         // Map History from enrolledCourses
         const historyList = statsData.enrolledCourses.map((c: any, idx: number) => ({
           id: idx,
@@ -56,11 +55,11 @@ export default function StudentDashboard() {
           score: c.status === "Approved" ? "Passed" : (c.status === "Pending" ? "Pending AI Eval" : "-"),
           status: c.status.toLowerCase().includes("approve") ? "completed" : "pending"
         }));
-        
+
         setHistory(historyList);
         setGaps(statsData.skillGaps || []);
         setRecommendations(statsData.recommendations || []);
-        
+
         // Use profileData directly instead of studentInfo state
         const profileSkills = (profileData as any).skills || [];
         setSkills(profileSkills.map((s: string) => ({ name: s, percentage: statsData.avgScore || 0 })));
@@ -111,7 +110,7 @@ export default function StudentDashboard() {
               <div className={styles.sectionHeader}>
                 <h3 className={styles.sectionTitle}>Recent Announcements</h3>
               </div>
-              
+
               <div className={styles.announcementList}>
                 {announcements.length > 0 ? (
                   announcements.map((announcement, idx) => (

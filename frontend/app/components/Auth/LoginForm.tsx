@@ -90,13 +90,16 @@ const LoginForm: React.FC<LoginFormProps> = ({
       }
 
       toast.success("Login successful");
-      // Token is now handled via HttpOnly cookie automatically
-      
+      // Token is now handled via HttpOnly cookie AND stored in localStorage for header-based auth
+      if (data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+      }
+
       // Store user info based on role
       if (data[role]) {
         localStorage.setItem(config.storageKey, JSON.stringify(data[role]));
         if (role === 'student' && data.student.id) {
-           localStorage.setItem("student_id", data.student.id);
+          localStorage.setItem("student_id", data.student.id);
         }
       }
 
@@ -114,21 +117,21 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
       {showRoleSwitcher && (
         <div className={`${styles.roleSwitcher} ${role === 'admin' ? styles.adminActive : ''}`}>
-           <div className={styles.tabSlider}></div>
-           <button 
-             type="button" 
-             className={`${styles.roleTab} ${role === 'student' ? styles.activeTab : ''}`}
-             onClick={() => handleRoleToggle('student')}
-           >
-             <SchoolIcon sx={{ fontSize: 20 }} /> Student
-           </button>
-           <button 
-             type="button" 
-             className={`${styles.roleTab} ${role === 'admin' ? styles.activeTab : ''}`}
-             onClick={() => handleRoleToggle('admin')}
-           >
-             <ShieldIcon sx={{ fontSize: 20 }} /> Admin
-           </button>
+          <div className={styles.tabSlider}></div>
+          <button
+            type="button"
+            className={`${styles.roleTab} ${role === 'student' ? styles.activeTab : ''}`}
+            onClick={() => handleRoleToggle('student')}
+          >
+            <SchoolIcon sx={{ fontSize: 20 }} /> Student
+          </button>
+          <button
+            type="button"
+            className={`${styles.roleTab} ${role === 'admin' ? styles.activeTab : ''}`}
+            onClick={() => handleRoleToggle('admin')}
+          >
+            <ShieldIcon sx={{ fontSize: 20 }} /> Admin
+          </button>
         </div>
       )}
 

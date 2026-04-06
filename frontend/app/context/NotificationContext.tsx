@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 export interface Notification {
   _id: string;
@@ -34,17 +34,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       const info = localStorage.getItem("student_info");
       if (!info) {
-          setNotifications([]);
-          setLoading(false);
-          return;
+        setNotifications([]);
+        setLoading(false);
+        return;
       }
-      
+
       const studentId = JSON.parse(info).id;
       if (!studentId) return;
 
-      const res = await fetch(`${API_BASE_URL}/student/notifications/${studentId}`, {
-        credentials: "include"
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/student/notifications/${studentId}`);
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
@@ -62,9 +60,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (!info) return;
       const studentId = JSON.parse(info).id;
 
-      const res = await fetch(`${API_BASE_URL}/student/notifications/${notificationId}/read?student_id=${studentId}`, {
-        method: "PUT",
-        credentials: "include"
+      const res = await authenticatedFetch(`${API_BASE_URL}/student/notifications/${notificationId}/read?student_id=${studentId}`, {
+        method: "PUT"
       });
 
       if (res.ok) {
@@ -85,9 +82,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (!info) return;
       const studentId = JSON.parse(info).id;
 
-      const res = await fetch(`${API_BASE_URL}/student/notifications/${studentId}/read-all`, {
-        method: "PUT",
-        credentials: "include"
+      const res = await authenticatedFetch(`${API_BASE_URL}/student/notifications/${studentId}/read-all`, {
+        method: "PUT"
       });
 
       if (res.ok) {

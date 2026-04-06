@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 export interface AdminNotification {
   _id: string;
@@ -35,14 +35,12 @@ export const AdminNotificationProvider: React.FC<{ children: React.ReactNode }> 
     try {
       const info = localStorage.getItem("admin_info");
       if (!info) {
-          setNotifications([]);
-          setLoading(false);
-          return;
+        setNotifications([]);
+        setLoading(false);
+        return;
       }
-      
-      const res = await fetch(`${API_BASE_URL}/admin/notifications`, {
-        credentials: "include"
-      });
+
+      const res = await authenticatedFetch(`${API_BASE_URL}/admin/notifications`);
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
@@ -56,9 +54,8 @@ export const AdminNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/notifications/${notificationId}/read`, {
-        method: "PUT",
-        credentials: "include"
+      const res = await authenticatedFetch(`${API_BASE_URL}/admin/notifications/${notificationId}/read`, {
+        method: "PUT"
       });
 
       if (res.ok) {
@@ -75,9 +72,8 @@ export const AdminNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
   const markAllAsRead = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/notifications/read-all`, {
-        method: "PUT",
-        credentials: "include"
+      const res = await authenticatedFetch(`${API_BASE_URL}/admin/notifications/read-all`, {
+        method: "PUT"
       });
 
       if (res.ok) {

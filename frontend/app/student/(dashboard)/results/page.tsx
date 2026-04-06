@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "./resultsListing.module.css";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 interface Course {
     _id: string;
@@ -37,9 +37,7 @@ export default function ResultsList() {
 
             if (!studentId) return;
 
-            const coursesRes = await fetch(`${API_BASE_URL}/courses/`, {
-                credentials: "include"
-            });
+            const coursesRes = await authenticatedFetch(`${API_BASE_URL}/courses/`);
             let coursesData: Course[] = [];
             if (coursesRes.ok) {
                 const data = await coursesRes.json();
@@ -50,9 +48,7 @@ export default function ResultsList() {
             const completedTests: CompletedResult[] = [];
 
             for (const course of coursesData) {
-                const statusRes = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${course._id}`, {
-                    credentials: "include"
-                });
+                const statusRes = await authenticatedFetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${course._id}`);
                 if (statusRes.ok) {
                     const statusData = await statusRes.json();
 

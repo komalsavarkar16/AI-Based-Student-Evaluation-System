@@ -13,7 +13,7 @@ import {
     ArrowForward as ViewIcon,
     Search as SearchIcon
 } from "@mui/icons-material";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 export default function StudentCourses() {
     const [courses, setCourses] = useState<Course[]>([]);
@@ -26,9 +26,7 @@ export default function StudentCourses() {
 
     const fetchCourses = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/courses`, {
-                credentials: "include"
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/courses`);
             const data = await res.json();
             // Filter for active/published courses if necessary, for now showing all
             const publishedCourses = data.filter(

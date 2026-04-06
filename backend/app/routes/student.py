@@ -54,9 +54,10 @@ async def login_student(data: StudentLogin):
         expires_delta=expiry_time
     )
 
-    # Prepare response data (Remove access_token from body)
+    # Prepare response data (Include access_token for header-based auth)
     content = {
         "message": "Login successful",
+        "access_token": access_token,
         "role": student["role"],
         "student": {
             "id": str(student["_id"]),

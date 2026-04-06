@@ -6,7 +6,7 @@ import StudentManagementTable from '../components/StudentManagementTable/Student
 import EnrollmentChart from '../components/EnrollmentChart/EnrollmentChart';
 import EvaluationReports from '../components/EvaluationReports/EvaluationReports';
 import SkillGapAnalytics from '../components/SkillGapAnalytics/SkillGapAnalytics';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import styles from './dashboard.module.css';
 import { useRouter } from 'next/navigation';
 
@@ -29,7 +29,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/dashboard-summary`, { credentials: "include" });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/dashboard-summary`);
                 if (res.ok) {
                     const data = await res.json();
                     setStats(prev => ({ ...prev, ...data }));
