@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import styles from "./courseVideoQuestionsContainer.module.css";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import { Video, HelpCircle, Plus } from "lucide-react";
 import ManualQuestionModal from "../ManualQuestionModal/ManualQuestionModal";
 
@@ -22,9 +22,7 @@ export default function CourseVideoQuestionsContainer({ courseId }: courseDetail
     const getVideoQuestions = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}`, {
-                credentials: "include"
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}`);
             if (response.ok) {
                 const data = await response.json();
                 setVideoQuestions(data.videoQuestions || []);
@@ -57,7 +55,7 @@ export default function CourseVideoQuestionsContainer({ courseId }: courseDetail
                     <Video size={28} className={styles.icon} />
                     <h1 className={styles.title}>Course Video Assessment Questions</h1>
                 </div>
-                <button 
+                <button
                     className={styles.addBtn}
                     onClick={() => setIsModalOpen(true)}
                 >
@@ -66,7 +64,7 @@ export default function CourseVideoQuestionsContainer({ courseId }: courseDetail
                 </button>
             </div>
 
-            <ManualQuestionModal 
+            <ManualQuestionModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 type="video"

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import { DataTable, Column } from '@/app/components/DataTable/DataTable';
 import styles from '@/app/components/DataTable/DataTable.module.css'; // Reuse shared styles if needed for specific tweaks
 
@@ -23,9 +23,7 @@ const StudentsPage = () => {
     useEffect(() => {
         const fetchStudents = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/students`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/students`);
                 if (res.ok) {
                     const data = await res.json();
                     setStudents(data);

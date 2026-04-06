@@ -9,7 +9,7 @@ import {
 } from '@mui/icons-material';
 
 import { toast } from 'react-toastify';
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 export default function SettingsPage() {
     // Combined settings state
@@ -38,9 +38,7 @@ export default function SettingsPage() {
 
     const fetchSettings = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/admin/settings`, {
-                credentials: "include"
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/admin/settings`);
             if (response.ok) {
                 const data = await response.json();
                 setSettings(data);
@@ -58,13 +56,9 @@ export default function SettingsPage() {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/admin/settings`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/admin/settings`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(settings),
-                credentials: "include"
+                body: JSON.stringify(settings)
             });
 
             if (response.ok) {

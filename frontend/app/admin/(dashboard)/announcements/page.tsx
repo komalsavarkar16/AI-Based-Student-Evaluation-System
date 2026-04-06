@@ -14,7 +14,7 @@ import {
     Save
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import ConfirmationModal from "@/app/components/ConfirmationModal/ConfirmationModal";
 
 interface Announcement {
@@ -61,9 +61,7 @@ export default function AnnouncementsPage() {
 
     const fetchAnnouncements = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/admin/announcements`, {
-                credentials: "include"
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/admin/announcements`);
             if (response.ok) {
                 const data = await response.json();
                 setAnnouncements(data);
@@ -78,9 +76,7 @@ export default function AnnouncementsPage() {
 
     const fetchCourses = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/courses`, {
-                credentials: "include"
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/courses`);
             if (response.ok) {
                 const data = await response.json();
                 setCourses(data);
@@ -118,25 +114,24 @@ export default function AnnouncementsPage() {
         setIsSubmitting(true);
 
         try {
-            const url = editingAnnouncement 
+            const url = editingAnnouncement
                 ? `${API_BASE_URL}/admin/announcements/${editingAnnouncement.id}`
                 : `${API_BASE_URL}/admin/announcements`;
-            
+
             const method = editingAnnouncement ? 'PUT' : 'POST';
-            
+
             const payload = {
                 ...formData,
                 courseId: formData.targetAudience === 'course' ? formData.courseId : null,
                 expiryDate: formData.expiryDate || null
             };
 
-            const response = await fetch(url, {
+            const response = await authenticatedFetch(url, {
                 method,
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(payload),
-                credentials: "include"
+                body: JSON.stringify(payload)
             });
 
             if (response.ok) {
@@ -164,9 +159,8 @@ export default function AnnouncementsPage() {
         const id = announcementToDelete;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/admin/announcements/${id}`, {
-                method: 'DELETE',
-                credentials: "include"
+            const response = await authenticatedFetch(`${API_BASE_URL}/admin/announcements/${id}`, {
+                method: 'DELETE'
             });
 
             if (response.ok) {
@@ -212,7 +206,7 @@ export default function AnnouncementsPage() {
                                 </span>
                             </div>
                             <p className={styles.message}>{announcement.message}</p>
-                            
+
                             <div className={styles.targetBadge}>
                                 {announcement.targetAudience === 'all' ? (
                                     <><Groups style={{ fontSize: '14px', marginRight: '4px' }} /> All Students</>
@@ -276,7 +270,7 @@ export default function AnnouncementsPage() {
                             </div>
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Target Audience</label>
-                                <select 
+                                <select
                                     className={styles.select}
                                     value={formData.targetAudience}
                                     onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
@@ -285,11 +279,11 @@ export default function AnnouncementsPage() {
                                     <option value="course">Specific Course</option>
                                 </select>
                             </div>
-                            
+
                             {formData.targetAudience === 'course' && (
                                 <div className={styles.formGroup}>
                                     <label className={styles.label}>Select Course</label>
-                                    <select 
+                                    <select
                                         className={styles.select}
                                         value={formData.courseId}
                                         onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}

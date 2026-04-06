@@ -5,7 +5,7 @@ import styles from "./courseDetailsContainer.module.css";
 import { LayoutList, Video, Clock, BarChart, GraduationCap, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import ConfirmationModal from "@/app/components/ConfirmationModal/ConfirmationModal";
 
 interface courseDetailsProps {
@@ -35,9 +35,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
         if (!studentId || isAdmin) return;
 
         try {
-            const res = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`, {
-                credentials: "include"
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`);
             if (res.ok) {
                 const data = await res.json();
                 setTestCompleted(data.completed);
@@ -50,9 +48,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
 
     const fetchCourse = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
-                credentials: "include"
-            })
+            const response = await authenticatedFetch(`${API_BASE_URL}/courses/${courseId}`)
             const data = await response.json()
             setCourse(data)
         }
@@ -75,9 +71,8 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
-                method: "DELETE",
-                credentials: "include"
+            const response = await authenticatedFetch(`${API_BASE_URL}/courses/${courseId}`, {
+                method: "DELETE"
             });
 
             if (response.ok) {
@@ -98,9 +93,8 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const handleGenerateMCQ = async () => {
         setGeneratingMcq(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/ai/generate/mcq/${courseId}`, {
-                method: "POST",
-                credentials: "include"
+            const response = await authenticatedFetch(`${API_BASE_URL}/ai/generate/mcq/${courseId}`, {
+                method: "POST"
             });
             if (response.ok) {
                 toast.success("MCQs generated successfully!");
@@ -127,9 +121,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             }
 
             // 1. Fetch student profile to check skills and academic details
-            const profileRes = await fetch(`${API_BASE_URL}/student/profile/${studentId}`, {
-                credentials: "include"
-            });
+            const profileRes = await authenticatedFetch(`${API_BASE_URL}/student/profile/${studentId}`);
             if (!profileRes.ok) {
                 toast.error("Failed to verify profile details");
                 return;
@@ -148,9 +140,7 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
             }
 
             // 3. Check if MCQs exist for the course
-            const mcqRes = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`, {
-                credentials: "include"
-            });
+            const mcqRes = await authenticatedFetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`);
             if (!mcqRes.ok) {
                 if (mcqRes.status === 404) {
                     toast.info("Assessment is not yet ready for this course. Please contact administrator.");
@@ -176,13 +166,9 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const handleStatusChange = async (newStatus: string) => {
         setUpdatingStatus(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/courses/${courseId}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ status: newStatus }),
-                credentials: "include"
+                body: JSON.stringify({ status: newStatus })
             });
 
             if (response.ok) {
@@ -204,9 +190,8 @@ export default function CourseDetailsContainer({ courseId, isAdmin = true }: cou
     const handleGenerateVideoQuestions = async () => {
         setGeneratingVideo(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/ai/generate/video-questions/${courseId}`, {
-                method: "POST",
-                credentials: "include"
+            const response = await authenticatedFetch(`${API_BASE_URL}/ai/generate/video-questions/${courseId}`, {
+                method: "POST"
             });
             if (response.ok) {
                 toast.success("Video questions generated successfully!");

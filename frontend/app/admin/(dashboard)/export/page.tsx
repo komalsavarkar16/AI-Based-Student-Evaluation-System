@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './export.module.css';
-import { 
-    Download, 
-    FileText, 
-    FileSpreadsheet, 
-    Table, 
-    ChevronDown, 
-    Clock, 
+import {
+    Download,
+    FileText,
+    FileSpreadsheet,
+    Table,
+    ChevronDown,
+    Clock,
     CheckCircle2,
     Database,
     FilePieChart
 } from 'lucide-react';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import { exportToExcel, exportToPDF, exportToCSV, flattenData } from '@/app/utils/exportUtils';
 import { toast } from 'react-toastify';
 
@@ -32,18 +32,14 @@ export default function ExportPage() {
             let headers: string[] = [];
 
             if (selectedData === 'students') {
-                const res = await fetch(`${API_BASE_URL}/admin/students`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/students`);
                 if (!res.ok) throw new Error("Failed to fetch students");
                 data = await res.json();
                 fileName = `Students_List_${new Date().toISOString().split('T')[0]}`;
                 title = "SkillBridge AI - Student Master List";
                 headers = ["Name", "Email", "MCQ Score", "Video Score", "Status"];
             } else if (selectedData === 'evaluations') {
-                const res = await fetch(`${API_BASE_URL}/admin/all-evaluations`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/all-evaluations`);
                 if (!res.ok) throw new Error("Failed to fetch evaluations");
                 data = await res.json();
                 fileName = `Evaluation_Results_${new Date().toISOString().split('T')[0]}`;
@@ -67,9 +63,9 @@ export default function ExportPage() {
                         return [item.name, item.email, item.mcqScore, item.videoScore, item.status];
                     } else {
                         return [
-                            item.studentName, 
-                            item.courseTitle, 
-                            item.mcqScore, 
+                            item.studentName,
+                            item.courseTitle,
+                            item.mcqScore,
                             typeof item.videoScore === 'number' ? item.videoScore.toFixed(2) : item.videoScore,
                             item.eligibilitySignal,
                             item.status,
@@ -118,7 +114,7 @@ export default function ExportPage() {
             <div className={styles.exportBox}>
                 <div className={styles.formGroup}>
                     <label className={styles.label}>1. Select Target Data</label>
-                    <select 
+                    <select
                         className={styles.select}
                         value={selectedData}
                         onChange={(e) => setSelectedData(e.target.value)}
@@ -131,7 +127,7 @@ export default function ExportPage() {
 
                 <div className={styles.formGroup}>
                     <label className={styles.label}>2. Select Export Format</label>
-                    <select 
+                    <select
                         className={styles.select}
                         value={selectedFormat}
                         onChange={(e) => setSelectedFormat(e.target.value)}
@@ -142,7 +138,7 @@ export default function ExportPage() {
                     </select>
                 </div>
 
-                <button 
+                <button
                     className={styles.downloadBtn}
                     onClick={handleExport}
                     disabled={loading}
@@ -182,7 +178,7 @@ export default function ExportPage() {
                     </div>
                 )}
             </div>
-            
+
             <div className={styles.footer}>
                 <div className={styles.footerItem}>
                     <CheckCircle2 size={18} color="#10b981" />

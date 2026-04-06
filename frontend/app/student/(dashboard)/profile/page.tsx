@@ -14,7 +14,7 @@ import {
     Settings as SettingsIcon,
     Edit as EditIcon
 } from "@mui/icons-material";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import { toast } from "react-toastify";
 
 interface StudentInfo {
@@ -84,10 +84,9 @@ export default function StudentProfile() {
             }
 
             try {
-                const fetchOptions = { credentials: "include" as const };
                 const [profileRes, statsRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/student/profile/${studentId}`, fetchOptions),
-                    fetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`, fetchOptions)
+                    authenticatedFetch(`${API_BASE_URL}/student/profile/${studentId}`),
+                    authenticatedFetch(`${API_BASE_URL}/student/dashboard-stats/${studentId}`)
                 ]);
 
                 if (profileRes.ok) {
@@ -95,7 +94,7 @@ export default function StudentProfile() {
                     setStudentInfo(data);
                     setProgress(calculateProgress(data));
                 }
-                
+
                 if (statsRes.ok) {
                     setStats(await statsRes.json());
                 }
@@ -125,14 +124,13 @@ export default function StudentProfile() {
 
         setUpdating(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/student/change-password/${studentId}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/student/change-password/${studentId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     oldPassword: passwords.oldPassword,
                     newPassword: passwords.newPassword
-                }),
-                credentials: "include"
+                })
             });
 
             if (res.ok) {

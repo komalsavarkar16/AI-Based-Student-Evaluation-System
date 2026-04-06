@@ -13,7 +13,7 @@ import {
     CheckCircle as ActiveIcon,
     Edit as EditIcon
 } from "@mui/icons-material";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 interface AdminInfo {
     id: string;
@@ -43,9 +43,7 @@ export default function AdminProfile() {
 
             try {
                 const { id } = JSON.parse(adminData);
-                const res = await fetch(`${API_BASE_URL}/admin/profile/${id}`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/profile/${id}`);
                 if (res.ok) {
                     const data = await res.json();
                     setAdminInfo(data);

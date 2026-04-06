@@ -4,7 +4,7 @@ import styles from "./edit.module.css";
 import StudentNavbar from "../../../components/StudentNavbar/StudentNavbar";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 interface StudentInfo {
     firstName: string;
@@ -51,9 +51,7 @@ export default function EditProfile() {
             }
 
             try {
-                const res = await fetch(`${API_BASE_URL}/student/profile/${studentId}`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/student/profile/${studentId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setFormData(data);
@@ -91,11 +89,9 @@ export default function EditProfile() {
         };
 
         try {
-            const res = await fetch(`${API_BASE_URL}/student/profile/${studentId}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/student/profile/${studentId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedData),
-                credentials: "include"
+                body: JSON.stringify(updatedData)
             });
 
             if (res.ok) {

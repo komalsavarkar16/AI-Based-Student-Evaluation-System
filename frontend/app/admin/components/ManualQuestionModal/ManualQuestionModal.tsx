@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./manualQuestionModal.module.css";
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 interface ManualQuestionModalProps {
     isOpen: boolean;
@@ -15,7 +15,7 @@ interface ManualQuestionModalProps {
 const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClose, type, courseId, onSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [courseSkills, setCourseSkills] = useState<string[]>([]);
-    
+
     // MCQ State
     const [mcqData, setMcqData] = useState({
         question: "",
@@ -39,9 +39,7 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
 
     const fetchCourseSkills = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
-                credentials: "include"
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/courses/${courseId}`);
             if (response.ok) {
                 const data = await response.json();
                 setCourseSkills(data.skills_required || []);
@@ -55,7 +53,7 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
 
     const handleSubmitMcq = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Validation
         if (!mcqData.question.trim()) {
             toast.error("Question text is required");
@@ -73,25 +71,23 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
             toast.error("Correct answer must exactly match one of the options");
             return;
         }
-        
+
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/courses/${courseId}/add-mcq`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/courses/${courseId}/add-mcq`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(mcqData),
-                credentials: "include"
+                body: JSON.stringify(mcqData)
             });
             if (response.ok) {
                 toast.success("MCQ added successfully");
                 onSuccess();
                 onClose();
                 // Clear state
-                setMcqData({ 
-                    question: "", 
-                    options: ["", "", "", ""], 
-                    answer: "", 
-                    relatedSkill: "" 
+                setMcqData({
+                    question: "",
+                    options: ["", "", "", ""],
+                    answer: "",
+                    relatedSkill: ""
                 });
             } else {
                 const errorData = await response.json();
@@ -106,7 +102,7 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
 
     const handleSubmitVideo = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!videoData.question.trim() || !videoData.relatedSkill.trim()) {
             toast.error("Please fill all fields");
             return;
@@ -122,21 +118,19 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
                     .map(s => s.trim())
                     .filter(s => s.length > 0)
             };
-            const response = await fetch(`${API_BASE_URL}/courses/${courseId}/add-video-question`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/courses/${courseId}/add-video-question`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formattedVideoData),
-                credentials: "include"
+                body: JSON.stringify(formattedVideoData)
             });
             if (response.ok) {
                 toast.success("Video question added successfully");
                 onSuccess();
                 onClose();
                 // Clear state
-                setVideoData({ 
-                    question: "", 
-                    relatedSkill: "", 
-                    expectedConceptsString: "" 
+                setVideoData({
+                    question: "",
+                    relatedSkill: "",
+                    expectedConceptsString: ""
                 });
             } else {
                 const errorData = await response.json();
@@ -161,9 +155,9 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
                     <form onSubmit={handleSubmitMcq} className={styles.form}>
                         <div className={styles.inputGroup}>
                             <label>Question Text</label>
-                            <textarea 
+                            <textarea
                                 value={mcqData.question}
-                                onChange={(e) => setMcqData({...mcqData, question: e.target.value})}
+                                onChange={(e) => setMcqData({ ...mcqData, question: e.target.value })}
                                 placeholder="Enter question..."
                                 rows={3}
                                 required
@@ -173,13 +167,13 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
                             {mcqData.options.map((opt, i) => (
                                 <div key={i} className={styles.inputGroup}>
                                     <label>Option {i + 1}</label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={opt}
                                         onChange={(e) => {
                                             const newOptions = [...mcqData.options];
                                             newOptions[i] = e.target.value;
-                                            setMcqData({...mcqData, options: newOptions});
+                                            setMcqData({ ...mcqData, options: newOptions });
                                         }}
                                         placeholder={`Option ${i + 1}`}
                                         required
@@ -189,9 +183,9 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
                         </div>
                         <div className={styles.inputGroup}>
                             <label>Related Skill</label>
-                            <select 
-                                value={mcqData.relatedSkill} 
-                                onChange={(e) => setMcqData({...mcqData, relatedSkill: e.target.value})}
+                            <select
+                                value={mcqData.relatedSkill}
+                                onChange={(e) => setMcqData({ ...mcqData, relatedSkill: e.target.value })}
                                 required
                                 className={styles.select}
                             >
@@ -204,9 +198,9 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
                         </div>
                         <div className={styles.inputGroup}>
                             <label>Correct Answer</label>
-                            <select 
-                                value={mcqData.answer} 
-                                onChange={(e) => setMcqData({...mcqData, answer: e.target.value})}
+                            <select
+                                value={mcqData.answer}
+                                onChange={(e) => setMcqData({ ...mcqData, answer: e.target.value })}
                                 required
                                 className={styles.select}
                             >
@@ -225,9 +219,9 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
                     <form onSubmit={handleSubmitVideo} className={styles.form}>
                         <div className={styles.inputGroup}>
                             <label>Question Text</label>
-                            <textarea 
+                            <textarea
                                 value={videoData.question}
-                                onChange={(e) => setVideoData({...videoData, question: e.target.value})}
+                                onChange={(e) => setVideoData({ ...videoData, question: e.target.value })}
                                 placeholder="Enter interview question..."
                                 rows={4}
                                 required
@@ -235,9 +229,9 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
                         </div>
                         <div className={styles.inputGroup}>
                             <label>Related Skill</label>
-                            <select 
-                                value={videoData.relatedSkill} 
-                                onChange={(e) => setVideoData({...videoData, relatedSkill: e.target.value})}
+                            <select
+                                value={videoData.relatedSkill}
+                                onChange={(e) => setVideoData({ ...videoData, relatedSkill: e.target.value })}
                                 required
                                 className={styles.select}
                             >
@@ -250,10 +244,10 @@ const ManualQuestionModal: React.FC<ManualQuestionModalProps> = ({ isOpen, onClo
                         </div>
                         <div className={styles.inputGroup}>
                             <label>Expected Concepts (Comma Separated)</label>
-                            <input 
+                            <input
                                 type="text"
                                 value={videoData.expectedConceptsString}
-                                onChange={(e) => setVideoData({...videoData, expectedConceptsString: e.target.value})}
+                                onChange={(e) => setVideoData({ ...videoData, expectedConceptsString: e.target.value })}
                                 placeholder="e.g. loops, arrays, time complexity"
                             />
                             <small className={styles.hint}>AI will look for these keywords in the answer.</small>

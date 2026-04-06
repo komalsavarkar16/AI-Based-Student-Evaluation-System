@@ -13,7 +13,7 @@ import {
     BarChart,
     ExternalLink
 } from 'lucide-react';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import styles from './StudentDetail.module.css';
 
 const StudentDetailPage = () => {
@@ -25,9 +25,7 @@ const StudentDetailPage = () => {
     useEffect(() => {
         const fetchStudentDetail = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/students/${studentId}`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/students/${studentId}`);
                 if (res.ok) {
                     const json = await res.json();
                     setData(json);

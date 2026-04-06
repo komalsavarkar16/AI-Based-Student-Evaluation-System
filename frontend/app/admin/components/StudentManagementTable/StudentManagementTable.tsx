@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import styles from './StudentManagementTable.module.css';
 
 const StudentManagementTable = () => {
@@ -12,9 +12,7 @@ const StudentManagementTable = () => {
     useEffect(() => {
         const fetchRecentEvaluations = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/evaluations/recent`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/evaluations/recent`);
                 if (res.ok) {
                     const data = await res.json();
                     setEvaluations(data || []);

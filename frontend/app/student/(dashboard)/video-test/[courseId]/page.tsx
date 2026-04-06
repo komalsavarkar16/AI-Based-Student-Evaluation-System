@@ -9,7 +9,7 @@ import {
     ChevronLeft, Bookmark, ArrowRight, StopCircle, RotateCcw, Brain
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import ConfirmationModal from "@/app/components/ConfirmationModal/ConfirmationModal";
 
 interface Question {
@@ -71,9 +71,7 @@ export default function VideoTestPage() {
         try {
             const studentId = localStorage.getItem("student_id");
             if (studentId) {
-                const statusRes = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`, {
-                    credentials: "include"
-                });
+                const statusRes = await authenticatedFetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`);
                 if (statusRes.ok) {
                     const statusData = await statusRes.json();
                     if (statusData.status === "Bridge Course In Progress") {
@@ -96,8 +94,7 @@ export default function VideoTestPage() {
     const fetchQuestions = async () => {
         try {
             const studentId = localStorage.getItem("student_id");
-            const res = await fetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}${studentId ? `?student_id=${studentId}` : ""}`, {
-                credentials: "include",
+            const res = await authenticatedFetch(`${API_BASE_URL}/ai/get/video-questions/${courseId}${studentId ? `?student_id=${studentId}` : ""}`, {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache'
@@ -258,10 +255,9 @@ export default function VideoTestPage() {
                 formData.append("files", new File([blob], fileName, { type: 'video/mp4' }));
             });
 
-            const response = await fetch(`${API_BASE_URL}/student/submit-video-test`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/student/submit-video-test`, {
                 method: "POST",
-                body: formData,
-                credentials: "include"
+                body: formData
             });
 
             if (response.ok) {
@@ -295,11 +291,9 @@ export default function VideoTestPage() {
         const studentId = localStorage.getItem("student_id");
         if (studentId) {
             try {
-                await fetch(`${API_BASE_URL}/student/update-bridge-checklist/${studentId}/${courseId}`, {
+                await authenticatedFetch(`${API_BASE_URL}/student/update-bridge-checklist/${studentId}/${courseId}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ checklistData: newChecklist }),
-                    credentials: "include"
+                    body: JSON.stringify({ checklistData: newChecklist })
                 });
             } catch (error) {
                 console.error("Error syncing checklist", error);
@@ -316,24 +310,23 @@ export default function VideoTestPage() {
         if (!studentId) return;
 
         setSubmitting(true);
-            try {
-                const response = await fetch(`${API_BASE_URL}/student/finish-bridge-course/${studentId}/${courseId}`, {
-                    method: 'POST',
-                    credentials: "include"
-                });
-                if (response.ok) {
-                    toast.success("Skill gaps cleared! You can now access the video test.");
-                    router.push("/student/tests");
-                } else {
-                    toast.error("Failed to finish bridge course.");
-                }
-            } catch (error) {
-                console.error(error);
-                toast.error("Error updating status.");
-            } finally {
-                setSubmitting(false);
-                setIsConfirmRetestModalOpen(false);
+        try {
+            const response = await authenticatedFetch(`${API_BASE_URL}/student/finish-bridge-course/${studentId}/${courseId}`, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                toast.success("Skill gaps cleared! You can now access the video test.");
+                router.push("/student/tests");
+            } else {
+                toast.error("Failed to finish bridge course.");
             }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error updating status.");
+        } finally {
+            setSubmitting(false);
+            setIsConfirmRetestModalOpen(false);
+        }
     };
 
     if (loading || submitting) {

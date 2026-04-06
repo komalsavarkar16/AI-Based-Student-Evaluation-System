@@ -3,7 +3,7 @@
 import styles from "./courses.module.css";
 import { useState, useEffect } from "react";
 import { Course } from "../../../types/course";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import SearchBar from "@/app/components/SearchBar/SearchBar";
 
 import Link from "next/link";
@@ -20,9 +20,7 @@ export default function Courses() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/courses`, {
-        credentials: "include"
-      });
+      const res = await authenticatedFetch(`${API_BASE_URL}/courses`);
       const data = await res.json();
       setCourses(data);
     } catch (err) {
@@ -32,7 +30,7 @@ export default function Courses() {
     }
   };
 
-  const filteredCourses = courses.filter(course => 
+  const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -51,10 +49,10 @@ export default function Courses() {
           <p className={styles.courseSubheading}>Manage and organize your academic catalog</p>
         </div>
         <div className={styles.headerActions}>
-          <SearchBar 
-            value={searchQuery} 
-            onChange={setSearchQuery} 
-            placeholder="Search by title or category..." 
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search by title or category..."
           />
           <Link href="/admin/courses/add">
             <button className={styles.addCourseButton}>
@@ -73,7 +71,7 @@ export default function Courses() {
         <div className={styles.emptyState}>
           <Search size={48} color="#94a3b8" />
           <p>No courses match your search "{searchQuery}"</p>
-          <button 
+          <button
             className={styles.resetSearch}
             onClick={() => setSearchQuery("")}
           >
@@ -85,7 +83,7 @@ export default function Courses() {
           {filteredCourses.map((course) => (
             <div key={course._id} className={styles.courseCard}>
               <h2 className={styles.courseTitle}>{course.title}</h2>
-              
+
               <div className={styles.detailsList}>
                 <p className={styles.category}>
                   <span><BookOpen size={16} /> Category</span>
@@ -97,7 +95,7 @@ export default function Courses() {
                 </p>
                 <p className={styles.status}>
                   <span><Activity size={16} /> Status</span>
-                  <span style={{ 
+                  <span style={{
                     backgroundColor: course.status === 'published' ? '#ecfdf5' : '#fff7ed',
                     color: course.status === 'published' ? '#059669' : '#d97706',
                     textTransform: 'capitalize'

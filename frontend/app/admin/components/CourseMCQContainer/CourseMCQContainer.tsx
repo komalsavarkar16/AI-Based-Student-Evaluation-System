@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import styles from "./courseMCQContainer.module.css";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import { Plus } from "lucide-react";
 import ManualQuestionModal from "../ManualQuestionModal/ManualQuestionModal";
 
@@ -19,9 +19,7 @@ export default function CourseMCQContainer({ courseId }: courseDetailsProps) {
     const getMCQs = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`, {
-                credentials: "include"
-            });
+            const response = await authenticatedFetch(`${API_BASE_URL}/ai/get/mcq/${courseId}`);
             const data = await response.json();
             if (response.ok) {
                 setMCQs(data.mcqs || []);
@@ -51,7 +49,7 @@ export default function CourseMCQContainer({ courseId }: courseDetailsProps) {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h1 className={styles.title}>Course Multiple Choice Questions</h1>
-                <button 
+                <button
                     className={styles.addBtn}
                     onClick={() => setIsModalOpen(true)}
                 >
@@ -59,8 +57,8 @@ export default function CourseMCQContainer({ courseId }: courseDetailsProps) {
                     Add MCQ
                 </button>
             </div>
-            
-            <ManualQuestionModal 
+
+            <ManualQuestionModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 type="mcq"

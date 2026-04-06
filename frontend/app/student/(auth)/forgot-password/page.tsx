@@ -4,7 +4,7 @@ import styles from "../login/login.module.css";
 import Link from "next/link";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 export default function StudentForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -19,9 +19,8 @@ export default function StudentForgotPasswordPage() {
 
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/student/forgot-password`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/student/forgot-password`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
             });
 

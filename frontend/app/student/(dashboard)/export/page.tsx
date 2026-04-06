@@ -11,7 +11,7 @@ import {
     FileDown,
     ShieldCheck
 } from 'lucide-react';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import { exportToExcel, exportToPDF, exportToCSV, flattenData } from '@/app/utils/exportUtils';
 import { toast } from 'react-toastify';
 import { jsPDF } from 'jspdf';
@@ -37,14 +37,12 @@ export default function StudentExportPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`${API_BASE_URL}/student/all-results/${studentId}`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/student/all-results/${studentId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setResults(data.results || []);
                     setStudentProfile(data.profile || null);
-                    
+
                     // Extract unique course titles for dropdown
                     const courses = Array.from(new Set((data.results || []).map((r: any) => r.courseTitle))) as string[];
                     setUniqueCourses(courses);
@@ -77,7 +75,7 @@ export default function StudentExportPage() {
             const dateStr = new Date().toISOString().split('T')[0];
             let fileName = "";
             let title = "";
-            
+
             if (selectedData === 'enrollment') {
                 const approved = results.find(r => r.status === 'Approved' && r.courseTitle !== "Assessment");
                 if (!approved) {
@@ -85,17 +83,17 @@ export default function StudentExportPage() {
                     setLoading(false);
                     return;
                 }
-                
+
                 fileName = `Enrollment_Letter_${approved.courseTitle.replace(/\s+/g, '_')}_${dateStr}`;
-                
+
                 const doc = new jsPDF();
                 const logo = approved.instituteLogo;
-                
+
                 // 1. Header & Logo
                 if (logo) {
-                   try {
+                    try {
                         doc.addImage(logo, 'PNG', 14, 15, 40, 15);
-                   } catch(e) { /* skip logo if invalid */ }
+                    } catch (e) { /* skip logo if invalid */ }
                 } else {
                     doc.setFontSize(18);
                     doc.setFont("helvetica", "bold");
@@ -106,7 +104,7 @@ export default function StudentExportPage() {
                 doc.setFont("times", "bold");
                 doc.setTextColor(30, 41, 59);
                 doc.text("LETTER OF ADMISSION", 105, 50, { align: 'center' });
-                
+
                 doc.setDrawColor(226, 232, 240);
                 doc.line(14, 55, 196, 55);
 
@@ -115,20 +113,20 @@ export default function StudentExportPage() {
                 doc.setFont("times", "normal");
                 doc.setTextColor(100);
                 doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 140, 62);
-                
+
                 // 3. Recipient Details
                 doc.setFontSize(12);
                 doc.setTextColor(30);
                 doc.setFont("times", "bold");
                 doc.text(`To: ${studentProfile?.firstName || "Student"} ${studentProfile?.lastName || ""}`, 14, 75);
                 doc.text(`Subject: Confirmation of Admission - ${approved.courseTitle}`, 14, 82);
-                
+
                 // 4. Letter Content
                 doc.setFont("times", "normal");
                 const letterContent = approved.enrollmentLetter || `Congratulations! You have been successfully enrolled in the ${approved.courseTitle} course based on your excellent performance in the AI-based evaluation.`;
                 const splitText = doc.splitTextToSize(letterContent, 180);
                 doc.text(splitText, 14, 100);
-                
+
                 // 5. Official Stamp Representation
                 const finalY = doc.getTextDimensions(splitText).h + 120;
                 doc.setDrawColor(22, 101, 52);
@@ -148,7 +146,7 @@ export default function StudentExportPage() {
                     fileName = `Academic_Summary_${dateStr}`;
                     title = "SkillBridge AI - Academic Performance Summary (Latest)";
                     reportTypeLabel = "LATEST";
-                    
+
                     const seenCourses = new Set();
                     filteredResults = results.filter(r => {
                         if (seenCourses.has(r.courseTitle)) return false;
@@ -191,9 +189,9 @@ export default function StudentExportPage() {
                 name: fileName,
                 format: selectedFormat,
                 timestamp: new Date().toLocaleTimeString(),
-                type: selectedData === 'enrollment' ? 'Admission Letter' : 
-                      selectedData === 'performance' ? 'Academic Summary' : 
-                      selectedData === 'history' ? 'Test History' : 'Course Report'
+                type: selectedData === 'enrollment' ? 'Admission Letter' :
+                    selectedData === 'performance' ? 'Academic Summary' :
+                        selectedData === 'history' ? 'Test History' : 'Course Report'
             };
             setDownloadHistory(prev => [newEntry, ...prev].slice(0, 5));
             toast.success("Document downloaded!");

@@ -6,7 +6,7 @@ import styles from "./add.module.css";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { ArrowBack } from "@mui/icons-material";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 export default function AddCourse() {
     const router = useRouter();
@@ -39,13 +39,9 @@ export default function AddCourse() {
         };
 
         try {
-            const res = await fetch(`${API_BASE_URL}/courses/add`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/courses/add`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload),
-                credentials: "include"
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {

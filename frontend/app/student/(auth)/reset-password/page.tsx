@@ -6,7 +6,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 function ResetPasswordForm() {
     const router = useRouter();
@@ -34,9 +34,8 @@ function ResetPasswordForm() {
 
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/student/reset-password`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/student/reset-password`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token, new_password: password }),
             });
 

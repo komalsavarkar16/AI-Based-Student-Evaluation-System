@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import styles from "./resultDetail.module.css";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import { toast } from "react-toastify";
 import ConfirmationModal from "@/app/components/ConfirmationModal/ConfirmationModal";
 import { Sparkles } from "lucide-react";
@@ -66,9 +66,7 @@ export default function ResultDetail() {
             const studentId = localStorage.getItem("student_id");
             if (!studentId || !courseId) return;
 
-            const res = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`, {
-                credentials: "include"
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${courseId}`);
             if (res.ok) {
                 const data = await res.json();
                 setResult(data);
@@ -87,11 +85,9 @@ export default function ResultDetail() {
     const fetchAllPaths = async (skillGap: string[]) => {
         setLoadingPath(true);
         try {
-            const resB = await fetch(`${API_BASE_URL}/student/bridge-path-b`, {
+            const resB = await authenticatedFetch(`${API_BASE_URL}/student/bridge-path-b`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ skillGap }),
-                credentials: "include"
+                body: JSON.stringify({ skillGap })
             });
 
             if (resB.ok) {
@@ -111,9 +107,8 @@ export default function ResultDetail() {
             const studentId = localStorage.getItem("student_id");
             if (!studentId || !courseId) return;
 
-            const res = await fetch(`${API_BASE_URL}/student/start-bridge-course/${studentId}/${courseId}`, {
-                method: 'POST',
-                credentials: "include"
+            const res = await authenticatedFetch(`${API_BASE_URL}/student/start-bridge-course/${studentId}/${courseId}`, {
+                method: 'POST'
             });
 
             if (res.ok) {

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import styles from "./edit.module.css";
 import AdminNavbar from "../../../components/Navbar/Navbar";
 import { Close as CloseIcon, Add as AddIcon } from "@mui/icons-material";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 
 interface AdminInfo {
     firstName: string;
@@ -49,9 +49,7 @@ export default function EditAdminProfile() {
             try {
                 const { id } = JSON.parse(adminData);
                 setAdminId(id);
-                const res = await fetch(`${API_BASE_URL}/admin/profile/${id}`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/profile/${id}`);
                 if (res.ok) {
                     const data = await res.json();
                     setFormData({
@@ -105,11 +103,9 @@ export default function EditAdminProfile() {
 
         setSaving(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/profile/${adminId}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/admin/profile/${adminId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-                credentials: "include"
+                body: JSON.stringify(formData)
             });
 
             if (res.ok) {

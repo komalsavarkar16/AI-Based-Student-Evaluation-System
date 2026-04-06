@@ -10,7 +10,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import SchoolIcon from "@mui/icons-material/School";
 import ShieldIcon from "@mui/icons-material/Shield";
 import { toast } from "react-toastify";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import styles from "./Auth.module.css";
 
 interface RegisterFormProps {
@@ -82,9 +82,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}${config.apiEndpoint}`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}${config.apiEndpoint}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -114,21 +113,21 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
       {showRoleSwitcher && (
         <div className={`${styles.roleSwitcher} ${role === 'admin' ? styles.adminActive : ''}`}>
-           <div className={styles.tabSlider}></div>
-           <button 
-             type="button" 
-             className={`${styles.roleTab} ${role === 'student' ? styles.activeTab : ''}`}
-             onClick={() => handleRoleToggle('student')}
-           >
-             <SchoolIcon sx={{ fontSize: 20 }} /> Student
-           </button>
-           <button 
-             type="button" 
-             className={`${styles.roleTab} ${role === 'admin' ? styles.activeTab : ''}`}
-             onClick={() => handleRoleToggle('admin')}
-           >
-             <ShieldIcon sx={{ fontSize: 20 }} /> Admin
-           </button>
+          <div className={styles.tabSlider}></div>
+          <button
+            type="button"
+            className={`${styles.roleTab} ${role === 'student' ? styles.activeTab : ''}`}
+            onClick={() => handleRoleToggle('student')}
+          >
+            <SchoolIcon sx={{ fontSize: 20 }} /> Student
+          </button>
+          <button
+            type="button"
+            className={`${styles.roleTab} ${role === 'admin' ? styles.activeTab : ''}`}
+            onClick={() => handleRoleToggle('admin')}
+          >
+            <ShieldIcon sx={{ fontSize: 20 }} /> Admin
+          </button>
         </div>
       )}
 
@@ -211,7 +210,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         </div>
 
         <button type="submit" className={styles.submitBtn}>
-           Sign Up
+          Sign Up
         </button>
 
         <div className={styles.formFooter}>

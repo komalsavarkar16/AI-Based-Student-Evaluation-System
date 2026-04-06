@@ -8,7 +8,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { BrainCircuit } from 'lucide-react';
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import { useAdminNotifications } from "@/app/context/AdminNotificationContext";
 import BellIcon from "@mui/icons-material/NotificationsNone";
 import BellActiveIcon from "@mui/icons-material/NotificationsActive";
@@ -45,9 +45,8 @@ export default function Navbar() {
 
     const handleLogout = async () => {
         try {
-            await fetch(`${API_BASE_URL}/admin/logout`, {
-                method: "POST",
-                credentials: "include"
+            await authenticatedFetch(`${API_BASE_URL}/admin/logout`, {
+                method: "POST"
             });
         } catch (error) {
             console.error("Logout failed:", error);
@@ -80,7 +79,7 @@ export default function Navbar() {
                     <div className={styles.logoIcon}>AI</div>
                     <span className={styles.logoText}>SkillBridge AI</span>
                 </Link>
-                
+
                 <div className={styles.mobileNavGroup}>
                     <div className={styles.notificationWrapper} ref={notificationRef}>
                         <button

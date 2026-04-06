@@ -14,7 +14,7 @@ import {
     ChevronRight as ChevronRightIcon,
     NotificationsActive as BellActiveIcon
 } from "@mui/icons-material";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import { useNotifications } from "@/app/context/NotificationContext";
 
 export default function StudentNavbar() {
@@ -53,9 +53,8 @@ export default function StudentNavbar() {
 
     const handleLogout = async () => {
         try {
-            await fetch(`${API_BASE_URL}/student/logout`, {
-                method: "POST",
-                credentials: "include"
+            await authenticatedFetch(`${API_BASE_URL}/student/logout`, {
+                method: "POST"
             });
         } catch (error) {
             console.error("Logout failed:", error);

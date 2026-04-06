@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import styles from "./test.module.css";
 import { toast } from "react-toastify";
 import ResultContainer from "../../../components/MCQResultContainer/ResultContainer";
-import { API_BASE_URL } from "@/app/utils/api";
+import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
 import {
     Timer as TimerIcon,
     ChevronRight,
@@ -64,9 +64,7 @@ export default function MCQTestPage() {
     const fetchMCQs = async () => {
         try {
             const studentId = localStorage.getItem("student_id");
-            const res = await fetch(`${API_BASE_URL}/ai/get/mcq/${courseId}${studentId ? `?student_id=${studentId}` : ""}`, {
-                credentials: "include"
-            });
+            const res = await authenticatedFetch(`${API_BASE_URL}/ai/get/mcq/${courseId}${studentId ? `?student_id=${studentId}` : ""}`);
             if (res.ok) {
                 const data = await res.json();
                 setTestData(data);
@@ -131,7 +129,7 @@ export default function MCQTestPage() {
                 toast.error("You must be logged in to submit the test");
                 return;
             }
-            const response = await fetch(`${API_BASE_URL}/student/submit-test`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/student/submit-test`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -144,8 +142,7 @@ export default function MCQTestPage() {
                     totalQuestions: testData.mcqs.length,
                     correctAnswers: correctCount,
                     answers: answersLog
-                }),
-                credentials: "include"
+                })
             });
 
             if (response.ok) {

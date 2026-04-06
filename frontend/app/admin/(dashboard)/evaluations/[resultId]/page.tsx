@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import styles from './EvaluationDetail.module.css';
 import {
     ArrowLeft,
@@ -31,9 +31,7 @@ const EvaluationDetailPage = () => {
     useEffect(() => {
         const fetchReport = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/evaluation-report/${resultId}`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/evaluation-report/${resultId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setReport(data);
@@ -57,11 +55,9 @@ const EvaluationDetailPage = () => {
 
         setSubmitting(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/submit-decision/${resultId}`, {
+            const res = await authenticatedFetch(`${API_BASE_URL}/admin/submit-decision/${resultId}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: decision, notes }),
-                credentials: "include"
+                body: JSON.stringify({ status: decision, notes })
             });
 
             if (res.ok) {
@@ -243,7 +239,7 @@ const EvaluationDetailPage = () => {
                 <section className={styles.section}>
                     <h3 className={styles.sectionTitle}><Lightbulb size={20} color="#6366f1" /> Section 5: Golden Report (AI Recommendation)</h3>
                     <div className={`${styles.recommendationBox} ${report.eligibilitySignal === 'Bridge Course' ? styles.bridge : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        
+
                         <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #ef4444', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                             <h4 style={{ margin: '0 0 8px 0', color: '#7f1d1d', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <AlertTriangle size={18} /> 1. The Competency Gap
@@ -329,8 +325,8 @@ const EvaluationDetailPage = () => {
                         onClick={handleSubmitDecision}
                         disabled={submitting || report.status !== 'Pending'}
                     >
-                        {submitting ? 'Submitting Decision...' : 
-                         report.status !== 'Pending' ? 'Decision Finalized' : 'Submit Decision'}
+                        {submitting ? 'Submitting Decision...' :
+                            report.status !== 'Pending' ? 'Decision Finalized' : 'Submit Decision'}
                     </button>
 
                     {report.decidedAt && (

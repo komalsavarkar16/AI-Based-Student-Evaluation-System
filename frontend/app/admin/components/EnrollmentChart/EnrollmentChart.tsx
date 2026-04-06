@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import styles from './EnrollmentChart.module.css';
 
 const EnrollmentChart = () => {
@@ -12,9 +12,7 @@ const EnrollmentChart = () => {
     useEffect(() => {
         const fetchEnrollments = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/analytics/course-performance`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/analytics/course-performance`);
                 if (res.ok) {
                     setData(await res.json());
                 }

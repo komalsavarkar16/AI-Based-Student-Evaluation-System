@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import styles from './PendingDecisions.module.css';
 
 const PendingDecisions = () => {
@@ -12,9 +12,7 @@ const PendingDecisions = () => {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/admin/notifications`, {
-                    credentials: "include"
-                });
+                const res = await authenticatedFetch(`${API_BASE_URL}/admin/notifications`);
                 if (res.ok) {
                     const data = await res.json();
                     setNotifications(data);

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import StudentNavbar from '../../components/StudentNavbar/StudentNavbar';
 import styles from './tests.module.css';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import { Brain, Video, ListChecks, ArrowRight, PlayCircle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -38,9 +38,7 @@ export default function TestsPage() {
         try {
             const studentId = localStorage.getItem("student_id");
 
-            const coursesRes = await fetch(`${API_BASE_URL}/courses/`, {
-                credentials: "include"
-            });
+            const coursesRes = await authenticatedFetch(`${API_BASE_URL}/courses/`);
             let coursesData = [];
             if (coursesRes.ok) {
                 const data = await coursesRes.json();
@@ -51,9 +49,7 @@ export default function TestsPage() {
             if (studentId) {
                 const statuses: Record<string, TestStatus> = {};
                 for (const course of coursesData) {
-                    const statusRes = await fetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${course._id}`, {
-                        credentials: "include"
-                    });
+                    const statusRes = await authenticatedFetch(`${API_BASE_URL}/student/check-test-status/${studentId}/${course._id}`);
                     if (statusRes.ok) {
                         statuses[course._id] = await statusRes.json();
                     }

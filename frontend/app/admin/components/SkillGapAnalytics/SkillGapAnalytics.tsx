@@ -3,7 +3,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { API_BASE_URL } from '@/app/utils/api';
+import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
 import styles from './SkillGapAnalytics.module.css';
 
 const SkillGapAnalytics = () => {
@@ -16,9 +16,9 @@ const SkillGapAnalytics = () => {
         const fetchAnalytics = async () => {
             try {
                 const [skillsRes, courseRes, statusRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/admin/analytics/skill-gaps`, { credentials: "include" }),
-                    fetch(`${API_BASE_URL}/admin/analytics/course-performance`, { credentials: "include" }),
-                    fetch(`${API_BASE_URL}/admin/analytics/overall-status`, { credentials: "include" })
+                    authenticatedFetch(`${API_BASE_URL}/admin/analytics/skill-gaps`),
+                    authenticatedFetch(`${API_BASE_URL}/admin/analytics/course-performance`),
+                    authenticatedFetch(`${API_BASE_URL}/admin/analytics/overall-status`)
                 ]);
 
                 if (skillsRes.ok) setWeakSkillsData(await skillsRes.json());
