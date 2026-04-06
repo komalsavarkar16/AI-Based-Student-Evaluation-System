@@ -248,11 +248,10 @@ async def submit_test(result: TestResult):
     db.notifications.insert_one({
         "type": "video_test_evaluation", # Using existing type for UI compatibility
         "studentId": student_id,
-        "studentName": student_name, 
+        "studentName": student_name,
         "courseId": course_id,
         "courseTitle": course_title,
-        "score": mcq_score,
-        "skillGap": analysis_content.get("weak_skills", []) if analysis_content else [],
+        "message": f"A new evaluation is ready for {student_name} ({course_title}).",
         "status": "unread",
         "isRead": False,
         "timestamp": timestamp
@@ -549,6 +548,7 @@ def notify_admin_of_evaluation(student_id, course_id, score, skill_gap):
             "score": round(score, 2),
             "skillGap": skill_gap,
             "status": "unread",
+            "isRead": False,
             "timestamp": datetime.utcnow()
         }
         

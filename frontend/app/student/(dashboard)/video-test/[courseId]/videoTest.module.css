@@ -894,3 +894,277 @@
         margin: 0 1rem 1rem;
     }
 }
+
+/* Permission Overlay Styles */
+.permissionOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 2.5rem;
+    text-align: center;
+    z-index: 2000;
+}
+
+.permissionIcon {
+    width: 100px;
+    height: 100px;
+    background: #fdf2f2;
+    color: #ef4444;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.permissionTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.permissionText {
+    font-size: 1rem;
+    color: #4b5563;
+    max-width: 480px;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.btnPermission {
+    background: #8b5cf6;
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(139, 92, 246, 0.25);
+    transition: all 0.2s ease;
+}
+
+.btnPermission:hover {
+    background: #7c3aed;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(139, 92, 246, 0.35);
+}
+
+/* Welcome Page Styles */
+.welcomePage {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.welcomeCard {
+    background: white;
+    width: 100%;
+    max-width: 550px;
+    padding: 2.5rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.welcomeHeader {
+    margin-bottom: 2rem;
+}
+
+.brandBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f5f3ff;
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+    color: #6366f1;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.welcomeHeader h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.welcomeContent {
+    text-align: left;
+    margin-bottom: 2.5rem;
+}
+
+.welcomeContent p {
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.requirementBox {
+    background: #f8fafc;
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+
+.requirementBox h4 {
+    margin: 0 0 1rem 0;
+    font-size: 0.875rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.requirementBox ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.requirementBox li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.warningNote {
+    display: flex;
+    gap: 0.75rem;
+    background: #fffbeb;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #fef3c7;
+    color: #92400e;
+}
+
+.warningNote p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.startBtn {
+    width: 100%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    padding: 1.125rem;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+}
+
+.startBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+}
+
+.cancelLink {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    margin-top: 1.25rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.cancelLink:hover {
+    color: #64748b;
+}
+
+@media (max-width: 480px) {
+    .welcomeCard {
+        padding: 1.5rem;
+    }
+
+    .welcomeHeader h2 {
+        font-size: 1.5rem;
+    }
+
+    .startBtn {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+}
+
+/* Permission Block Fix Styles */
+.fixInstructions {
+    background: #fdfdfd;
+    border: 1px solid #e1e7ef;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    text-align: left;
+}
+
+.fixInstructions h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.fixInstructions ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.fixInstructions li {
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.permissionActions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.btnSecondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnSecondary:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}

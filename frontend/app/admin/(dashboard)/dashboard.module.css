@@ -17,7 +17,8 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    padding-top: 100px; /* Account for fixed navbar */
+    padding-top: 4rem;
+    /* Account for fixed navbar */
 }
 
 /* CTA SECTION (Welcome Banner) */
@@ -142,120 +143,77 @@
     }
 }
 
-/* 3. Tablets (Portrait) */
-@media (min-width: 768px) and (max-width: 1024px) {
+/* 3. Tablets (Portrait) - Standardizing breakpoints */
+@media (max-width: 1024px) {
     .mainContent {
-        padding: 1.5rem;
+        padding: 1.25rem;
         gap: 1.5rem;
-    }
-
-    .statsGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .mainGrid,
-    .secondaryGrid {
-        grid-template-columns: 1fr;
+        /* padding-top: 90px; */
     }
 
     .ctaSection {
         padding: 30px;
     }
 
-    .ctaText h2 {
-        font-size: 24px;
-    }
-}
-
-/* 4. Tablets (Landscape) */
-@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
-    .statsGrid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-
-    .mainGrid {
-        grid-template-columns: 1.5fr 1fr;
-    }
-}
-
-/* 5. Mobile (Landscape) or Large phones */
-@media (min-width: 481px) and (max-width: 767px) {
-    .mainContent {
-        padding: 1rem;
-    }
-
     .statsGrid {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .mainGrid,
     .secondaryGrid {
         grid-template-columns: 1fr;
-    }
-
-    .ctaSection {
-        flex-direction: column;
-        text-align: center;
-        padding: 25px;
-        gap: 20px;
-    }
-
-    .ctaText {
-        max-width: 100%;
-    }
-
-    .ctaText h2 {
-        font-size: 22px;
-    }
-
-    .quickActions {
-        justify-content: center;
     }
 }
 
-/* 6. Small Screens (Phones) */
-@media (min-width: 320px) and (max-width: 480px) {
-    .mainContent {
-        padding: 1rem;
-        gap: 1rem;
-    }
-
-    .statsGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .mainGrid,
-    .secondaryGrid {
-        grid-template-columns: 1fr;
-    }
-
+/* 4. Large Phones / Small Tablets */
+@media (max-width: 768px) {
     .ctaSection {
         flex-direction: column;
         text-align: center;
-        padding: 20px;
-        gap: 15px;
+        gap: 1.5rem;
     }
 
     .ctaText {
         max-width: 100%;
     }
 
-    .ctaText h2 {
-        font-size: 20px;
+    .quickActions {
+        width: 100%;
+        justify-content: center;
     }
 
-    .ctaText p {
-        font-size: 14px;
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* 5. Mobile (Portrait) */
+@media (max-width: 500px) {
+    .mainContent {
+        padding: 1rem;
+        gap: 1.25rem;
+        padding-top: 80px;
+    }
+
+    .ctaSection {
+        padding: 24px 20px;
+    }
+
+    .ctaText h2 {
+        font-size: 1.5rem;
     }
 
     .quickActions {
         flex-direction: column;
-        width: 100%;
     }
 
     .actionBtn {
         width: 100%;
         justify-content: center;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
     }
 
     .title {

@@ -14,28 +14,22 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 @router.get("/notifications")
 async def get_admin_notifications(current_user: dict = Depends(get_current_user)):
-    """Retrieve all notifications of type video_test_evaluation for administrators."""
+    """Retrieve the 30 most recent notifications for administrators."""
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin role required")
-    
-    # Fetch notifications for evaluations that need manual review
-    notifications = list(notifications_collection.find({
-        "type": "video_test_evaluation"
-    }).sort("timestamp", -1))
-    
-    # Process for frontend
-    results = []
-    for n in notifications:
-        n["_id"] = str(n["_id"])
-        n["studentId"] = str(n["studentId"])
-        if "courseId" in n and n["courseId"]:
-            n["courseId"] = str(n["courseId"])
-            
-        # Standardize field for frontend consistency (students use isRead)
-        n["isRead"] = n.get("status") == "read" or n.get("isRead") == True
-        results.append(n)
-        
-    return results
+    try:
+        notifications = list(notifications_collection.find({
+            "type": "video_test_evaluation"
+        }).sort("timestamp", -1).limit(30))
+        for n in notifications:
+            n["_id"] = str(n["_id"])
+            if "studentId" in n: n["studentId"] = str(n["studentId"])
+            if "courseId" in n: n["courseId"] = str(n["courseId"])
+            # Ensure isRead exists for the frontend logic
+            if "isRead" not in n: n["isRead"] = n.get("status") == "read"
+        return notifications
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/notifications/read-all")
 async def mark_all_admin_notifications_read(current_user: dict = Depends(get_current_user)):
@@ -237,14 +231,6 @@ async def update_admin_profile(admin_id: str, admin_update: AdminUpdate, current
     
     return {"message": "Profile updated successfully"}
 
-@router.get("/notifications")
-async def get_notifications(current_user: dict = Depends(get_current_user)):
-    notifications = list(db.notifications.find().sort("timestamp", -1).limit(20))
-    for n in notifications:
-        n["_id"] = str(n["_id"])
-        if "studentId" in n: n["studentId"] = str(n["studentId"])
-        if "courseId" in n: n["courseId"] = str(n["courseId"])
-    return notifications
 
 @router.get("/analytics/skill-gaps")
 async def get_skill_gap_analytics(current_user: dict = Depends(get_current_user)):

@@ -6,7 +6,7 @@ import {
     Video, Camera, Mic, Play, ArrowLeft, Clock, Info,
     Sparkles, HelpCircle, Wifi, Headphones, Zap,
     MessageSquare, Activity, Layout, Timer,
-    ChevronLeft, Bookmark, ArrowRight, StopCircle, RotateCcw, Brain
+    ChevronLeft, Bookmark, ArrowRight, StopCircle, RotateCcw, Brain, CheckCircle2, Lock
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { API_BASE_URL, authenticatedFetch } from "@/app/utils/api";
@@ -42,6 +42,8 @@ export default function VideoTestPage() {
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [recordedChunks, setRecordedChunks] = useState<Record<number, Blob[]>>({});
     const [answersCompleted, setAnswersCompleted] = useState<number[]>([]);
+    const [permissionError, setPermissionError] = useState(false);
+    const [testStarted, setTestStarted] = useState(false);
 
     // Refs
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -105,8 +107,6 @@ export default function VideoTestPage() {
                 setQuestions(data.videoQuestions);
                 setCourseTitle(data.courseTitle);
                 setIsRetest(data.isRetest || false);
-                // Pre-warm the camera
-                initCamera();
             } else {
                 toast.error("Failed to load questions");
             }
@@ -118,7 +118,22 @@ export default function VideoTestPage() {
         }
     };
 
+    const startAssessment = async () => {
+        setLoading(true);
+        const success = await initCamera();
+        if (success) {
+            setTestStarted(true);
+            startTestTimer();
+        }
+        setLoading(false);
+    };
+
     const initCamera = async () => {
+        if (typeof window === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setPermissionError(true);
+            return false;
+        }
+
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: true,
@@ -126,12 +141,16 @@ export default function VideoTestPage() {
             });
             setStream(mediaStream);
             streamRef.current = mediaStream;
+            setPermissionError(false);
             if (videoRef.current) {
                 videoRef.current.srcObject = mediaStream;
             }
+            return true;
         } catch (err) {
             console.error("Error accessing camera:", err);
-            toast.error("Please allow camera and microphone access to continue.");
+            setPermissionError(true);
+            // toast.error("Please allow camera and microphone access to continue.");
+            return false;
         }
     };
 
@@ -329,12 +348,110 @@ export default function VideoTestPage() {
         }
     };
 
+    if (permissionError) {
+        return (
+            <div className={styles.permissionOverlay}>
+                <div className={styles.permissionIcon}>
+                    <Lock size={48} />
+                </div>
+                <h2 className={styles.permissionTitle}>Camera/Microphone Blocked</h2>
+                <div className={styles.permissionText}>
+                    <p>SkillBridge AI cannot access your hardware. This usually happens if permissions were denied or your browser is restricting access.</p>
+                    
+                    <div className={styles.fixInstructions}>
+                        <h4>Chrome Troubleshooting:</h4>
+                        <ol>
+                            <li>Click the <strong>Lock Icon</strong> (🔒) next to the URL.</li>
+                            <li>Ensure <strong>Camera</strong> and <strong>Microphone</strong> are set to <strong>Allow</strong>.</li>
+                            <li>If they are already allowed, click <strong>Reset Permission</strong> and refresh.</li>
+                            <li>Check if your physical camera/mic is plugged in and not being used by another app (like Zoom or Teams).</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div className={styles.permissionActions}>
+                    <button 
+                        className={styles.btnPermission}
+                        onClick={() => window.location.reload()}
+                    >
+                        I've allowed it, Refresh Page
+                    </button>
+                    <button 
+                        className={styles.btnSecondary}
+                        onClick={() => {
+                            setPermissionError(false);
+                            initCamera();
+                        }}
+                    >
+                        Try Again
+                    </button>
+                </div>
+                
+                <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                    <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b' }}>Advanced Chrome Tip:</p>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: 1.5 }}>
+                        Type <strong>chrome://settings/content</strong> in your address bar to see all blocked sites and unblock SkillBridge AI.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     if (loading || submitting) {
         return (
             <div className={styles.loadingOverlay}>
                 <div className={styles.spinner}></div>
                 <p>{submitting ? "Uploading your video responses..." : "Establishing secure connection..."}</p>
                 {submitting && <p className={styles.subText}>This may take a moment depending on your connection speed.</p>}
+            </div>
+        );
+    }
+
+    if (!testStarted && !permissionError) {
+        return (
+            <div className={styles.welcomePage}>
+                <div className={styles.welcomeCard}>
+                    <div className={styles.welcomeHeader}>
+                        <div className={styles.brandBadge}>
+                            <Brain size={24} />
+                            <span>SkillBridge AI</span>
+                        </div>
+                        <h2>Begin Your Video Assessment</h2>
+                    </div>
+                    
+                    <div className={styles.welcomeContent}>
+                        <p>You have <strong>20 minutes</strong> to complete the assessment for <strong>{courseTitle}</strong>.</p>
+                        
+                        <div className={styles.requirementBox}>
+                            <h4>System Checklist:</h4>
+                            <ul>
+                                <li><CheckCircle2 size={16} color="#10B981" /> Stable internet connection</li>
+                                <li><CheckCircle2 size={16} color="#10B981" /> Quiet environment with good lighting</li>
+                                <li><CheckCircle2 size={16} color="#10B981" /> Camera & Microphone access</li>
+                            </ul>
+                        </div>
+                        
+                        <div className={styles.warningNote}>
+                            <Info size={20} />
+                            <p>You will need to allow your browser to access your camera and microphone in the next step.</p>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        className={styles.startBtn}
+                        onClick={startAssessment}
+                    >
+                        Start System Check & Assessment
+                        <ArrowRight size={20} />
+                    </button>
+                    
+                    <button 
+                        className={styles.cancelLink}
+                        onClick={() => router.push('/student')}
+                    >
+                        I'll do this later
+                    </button>
+                </div>
             </div>
         );
     }

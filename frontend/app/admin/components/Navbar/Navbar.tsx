@@ -18,6 +18,7 @@ const menuItems = [
     { label: "Students", path: "/admin/students" },
     { label: "Courses", path: "/admin/courses" },
     { label: "Evaluations", path: "/admin/evaluations" },
+    { label: "Notifications", path: "/admin/notifications" },
     { label: "Announcements", path: "/admin/announcements" },
     { label: "Export", path: "/admin/export" },
     { label: "Profile", path: "/admin/profile" },
@@ -30,12 +31,11 @@ export default function Navbar() {
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
-    const notificationRef = React.useRef<HTMLDivElement>(null);
-
     // Close notifications on outside click
     React.useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+            const target = event.target as HTMLElement;
+            if (!target.closest(`.${styles.notificationWrapper}`)) {
                 setShowNotifications(false);
             }
         }
@@ -81,7 +81,7 @@ export default function Navbar() {
                 </Link>
 
                 <div className={styles.mobileNavGroup}>
-                    <div className={styles.notificationWrapper} ref={notificationRef}>
+                    <div className={styles.notificationWrapper}>
                         <button
                             className={styles.iconBtn}
                             onClick={() => setShowNotifications(!showNotifications)}
@@ -141,11 +141,11 @@ export default function Navbar() {
                                 </div>
 
                                 <Link
-                                    href="/admin/evaluations"
+                                    href="/admin/notifications"
                                     className={styles.viewAllBtn}
                                     onClick={() => setShowNotifications(false)}
                                 >
-                                    View all evaluations
+                                    View all notifications
                                 </Link>
                             </div>
                         )}
@@ -165,6 +165,9 @@ export default function Navbar() {
                         onClick={() => setIsMenuOpen(false)}
                     >
                         {item.label}
+                        {item.label === "Notifications" && unreadCount > 0 && (
+                            <span className={styles.inlineBadge}>{unreadCount}</span>
+                        ) }
                     </Link>
                 ))}
                 <div className={styles.mobileActions}>
@@ -176,6 +179,75 @@ export default function Navbar() {
             </div>
 
             <div className={styles.actions}>
+                <div className={styles.notificationWrapper}>
+                    <button
+                        className={styles.iconBtn}
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        title="Notifications"
+                    >
+                        {unreadCount > 0 ? <BellActiveIcon sx={{ color: '#38a3a5' }} /> : <BellIcon />}
+                        {unreadCount > 0 && <span className={styles.badge}></span>}
+                    </button>
+
+                    {showNotifications && (
+                        <div className={styles.notificationPopover}>
+                            <div className={styles.popoverHeader}>
+                                <div className={styles.headerLeft}>
+                                    <h3>Notifications</h3>
+                                    {unreadCount > 0 && <span className={styles.unreadCountLabel}>{unreadCount} new</span>}
+                                </div>
+                                {unreadCount > 0 && (
+                                    <button
+                                        className={styles.clearAllBtn}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            markAllAsRead();
+                                        }}
+                                    >
+                                        Clear all
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className={styles.popoverList}>
+                                {unreadCount === 0 ? (
+                                    <div className={styles.emptyPopover}>
+                                        <BellIcon sx={{ fontSize: 40, opacity: 0.1, mb: 1, color: '#94a3b8' }} />
+                                        <p>No new evaluations</p>
+                                        <span>You'll be alerted when students complete tests</span>
+                                    </div>
+                                ) : (
+                                    recentNotifications.map((notif) => (
+                                        <div
+                                            key={notif._id}
+                                            className={`${styles.popoverItem} ${!notif.isRead ? styles.unreadItem : ''}`}
+                                            onClick={() => handleNotificationClick(notif._id, notif.isRead)}
+                                        >
+                                            <div className={styles.notifDot}></div>
+                                            <div className={styles.notifContent}>
+                                                <p className={styles.notifMessage}>
+                                                    <strong>{notif.studentName}</strong> completed evaluation for {notif.courseTitle}
+                                                </p>
+                                                <span className={styles.notifTime}>
+                                                    {new Date(notif.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                                </span>
+                                            </div>
+                                            <ChevronRightIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <Link
+                                href="/admin/notifications"
+                                className={styles.viewAllBtn}
+                                onClick={() => setShowNotifications(false)}
+                            >
+                                View all notifications
+                            </Link>
+                        </div>
+                    )}
+                </div>
                 <button className={styles.logout} onClick={handleLogout}>
                     <LogoutIcon fontSize="small" />
                     <span>Logout</span>

@@ -214,7 +214,43 @@
         padding: 1.25rem;
     }
 
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .header p {
+        font-size: 0.875rem;
+    }
+
     .exportBox {
-        padding: 2rem;
+        padding: 1.25rem;
+        border-radius: 1.5rem;
+    }
+
+    .historyList {
+        padding: 0.25rem;
+    }
+
+    .historyItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .historyItem div:last-child {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .downloadBtn {
+        font-size: 1rem;
+        padding: 12px;
+    }
+
+    .select {
+        font-size: 0.875rem;
     }
 }

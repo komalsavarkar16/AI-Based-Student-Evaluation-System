@@ -306,41 +306,45 @@ def discover_skill_gaps(mcq_answers, video_answers, course_details, threshold=6.
     client = genai.Client(api_key=GEMINI_API_KEY)
     
     prompt = f"""
-    You are an AI gap discovery engine. The student took an MCQ test and a Video test.
-    Course Details:
-    {json.dumps(course_details, indent=2, default=str)}
+    You are an AI gap discovery engine. Your task is to identify specific skill gaps for a student based on their assessment data.
     
-    MCQ Answers (Theory - mostly out of 100/boolean per question): 
+    Course Context:
+    - Title: {course_details.get('title')}
+    - Required Skills: {', '.join(course_details.get('skills_required', []))}
+    - Difficulty: {course_details.get('level')}
+
+    Data Source 1: MCQ Answers (The student's theoretical knowledge)
     {json.dumps(mcq_answers, indent=2, default=str)}
-    
-    Video Answers (Application - out of 10 per skill):
+    (Note: Each item has "isCorrect" and "relatedSkill")
+
+    Data Source 2: Video Test Evaluation (The student's practical application)
     {json.dumps(video_answers, indent=2, default=str)}
-    
-    Required Proficiency Threshold equivalent: {threshold * 10}% (or {threshold}/10).
-    
-    Tasks:
-    1. Identify all skills that have assessment data in either the MCQ results (answers provided) or the Video technical scores (evaluations provided).
-    2. IMPORTANT RULE: If a skill listed in Course Details has NO corresponding evidence or data in the MCQ or Video logs, DO NOT include it in the analysis. Do not invent scores for untested skills.
-    3. For each assessed skill, consolidate an overall estimated score out of 10 by blending the MCQ correctness (related to that skill) and the Video technical Score for that skill.
-    4. Compare this consolidated score against the threshold of {threshold}/10.
-    5. If score < threshold, flag it as a "Gap".
-    6. Categorize all flagged gaps into broader topics (e.g., "Logic Building", "Syntax", "Soft Skills", "Domain Concepts").
-    
+    (Note: Each item has "relatedSkill" and an "analysis" object containing "technicalScore" out of 10)
+
+    Requirement:
+    1. A skill is considered a "Gap" if its estimated proficiency is below {threshold}/10 (70%).
+    2. Consolidate a score for each skill mentioned in either the MCQ or Video data.
+    3. If a question is tagged with "General", try to map it to one of the Course Required Skills based on the question text.
+    4. Group identify gaps into logical "Categories" (e.g., Logic & Programming, Soft Skills, Domain Architecture).
+    5. Be specific in the "reasoning" about why it's a gap (e.g., "Student failed MCQ definitions for this topic and showed hesitation in the video explanation.")
+
     Output strictly in this JSON format:
     [
       {{
-        "category": "Topic Name",
+        "category": "Topic Category Name",
         "skills": [
           {{
-            "skillName": "Specific Skill",
-            "score": 5.5,
+            "skillName": "Name of the Skill",
+            "score": 0.0,
             "threshold": {threshold},
             "isGap": true,
-            "reasoning": "Failed MCQ on this topic and scored poorly on video application."
+            "reasoning": "Detailed explanation of why this was flagged"
           }}
         ]
       }}
     ]
+    
+    If no significant gaps are found (< threshold), return an empty array [].
     """
     try:
         response = client.models.generate_content(
