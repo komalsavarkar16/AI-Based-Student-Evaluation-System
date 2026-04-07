@@ -11,7 +11,8 @@ SMTP_PORT = 587
 GMAIL_EMAIL = os.getenv("GMAIL_EMAIL")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
-RESEND_API_KEY = os.getenv("RESEND_API_KEY") # Recommended for Render/Vercel
+# Recommended for Render/Vercel (No domain required - use Single Sender Verification)
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY") 
 
 async def send_reset_email(email: str, token: str, role: str):
     # Ensure FRONTEND_URL doesn't have a trailing slash to avoid double slashes in the link
@@ -27,31 +28,33 @@ Click the link below to reset your password:
 This link expires in 1 hour.
 """
 
-    # 🚀 PRIMARY: Try using Resend API (Recommended for Cloud Hosting like Render)
-    # This works over HTTP (Port 443) which is never blocked.
-    if RESEND_API_KEY:
+    # 🚀 PRIMARY: Try using SendGrid API (Best for Render/Vercel WITHOUT a domain)
+    # 1. Sign up on sendgrid.com
+    # 2. Settings -> Sender Authentication -> Single Sender Verification (Verify your Gmail)
+    # 3. Create API Key
+    if SENDGRID_API_KEY:
         try:
             response = requests.post(
-                "https://api.resend.com/emails",
+                "https://api.sendgrid.com/v3/mail/send",
                 headers={
-                    "Authorization": f"Bearer {RESEND_API_KEY}",
+                    "Authorization": f"Bearer {SENDGRID_API_KEY}",
                     "Content-Type": "application/json"
                 },
                 json={
-                    "from": f"onboarding@resend.dev", # Replace with your domain if verified
-                    "to": email,
+                    "personalizations": [{"to": [{"email": email}]}],
+                    "from": {"email": GMAIL_EMAIL, "name": "SkillBridge AI"},
                     "subject": subject,
-                    "text": content
+                    "content": [{"type": "text/plain", "value": content}]
                 },
                 timeout=10
             )
-            if response.ok:
-                print(f"Reset email sent via Resend API to {email}")
+            if 200 <= response.status_code < 300:
+                print(f"Reset email sent via SendGrid API to {email}")
                 return True
             else:
-                print(f"Resend API Error: {response.text}")
+                print(f"SendGrid API Error: {response.text}")
         except Exception as e:
-            print(f"Failed to send via Resend API: {e}")
+            print(f"Failed via SendGrid API: {e}")
 
     # 🔗 FALLBACK: SMTP (Likely to fail on Render but works locally)
     msg = EmailMessage()

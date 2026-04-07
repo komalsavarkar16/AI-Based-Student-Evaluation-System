@@ -60,7 +60,7 @@ def get_mcq(course_id: str, student_id: str = Query(None)):
         if existing_response:
             # Check passing score
             settings = settings_collection.find_one({"type": "global_config"})
-            passing_score = settings.get("passingScore", 70) if settings else 70
+            passing_score = settings.get("passingScore", 40) if settings else 40
             if existing_response.get("mcqScore", 0) < passing_score:
                 raise HTTPException(status_code=403, detail="Assessment already completed with 'Needs Improvement' status. Retakes are not permitted.")
 
