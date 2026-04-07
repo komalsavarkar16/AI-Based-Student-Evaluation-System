@@ -1,50 +1,28 @@
 import os
-import requests
+import smtplib
+from email.mime.text import MIMEText
 
-# Configuration
 GMAIL_EMAIL = os.getenv("GMAIL_EMAIL")
+GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
-BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
-async def send_reset_email(email: str, token: str, role: str):
-    # Ensure FRONTEND_URL doesn't have a trailing slash
-    base_url = FRONTEND_URL.rstrip('/')
-    reset_link = f"{base_url}/{role}/reset-password?token={token}"
-    subject = "Reset Your Password"
-    content = f"""
-Hello,
+async def send_reset_email(to_email: str, token: str, role: str):
+    # Determine front-end base URL
+    base_url = FRONTEND_URL.rstrip("/") if FRONTEND_URL else "http://localhost:3000"
+    link = f"{base_url}/{role}/reset-password?token={token}"
 
-Click the link below to reset your password:
-{reset_link}
-
-This link expires in 1 hour.
-"""
-
-    if not BREVO_API_KEY:
-        print("⚠️ BREVO_API_KEY is not set. Email cannot be sent.")
-        return False
+    msg = MIMEText(f"Click the link to reset your password: {link}\n\nThis link expires in 15 minutes.")
+    msg['Subject'] = "Password Reset"
+    msg['From'] = GMAIL_EMAIL
+    msg['To'] = to_email
 
     try:
-        response = requests.post(
-            "https://api.brevo.com/v3/smtp/email",
-            headers={
-                "api-key": BREVO_API_KEY,
-                "Content-Type": "application/json"
-            },
-            json={
-                "sender": {"name": "SkillBridge AI", "email": GMAIL_EMAIL},
-                "to": [{"email": email}],
-                "subject": subject,
-                "textContent": content
-            },
-            timeout=10
-        )
-        if 200 <= response.status_code < 300:
-            print(f"📧 Reset email sent successfully to {email}")
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(GMAIL_EMAIL, GMAIL_APP_PASSWORD)
+            server.send_message(msg)
+            print(f"📧 Reset email sent successfully to {to_email}")
             return True
-        else:
-            print(f"🚫 Brevo API Error: {response.text}")
-            return False
     except Exception as e:
-        print(f"⚠️ Critical error sending email: {e}")
+        print(f"❌ Critical Email Error: {e}")
         return False

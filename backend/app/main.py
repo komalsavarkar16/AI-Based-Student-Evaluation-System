@@ -17,10 +17,7 @@ app = FastAPI(title="AI Student Evaluation System")
 
 
 frontend_url = os.getenv("FRONTEND_URL")
-origins = [
-   "http://192.168.31.17:3000",
-   "http://localhost:3000",
-   "http://127.0.0.1:3000",
+origins = ["*"
 ]
 if frontend_url:
    origins.append(frontend_url)

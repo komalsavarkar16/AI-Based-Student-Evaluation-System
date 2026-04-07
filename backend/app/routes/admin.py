@@ -145,51 +145,49 @@ async def logout_admin():
 
 @router.post("/forgot-password")
 async def forgot_password(data: ForgotPasswordRequest, background_tasks: BackgroundTasks):
-    # Find admin by email (case-insensitive search for better UX)
-    admin = admins_collection.find_one({"email": {"$regex": f"^{re.escape(data.email)}$", "$options": "i"}})
-
-    if admin:
-        token = secrets.token_urlsafe(32)
-        expiry = datetime.utcnow() + timedelta(hours=1)
-
-        admins_collection.update_one(
-            {"_id": admin["_id"]},
-                {"$set": {
-                    "reset_token": token,
-                    "reset_token_expiry": expiry
-                }}
-            )
-
-        background_tasks.add_task(send_reset_email, admin["email"], token, "admin")
+    admin = admins_collection.find_one({"email": data.email})
     
-    return {
-        "message": "If your email is registered, you will receive a reset link shortly."
-        }
+    if not admin:
+        raise HTTPException(status_code=404, detail="User not found")
 
+    # generate secure token
+    token = secrets.token_urlsafe(32)
+
+    # store token with expiry (15 mins)
+    expiry = datetime.utcnow() + timedelta(minutes=15)
+
+    admins_collection.update_one(
+        {"email": data.email},
+        {"$set": {"reset_token": token, "token_expiry": expiry}}
+    )
+
+    # send email (link with token)
+    background_tasks.add_task(send_reset_email, data.email, token, "admin")
+
+    return {"message": "Password reset link sent"}
 
 @router.post("/reset-password")
 async def reset_password(data: ResetPasswordRequest):
-    admin = admins_collection.find_one({
-        "reset_token": data.token,
-        "reset_token_expiry": {"$gt": datetime.utcnow()}
-    })
+    admin = admins_collection.find_one({"reset_token": data.token})
 
     if not admin:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired reset token"
-        )
+        raise HTTPException(status_code=400, detail="Invalid token")
 
+    # check expiry
+    if admin.get("token_expiry") < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Token expired")
+
+    # hash password
     hashed_password = hash_password(data.new_password)
+
+    # update password & remove token
     admins_collection.update_one(
         {"_id": admin["_id"]},
-        {
-            "$set": {"password": hashed_password},
-            "$unset": {"reset_token": "", "reset_token_expiry": ""}
-        }
+        {"$set": {"password": hashed_password},
+         "$unset": {"reset_token": "", "token_expiry": ""}}
     )
 
-    return {"message": "Password reset successfully"}
+    return {"message": "Password reset successful"}
 
 @router.get("/profile/{admin_id}")
 async def get_admin_profile(admin_id: str, current_user: dict = Depends(get_current_user)):

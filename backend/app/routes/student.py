@@ -116,25 +116,49 @@ async def update_student_profile(student_id: str, profile_data: StudentProfileUp
 
 @router.post("/forgot-password")
 async def forgot_password(data: ForgotPasswordRequest, background_tasks: BackgroundTasks):
-    # Find student by email (case-insensitive search for better UX)
-    student = students_collection.find_one({"email": {"$regex": f"^{re.escape(data.email)}$", "$options": "i"}})
+    student = students_collection.find_one({"email": data.email})
     
-    if student:
-        token = secrets.token_urlsafe(32)
-        expiry = datetime.utcnow() + timedelta(hours=1)
-        students_collection.update_one({"_id": student["_id"]}, {"$set": {"reset_token": token, "reset_token_expiry": expiry}})
-        background_tasks.add_task(send_reset_email, student["email"], token, "student")
-    
-    return {"message": "If your email is registered, you will receive a reset link shortly."}
+    if not student:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # generate secure token
+    token = secrets.token_urlsafe(32)
+
+    # store token with expiry (15 mins)
+    expiry = datetime.utcnow() + timedelta(minutes=15)
+
+    students_collection.update_one(
+        {"email": data.email},
+        {"$set": {"reset_token": token, "token_expiry": expiry}}
+    )
+
+    # send email (link with token)
+    background_tasks.add_task(send_reset_email, data.email, token, "student")
+
+    return {"message": "Password reset link sent"}
 
 @router.post("/reset-password")
 async def reset_password(data: ResetPasswordRequest):
-    student = students_collection.find_one({"reset_token": data.token, "reset_token_expiry": {"$gt": datetime.utcnow()}})
+    student = students_collection.find_one({"reset_token": data.token})
+
     if not student:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset token")
+        raise HTTPException(status_code=400, detail="Invalid token")
+
+    # check expiry
+    if student.get("token_expiry") < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Token expired")
+
+    # hash password
     hashed_password = hash_password(data.new_password)
-    students_collection.update_one({"_id": student["_id"]}, {"$set": {"password": hashed_password}, "$unset": {"reset_token": "", "reset_token_expiry": ""}})
-    return {"message": "Password reset successfully"}
+
+    # update password & remove token
+    students_collection.update_one(
+        {"_id": student["_id"]},
+        {"$set": {"password": hashed_password},
+         "$unset": {"reset_token": "", "token_expiry": ""}}
+    )
+
+    return {"message": "Password reset successful"}
 
 @router.post("/change-password/{student_id}")
 async def change_password(student_id: str, data: dict):
