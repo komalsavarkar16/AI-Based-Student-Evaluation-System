@@ -9,6 +9,7 @@ import secrets
 from datetime import datetime, timedelta
 from app.services.ai_service import generate_confirmation_letter
 from app.core.dependencies import get_current_user
+import re
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -144,26 +145,22 @@ async def logout_admin():
 
 @router.post("/forgot-password")
 async def forgot_password(data: ForgotPasswordRequest):
-    admin = admins_collection.find_one({"email": data.email})
+    # Find admin by email (case-insensitive search for better UX)
+    admin = admins_collection.find_one({"email": {"$regex": f"^{re.escape(data.email)}$", "$options": "i"}})
 
-    if not admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found!"
-        )
+    if admin:
+        token = secrets.token_urlsafe(32)
+        expiry = datetime.utcnow() + timedelta(hours=1)
 
-    token = secrets.token_urlsafe(32)
-    expiry = datetime.utcnow() + timedelta(hours=1)
+        admins_collection.update_one(
+            {"_id": admin["_id"]},
+                {"$set": {
+                    "reset_token": token,
+                    "reset_token_expiry": expiry
+                }}
+            )
 
-    admins_collection.update_one(
-        {"_id": admin["_id"]},
-            {"$set": {
-                "reset_token": token,
-                "reset_token_expiry": expiry
-            }}
-        )
-
-    await send_reset_email(data.email, token, "admin")
+        await send_reset_email(admin["email"], token, "admin")
     
     return {
         "message": "If your email is registered, you will receive a reset link shortly."

@@ -11,7 +11,9 @@ GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 async def send_reset_email(email: str, token: str, role: str):
-    reset_link = f"{FRONTEND_URL}/{role}/reset-password?token={token}"
+    # Ensure FRONTEND_URL doesn't have a trailing slash to avoid double slashes in the link
+    base_url = FRONTEND_URL.rstrip('/')
+    reset_link = f"{base_url}/{role}/reset-password?token={token}"
 
     msg = EmailMessage()
     msg["From"] = GMAIL_EMAIL

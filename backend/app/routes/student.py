@@ -116,13 +116,15 @@ async def update_student_profile(student_id: str, profile_data: StudentProfileUp
 
 @router.post("/forgot-password")
 async def forgot_password(data: ForgotPasswordRequest):
-    student = students_collection.find_one({"email": data.email})
-    if not student:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    token = secrets.token_urlsafe(32)
-    expiry = datetime.utcnow() + timedelta(hours=1)
-    students_collection.update_one({"_id": student["_id"]}, {"$set": {"reset_token": token, "reset_token_expiry": expiry}})
-    await send_reset_email(data.email, token, "student")
+    # Find student by email (case-insensitive search for better UX)
+    student = students_collection.find_one({"email": {"$regex": f"^{re.escape(data.email)}$", "$options": "i"}})
+    
+    if student:
+        token = secrets.token_urlsafe(32)
+        expiry = datetime.utcnow() + timedelta(hours=1)
+        students_collection.update_one({"_id": student["_id"]}, {"$set": {"reset_token": token, "reset_token_expiry": expiry}})
+        await send_reset_email(student["email"], token, "student")
+    
     return {"message": "If your email is registered, you will receive a reset link shortly."}
 
 @router.post("/reset-password")
