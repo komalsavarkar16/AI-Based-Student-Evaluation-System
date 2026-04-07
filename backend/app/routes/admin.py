@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks
 from app.schemas.admin import AdminCreate, AdminLogin, AdminUpdate, SystemSettings, AnnouncementCreate, AnnouncementUpdate
 from bson import ObjectId
 from app.database.connection import db, admins_collection, students_collection, responses_collection, ai_evaluations_collection, admissions_status_collection, bridge_curriculum_collection, courses_collection, settings_collection, announcements_collection, notifications_collection
@@ -144,7 +144,7 @@ async def logout_admin():
     return response
 
 @router.post("/forgot-password")
-async def forgot_password(data: ForgotPasswordRequest):
+async def forgot_password(data: ForgotPasswordRequest, background_tasks: BackgroundTasks):
     # Find admin by email (case-insensitive search for better UX)
     admin = admins_collection.find_one({"email": {"$regex": f"^{re.escape(data.email)}$", "$options": "i"}})
 
@@ -160,7 +160,7 @@ async def forgot_password(data: ForgotPasswordRequest):
                 }}
             )
 
-        await send_reset_email(admin["email"], token, "admin")
+        background_tasks.add_task(send_reset_email, admin["email"], token, "admin")
     
     return {
         "message": "If your email is registered, you will receive a reset link shortly."

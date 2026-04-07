@@ -53,7 +53,7 @@ export default function ResultsList() {
                     const statusData = await statusRes.json();
 
                     const hasHistory = (statusData.evaluationHistory?.length ?? 0) > 0;
-                    if (statusData.videoTestEvaluationStatus === "completed" || hasHistory) {
+                    if (statusData.passed && (statusData.videoTestEvaluationStatus === "completed" || hasHistory)) {
                         completedTests.push({
                             course: course,
                             score: statusData.score,

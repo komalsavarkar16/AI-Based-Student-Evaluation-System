@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import StudentNavbar from '../../components/StudentNavbar/StudentNavbar';
 import styles from './tests.module.css';
 import { API_BASE_URL, authenticatedFetch } from '@/app/utils/api';
-import { Brain, Video, ListChecks, ArrowRight, PlayCircle } from 'lucide-react';
+import { Brain, Video, ListChecks, ArrowRight, PlayCircle, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 interface Course {
@@ -143,6 +143,10 @@ export default function TestsPage() {
                                                     <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn}>
                                                         <PlayCircle size={18} /> Take Test
                                                     </Link>
+                                                ) : (status as any).status === "Bridge Course Recommended" ? (
+                                                    <Link href={`/student/results/${course._id}`} className={styles.videoStartBtn} style={{ background: '#f59e0b' }}>
+                                                        <Sparkles size={18} /> Start Bridge Course
+                                                    </Link>
                                                 ) : (status as any).status === "Bridge Course In Progress" ? (
                                                     <Link href={`/student/video-test/${course._id}`} className={styles.videoStartBtn} style={{ background: '#4f46e5' }}>
                                                         <Brain size={18} /> Resume Bridge Course
@@ -157,7 +161,7 @@ export default function TestsPage() {
 
                                         {!status.passed && status.completed && (
                                             <div className={styles.lockedMessage}>
-                                                <p>Score 70% or more to unlock the video assessment.</p>
+                                                <p>Score 40% or more to unlock the video assessment.</p>
                                             </div>
                                         )}
                                     </div>

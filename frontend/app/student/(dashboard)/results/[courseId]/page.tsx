@@ -156,7 +156,11 @@ export default function ResultDetail() {
     let bannerTitle = "Evaluation Complete";
     let bannerRec = "";
 
-    if (signal === "pass" || signal.includes("pass")) {
+    if (result.status === "Approved") {
+        bannerClass = styles.bannerPass;
+        bannerTitle = "Officially Admitted";
+        bannerRec = "Your enrollment has been approved. Welcome to the course!";
+    } else if (signal === "pass" || signal.includes("pass")) {
         bannerClass = styles.bannerPass;
         bannerTitle = "Eligible for Admission";
         bannerRec = "You are ready to enroll in this course.";
@@ -247,82 +251,44 @@ export default function ResultDetail() {
 
                     {result.status === 'Bridge Course Recommended' && (
                         <div style={{ marginTop: '24px', background: '#eef2ff', padding: '24px', borderRadius: '12px', border: '1px solid #c7d2fe' }}>
-                            <h3 style={{ color: '#4338ca', marginTop: 0, marginBottom: '8px', fontSize: '20px' }}>Bridge Path Assigned: AI Concept Checklist</h3>
+                            <h3 style={{ color: '#4338ca', marginTop: 0, marginBottom: '8px', fontSize: '20px' }}>Bridge Path Recommended</h3>
                             <p style={{ color: '#4f46e5', marginBottom: '20px', fontSize: '15px' }}>
-                                You have great potential, but need to fill some technical gaps before full enrollment. Follow this personalized study plan to bridge your gaps using the AI-generated Concept Checklist organized from easiest to hardest.
+                                You have great potential, but need to fill some technical gaps before full enrollment. We have prepared a personalized study plan for you. Accept the bridge course to unlock your concept roadmap.
                             </p>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', border: '2px solid transparent', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-
-                                    {loadingPath && !pathBData ? (
-                                        <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>AI is analyzing your skill gaps and generating study concepts...</div>
-                                    ) : pathBData && (
-                                        <>
-                                            <div style={{ marginBottom: '20px', background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                                <h5 style={{ color: '#1e293b', marginTop: 0, fontSize: '15px' }}>Your AI Concept Checklist:</h5>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                                    {pathBData.checklist?.map((item: any, idx: number) => (
-                                                        <div key={idx} style={{ padding: '12px', background: '#fff', marginBottom: '8px', borderRadius: '6px', borderLeft: item.difficulty === 'HARD' ? '4px solid #ef4444' : item.difficulty === 'MEDIUM' ? '4px solid #f59e0b' : '4px solid #10b981', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
-                                                            <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.concept} <span style={{ fontSize: '11px', padding: '2px 6px', background: '#e2e8f0', borderRadius: '4px', marginLeft: '6px', verticalAlign: 'middle' }}>{item.difficulty}</span></div>
-                                                            <div style={{ fontSize: '13px', color: '#475569', marginTop: '6px', lineHeight: 1.4 }}><em>{item.description}</em></div>
-                                                            {item.subtopics && item.subtopics.length > 0 && (
-                                                                <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', fontSize: '13px', color: '#1e293b' }}>
-                                                                    {item.subtopics.map((sub: string, sIdx: number) => (
-                                                                        <li key={sIdx} style={{ marginBottom: '2px' }}>{sub}</li>
-                                                                    ))}
-                                                                </ul>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <h5 style={{ color: '#1e293b', marginTop: '0', fontSize: '15px' }}>Recommended Reading Links:</h5>
-                                                <ul style={{ paddingLeft: '20px', color: '#475569', margin: 0, fontSize: '14px' }}>
-                                                    {pathBData.references?.map((ref: any, idx: number) => (
-                                                        <li key={idx} style={{ marginBottom: '6px' }}>
-                                                            <a href={ref.url} target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'none' }}>{ref.title}</a>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-
-                                            <button
-                                                className={styles.acceptBtn}
-                                                style={{
-                                                    background: '#4f46e5',
-                                                    color: '#fff',
-                                                    border: 'none',
-                                                    padding: '16px 20px',
-                                                    borderRadius: '10px',
-                                                    fontWeight: 600,
-                                                    width: '100%',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '10px',
-                                                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)'
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.background = '#4338ca';
-                                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                                    e.currentTarget.style.boxShadow = '0 6px 15px rgba(79, 70, 229, 0.35)';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.background = '#4f46e5';
-                                                    e.currentTarget.style.transform = 'translateY(0)';
-                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.25)';
-                                                }}
-                                                onClick={() => setIsBridgeConfirmModalOpen(true)}
-                                            >
-                                                <Sparkles size={20} />
-                                                Accept & Start Bridge Course
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
+                            <button
+                                className={styles.acceptBtn}
+                                style={{
+                                    background: '#4f46e5',
+                                    color: '#fff',
+                                    border: 'none',
+                                    padding: '16px 20px',
+                                    borderRadius: '10px',
+                                    fontWeight: 600,
+                                    width: '100%',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px',
+                                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = '#4338ca';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 6px 15px rgba(79, 70, 229, 0.35)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = '#4f46e5';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.25)';
+                                }}
+                                onClick={() => setIsBridgeConfirmModalOpen(true)}
+                            >
+                                <Sparkles size={20} />
+                                Accept & Start Bridge Course
+                            </button>
                         </div>
                     )}
                 </div>

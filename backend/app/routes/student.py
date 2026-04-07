@@ -115,7 +115,7 @@ async def update_student_profile(student_id: str, profile_data: StudentProfileUp
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/forgot-password")
-async def forgot_password(data: ForgotPasswordRequest):
+async def forgot_password(data: ForgotPasswordRequest, background_tasks: BackgroundTasks):
     # Find student by email (case-insensitive search for better UX)
     student = students_collection.find_one({"email": {"$regex": f"^{re.escape(data.email)}$", "$options": "i"}})
     
@@ -123,7 +123,7 @@ async def forgot_password(data: ForgotPasswordRequest):
         token = secrets.token_urlsafe(32)
         expiry = datetime.utcnow() + timedelta(hours=1)
         students_collection.update_one({"_id": student["_id"]}, {"$set": {"reset_token": token, "reset_token_expiry": expiry}})
-        await send_reset_email(student["email"], token, "student")
+        background_tasks.add_task(send_reset_email, student["email"], token, "student")
     
     return {"message": "If your email is registered, you will receive a reset link shortly."}
 
@@ -191,7 +191,7 @@ async def submit_test(result: TestResult):
     
     # 2. Initial AI Analysis (if score < passing_score)
     settings = settings_collection.find_one({"type": "global_config"})
-    passing_score = settings.get("passingScore", 70) if settings else 70
+    passing_score = settings.get("passingScore", 40) if settings else 40
 
     analysis_content = None
     analysis = None

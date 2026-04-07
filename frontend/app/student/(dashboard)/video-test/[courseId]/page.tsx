@@ -413,58 +413,6 @@ export default function VideoTestPage() {
         );
     }
 
-    if (!testStarted && !permissionError) {
-        return (
-            <div className={styles.welcomePage}>
-                <div className={styles.welcomeCard}>
-                    <div className={styles.welcomeHeader}>
-                        <div className={styles.brandBadge}>
-                            <Brain size={24} />
-                            <span>SkillBridge AI</span>
-                        </div>
-                        <h2>Begin Your Video Assessment</h2>
-                    </div>
-
-                    <div className={styles.welcomeContent}>
-                        <p>You have <strong>20 minutes</strong> to complete the assessment for <strong>{courseTitle}</strong>.</p>
-
-                        <div className={styles.requirementBox}>
-                            <h4>System Checklist:</h4>
-                            <ul>
-                                <li><CheckCircle2 size={16} color="#10B981" /> Stable internet connection</li>
-                                <li><CheckCircle2 size={16} color="#10B981" /> Quiet environment with good lighting</li>
-                                <li><CheckCircle2 size={16} color="#10B981" /> Camera & Microphone access</li>
-                            </ul>
-                        </div>
-
-                        <div className={styles.warningNote}>
-                            <Info size={20} />
-                            <p>You will need to allow your browser to access your camera and microphone in the next step.</p>
-                        </div>
-                    </div>
-
-                    <button
-                        className={styles.startBtn}
-                        onClick={startAssessment}
-                    >
-                        Start System Check & Assessment
-                        <ArrowRight size={20} />
-                    </button>
-
-                    <button
-                        className={styles.cancelLink}
-                        onClick={() => router.push('/student')}
-                    >
-                        I'll do this later
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    const currentQuestion = questions[currentIdx];
-    const progressPercent = Math.round(((currentIdx + 1) / questions.length) * 100);
-
     if (isBridgeCourse && bridgeChecklist) {
         const totalItems = bridgeChecklist.checklist?.length || 0;
         const checkedItems = bridgeChecklist.checklist?.filter((c: any) => c.checked).length || 0;
@@ -566,6 +514,60 @@ export default function VideoTestPage() {
             </div>
         );
     }
+
+    if (!testStarted && !permissionError) {
+        return (
+            <div className={styles.welcomePage}>
+                <div className={styles.welcomeCard}>
+                    <div className={styles.welcomeHeader}>
+                        <div className={styles.brandBadge}>
+                            <Brain size={24} />
+                            <span>SkillBridge AI</span>
+                        </div>
+                        <h2>Begin Your Video Assessment</h2>
+                    </div>
+
+                    <div className={styles.welcomeContent}>
+                        <p>You have <strong>20 minutes</strong> to complete the assessment for <strong>{courseTitle}</strong>.</p>
+
+                        <div className={styles.requirementBox}>
+                            <h4>System Checklist:</h4>
+                            <ul>
+                                <li><CheckCircle2 size={16} color="#10B981" /> Stable internet connection</li>
+                                <li><CheckCircle2 size={16} color="#10B981" /> Quiet environment with good lighting</li>
+                                <li><CheckCircle2 size={16} color="#10B981" /> Camera & Microphone access</li>
+                            </ul>
+                        </div>
+
+                        <div className={styles.warningNote}>
+                            <Info size={20} />
+                            <p>You will need to allow your browser to access your camera and microphone in the next step.</p>
+                        </div>
+                    </div>
+
+                    <button
+                        className={styles.startBtn}
+                        onClick={startAssessment}
+                    >
+                        Start System Check & Assessment
+                        <ArrowRight size={20} />
+                    </button>
+
+                    <button
+                        className={styles.cancelLink}
+                        onClick={() => router.push('/student')}
+                    >
+                        I'll do this later
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const currentQuestion = questions[currentIdx];
+    const progressPercent = Math.round(((currentIdx + 1) / questions.length) * 100);
+
+
 
     return (
         <div className={styles.pageWrapper}>
