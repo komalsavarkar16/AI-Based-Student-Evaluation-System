@@ -69,6 +69,12 @@ export default function VideoTestPage() {
         };
     }, []);
 
+    useEffect(() => {
+        if (stream && videoRef.current && !videoRef.current.srcObject) {
+            videoRef.current.srcObject = stream;
+        }
+    }, [stream, testStarted]);
+
     const checkTestStatusAndInit = async () => {
         try {
             const studentId = localStorage.getItem("student_id");
@@ -357,7 +363,7 @@ export default function VideoTestPage() {
                 <h2 className={styles.permissionTitle}>Camera/Microphone Blocked</h2>
                 <div className={styles.permissionText}>
                     <p>SkillBridge AI cannot access your hardware. This usually happens if permissions were denied or your browser is restricting access.</p>
-                    
+
                     <div className={styles.fixInstructions}>
                         <h4>Chrome Troubleshooting:</h4>
                         <ol>
@@ -368,15 +374,15 @@ export default function VideoTestPage() {
                         </ol>
                     </div>
                 </div>
-                
+
                 <div className={styles.permissionActions}>
-                    <button 
+                    <button
                         className={styles.btnPermission}
                         onClick={() => window.location.reload()}
                     >
                         I've allowed it, Refresh Page
                     </button>
-                    <button 
+                    <button
                         className={styles.btnSecondary}
                         onClick={() => {
                             setPermissionError(false);
@@ -386,7 +392,7 @@ export default function VideoTestPage() {
                         Try Again
                     </button>
                 </div>
-                
+
                 <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                     <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem', fontWeight: 'bold', color: '#1e293b' }}>Advanced Chrome Tip:</p>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: 1.5 }}>
@@ -418,10 +424,10 @@ export default function VideoTestPage() {
                         </div>
                         <h2>Begin Your Video Assessment</h2>
                     </div>
-                    
+
                     <div className={styles.welcomeContent}>
                         <p>You have <strong>20 minutes</strong> to complete the assessment for <strong>{courseTitle}</strong>.</p>
-                        
+
                         <div className={styles.requirementBox}>
                             <h4>System Checklist:</h4>
                             <ul>
@@ -430,22 +436,22 @@ export default function VideoTestPage() {
                                 <li><CheckCircle2 size={16} color="#10B981" /> Camera & Microphone access</li>
                             </ul>
                         </div>
-                        
+
                         <div className={styles.warningNote}>
                             <Info size={20} />
                             <p>You will need to allow your browser to access your camera and microphone in the next step.</p>
                         </div>
                     </div>
-                    
-                    <button 
+
+                    <button
                         className={styles.startBtn}
                         onClick={startAssessment}
                     >
                         Start System Check & Assessment
                         <ArrowRight size={20} />
                     </button>
-                    
-                    <button 
+
+                    <button
                         className={styles.cancelLink}
                         onClick={() => router.push('/student')}
                     >
