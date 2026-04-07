@@ -18,7 +18,6 @@ const menuItems = [
     { label: "Students", path: "/admin/students" },
     { label: "Courses", path: "/admin/courses" },
     { label: "Evaluations", path: "/admin/evaluations" },
-    { label: "Notifications", path: "/admin/notifications" },
     { label: "Announcements", path: "/admin/announcements" },
     { label: "Export", path: "/admin/export" },
     { label: "Profile", path: "/admin/profile" },
@@ -167,7 +166,7 @@ export default function Navbar() {
                         {item.label}
                         {item.label === "Notifications" && unreadCount > 0 && (
                             <span className={styles.inlineBadge}>{unreadCount}</span>
-                        ) }
+                        )}
                     </Link>
                 ))}
                 <div className={styles.mobileActions}>
