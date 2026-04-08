@@ -8,6 +8,7 @@ load_dotenv()
 
 # Configure Gemini using the working method from test.py
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash") # Fallback to 1.5 for deployment compatibility
 
 def generate_mcqs(course, count=10):
     """
@@ -46,7 +47,7 @@ def generate_mcqs(course, count=10):
     try:
         # Using the model confirmed working in test.py
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt
         )
         
@@ -105,7 +106,7 @@ def generate_video_questions(course, count=6):
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt
         )
         
@@ -152,7 +153,7 @@ def generate_retest_video_questions(course, previous_gaps, count=6):
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -187,7 +188,7 @@ def analyze_test_results(answers, course_title):
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt
         )
         
@@ -275,7 +276,7 @@ Return ONLY a valid JSON object in this format:
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -348,7 +349,7 @@ def discover_skill_gaps(mcq_answers, video_answers, course_details, threshold=6.
     """
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -392,7 +393,7 @@ def generate_overall_video_evaluation(evaluations, course_details):
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -439,7 +440,7 @@ def generate_bridge_path_b_content(skill_gaps):
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -508,7 +509,7 @@ def generate_confirmation_letter(student_name, course_title, overall_score, sett
     try:
         current_date = datetime.now().strftime("%B %d, %Y")
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=GEMINI_MODEL,
             contents=prompt
         )
         return response.text.strip()

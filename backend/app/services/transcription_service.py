@@ -10,6 +10,7 @@ from google.genai import types
 load_dotenv()
 
 # Initialize Gemini Client
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 client = genai.Client()
 
 def transcribe_videos(student_id: str, course_id: str, video_urls: list):
@@ -62,7 +63,7 @@ def transcribe_videos(student_id: str, course_id: str, video_urls: list):
             - "confidenceScore": A number out of 10 representing the student's confidence."""
             
             gemini_response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model=GEMINI_MODEL,
                 contents=[
                     uploaded_file,
                     prompt
