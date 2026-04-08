@@ -673,7 +673,13 @@ async def get_student_detail(student_id: str, current_user: dict = Depends(get_c
 async def get_system_settings(current_user: dict = Depends(get_current_user)):
     settings = settings_collection.find_one({"type": "global_config"})
     if not settings:
-        return SystemSettings()
+        return SystemSettings(
+            instituteName="",
+            instituteAddress="",
+            instituteWebsite="",
+            instituteEmail="",
+            signatureText=""
+        )
     
     settings.pop("_id", None)
     return settings
