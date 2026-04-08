@@ -47,7 +47,7 @@ def generate_mcqs(course, count=10):
     try:
         # Using the model confirmed working in test.py
         response = client.models.generate_content(
-            model=GEMINI_MODEL,
+            model="gemini-3.1-pro-preview",
             contents=prompt
         )
         
@@ -106,7 +106,7 @@ def generate_video_questions(course, count=6):
 
     try:
         response = client.models.generate_content(
-            model=GEMINI_MODEL,
+            model="gemini-2.5-flash",
             contents=prompt
         )
         
@@ -153,7 +153,7 @@ def generate_retest_video_questions(course, previous_gaps, count=6):
 
     try:
         response = client.models.generate_content(
-            model=GEMINI_MODEL,
+            model="gemini-2.5-flash",
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -188,7 +188,7 @@ def analyze_test_results(answers, course_title):
 
     try:
         response = client.models.generate_content(
-            model=GEMINI_MODEL,
+            model="gemini-2.5-flash",
             contents=prompt
         )
         
@@ -276,7 +276,7 @@ Return ONLY a valid JSON object in this format:
 
     try:
         response = client.models.generate_content(
-            model=GEMINI_MODEL,
+            model="gemini-2.5-flash",
             contents=prompt,
             config={"response_mime_type": "application/json"}
         )
@@ -509,7 +509,7 @@ def generate_confirmation_letter(student_name, course_title, overall_score, sett
     try:
         current_date = datetime.now().strftime("%B %d, %Y")
         response = client.models.generate_content(
-            model=GEMINI_MODEL,
+            model="gemini-2.5-flash",
             contents=prompt
         )
         return response.text.strip()
