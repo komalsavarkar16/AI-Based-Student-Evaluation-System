@@ -47,7 +47,7 @@ def generate_mcqs(course, count=10):
     try:
         # Using the model confirmed working in test.py
         response = client.models.generate_content(
-            model="gemini-3.1-pro-preview",
+            model="gemini-2.5-flash",
             contents=prompt
         )
         
